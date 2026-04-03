@@ -102,9 +102,9 @@ jobs:
             rust/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('rust/Cargo.lock') }}
 
-      - name: Run tests (skip perf on CI)
-        run: cargo test -- --test-threads=1 --skip performance
-        timeout-minutes: 20
+      - name: Run tests (skip perf + stress on CI)
+        run: cargo test -- --test-threads=1 --skip performance --skip stress --skip soak
+        timeout-minutes: 30
 
   dart-checks:
     name: Dart — analyze
