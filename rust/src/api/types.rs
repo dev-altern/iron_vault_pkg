@@ -507,3 +507,69 @@ pub struct IndexStats {
     /// Total size of the index directory in bytes.
     pub size_bytes: u64,
 }
+
+// ─── Phase 10: Sync Types ───────────────────────────────────────────
+
+/// Vector clock for causality tracking in sync.
+///
+/// Maps node_id → counter. Used to detect concurrent edits
+/// and determine happens-before relationships.
+#[derive(Debug, Clone, PartialEq)]
+pub struct VectorClock {
+    /// Node ID → logical timestamp.
+    pub clocks: HashMap<String, u64>,
+}
+
+/// A record in the sync outbox (pending upload to server).
+#[derive(Debug, Clone)]
+pub struct SyncRecord {
+    pub id: String,
+    pub table_name: String,
+    pub row_id: String,
+    pub operation: String,
+    pub payload: String,
+    pub vector_clock: String,
+    pub created_at: i64,
+    pub synced_at: Option<i64>,
+    pub attempts: i32,
+    pub tenant_id: String,
+}
+
+/// A batch of sync records to push or pull.
+#[derive(Debug, Clone)]
+pub struct SyncDelta {
+    pub records: Vec<SyncRecord>,
+}
+
+/// Result of applying incoming sync records.
+#[derive(Debug, Clone)]
+pub struct SyncApplyResult {
+    pub applied: u32,
+    pub conflicts: u32,
+    pub skipped: u32,
+}
+
+/// A detected sync conflict between local and remote data.
+#[derive(Debug, Clone)]
+pub struct SyncConflict {
+    pub id: String,
+    pub table_name: String,
+    pub row_id: String,
+    pub local_data: String,
+    pub remote_data: String,
+    pub local_clock: String,
+    pub remote_clock: String,
+    pub detected_at: i64,
+    pub resolved: bool,
+}
+
+/// Strategy for resolving sync conflicts.
+#[derive(Debug, Clone)]
+pub enum ConflictResolution {
+    /// Most recent timestamp wins.
+    LastWriteWins,
+    /// Local data always kept.
+    LocalWins,
+    /// Remote data always applied.
+    RemoteWins,
+}

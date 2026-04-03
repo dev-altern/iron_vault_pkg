@@ -318,6 +318,46 @@ abstract class IronVaultDb implements RustOpaqueInterface {
   /// Return a snapshot of database statistics.
   Future<VaultStats> stats();
 
+  /// Add a record to the sync outbox.
+  Future<String> syncAddToOutbox({
+    required String tableName,
+    required String rowId,
+    required String operation,
+    required String payload,
+    required VectorClock vectorClock,
+  });
+
+  /// Apply incoming sync records with conflict detection.
+  Future<SyncApplyResult> syncApplyDelta({
+    required SyncDelta delta,
+    required ConflictResolution resolution,
+  });
+
+  /// Get unresolved sync conflicts.
+  Future<List<SyncConflict>> syncGetConflicts();
+
+  /// Get pending outbox records.
+  Future<SyncDelta> syncGetDelta({
+    required PlatformInt64 sinceSeq,
+    required int limit,
+  });
+
+  /// Increment retry on a failed outbox record. Returns false if moved to dead-letter.
+  Future<bool> syncIncrementRetry({
+    required String recordId,
+    required int maxAttempts,
+    required String errorMessage,
+  });
+
+  /// Mark outbox records as synced.
+  Future<int> syncMarkSynced({required List<String> recordIds});
+
+  /// Resolve a sync conflict.
+  Future<void> syncResolveConflict({
+    required String conflictId,
+    required String resolution,
+  });
+
   /// Execute multiple operations in a single ACID transaction.
   ///
   /// All operations run inside `BEGIN IMMEDIATE ... COMMIT`.

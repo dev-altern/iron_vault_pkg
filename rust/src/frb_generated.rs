@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.12.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 198302690;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 403074104;
 
 // Section: executor
 
@@ -2514,6 +2514,407 @@ fn wire__crate__api__vault__IronVaultDb_stats_impl(
         },
     )
 }
+fn wire__crate__api__vault__IronVaultDb_sync_add_to_outbox_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "IronVaultDb_sync_add_to_outbox",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<IronVaultDb>,
+            >>::sse_decode(&mut deserializer);
+            let api_table_name = <String>::sse_decode(&mut deserializer);
+            let api_row_id = <String>::sse_decode(&mut deserializer);
+            let api_operation = <String>::sse_decode(&mut deserializer);
+            let api_payload = <String>::sse_decode(&mut deserializer);
+            let api_vector_clock = <crate::api::types::VectorClock>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::vault::IronVaultDb::sync_add_to_outbox(
+                            &*api_that_guard,
+                            api_table_name,
+                            api_row_id,
+                            api_operation,
+                            api_payload,
+                            api_vector_clock,
+                        )?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vault__IronVaultDb_sync_apply_delta_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "IronVaultDb_sync_apply_delta",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<IronVaultDb>,
+            >>::sse_decode(&mut deserializer);
+            let api_delta = <crate::api::types::SyncDelta>::sse_decode(&mut deserializer);
+            let api_resolution =
+                <crate::api::types::ConflictResolution>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::vault::IronVaultDb::sync_apply_delta(
+                            &*api_that_guard,
+                            api_delta,
+                            api_resolution,
+                        )?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vault__IronVaultDb_sync_get_conflicts_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "IronVaultDb_sync_get_conflicts",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<IronVaultDb>,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok =
+                            crate::api::vault::IronVaultDb::sync_get_conflicts(&*api_that_guard)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vault__IronVaultDb_sync_get_delta_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "IronVaultDb_sync_get_delta",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<IronVaultDb>,
+            >>::sse_decode(&mut deserializer);
+            let api_since_seq = <i64>::sse_decode(&mut deserializer);
+            let api_limit = <u32>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::vault::IronVaultDb::sync_get_delta(
+                            &*api_that_guard,
+                            api_since_seq,
+                            api_limit,
+                        )?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vault__IronVaultDb_sync_increment_retry_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "IronVaultDb_sync_increment_retry",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<IronVaultDb>,
+            >>::sse_decode(&mut deserializer);
+            let api_record_id = <String>::sse_decode(&mut deserializer);
+            let api_max_attempts = <i32>::sse_decode(&mut deserializer);
+            let api_error_message = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::vault::IronVaultDb::sync_increment_retry(
+                            &*api_that_guard,
+                            api_record_id,
+                            api_max_attempts,
+                            api_error_message,
+                        )?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vault__IronVaultDb_sync_mark_synced_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "IronVaultDb_sync_mark_synced",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<IronVaultDb>,
+            >>::sse_decode(&mut deserializer);
+            let api_record_ids = <Vec<String>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::vault::IronVaultDb::sync_mark_synced(
+                            &*api_that_guard,
+                            api_record_ids,
+                        )?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vault__IronVaultDb_sync_resolve_conflict_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "IronVaultDb_sync_resolve_conflict",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<IronVaultDb>,
+            >>::sse_decode(&mut deserializer);
+            let api_conflict_id = <String>::sse_decode(&mut deserializer);
+            let api_resolution = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::vault::IronVaultDb::sync_resolve_conflict(
+                            &*api_that_guard,
+                            api_conflict_id,
+                            api_resolution,
+                        )?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__vault__IronVaultDb_transaction_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -3446,6 +3847,14 @@ impl SseDecode for std::collections::HashMap<String, crate::api::types::SqlValue
     }
 }
 
+impl SseDecode for std::collections::HashMap<String, u64> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <Vec<(String, u64)>>::sse_decode(deserializer);
+        return inner.into_iter().collect();
+    }
+}
+
 impl SseDecode
     for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<IronVaultDb>>
 {
@@ -3774,6 +4183,19 @@ impl SseDecode for crate::api::types::Condition {
     }
 }
 
+impl SseDecode for crate::api::types::ConflictResolution {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::types::ConflictResolution::LastWriteWins,
+            1 => crate::api::types::ConflictResolution::LocalWins,
+            2 => crate::api::types::ConflictResolution::RemoteWins,
+            _ => unreachable!("Invalid variant for ConflictResolution: {}", inner),
+        };
+    }
+}
+
 impl SseDecode for crate::api::types::ExportFormat {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -4045,6 +4467,18 @@ impl SseDecode for Vec<(String, String)> {
     }
 }
 
+impl SseDecode for Vec<(String, u64)> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<(String, u64)>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::api::types::SearchField> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -4076,6 +4510,30 @@ impl SseDecode for Vec<crate::api::types::SqlValue> {
         let mut ans_ = Vec::with_capacity(len_ as usize);
         for idx_ in 0..len_ {
             ans_.push(<crate::api::types::SqlValue>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::types::SyncConflict> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::types::SyncConflict>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::api::types::SyncRecord> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::types::SyncRecord>::sse_decode(deserializer));
         }
         return ans_;
     }
@@ -4374,6 +4832,15 @@ impl SseDecode for (String, String) {
     }
 }
 
+impl SseDecode for (String, u64) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_field0 = <String>::sse_decode(deserializer);
+        let mut var_field1 = <u64>::sse_decode(deserializer);
+        return (var_field0, var_field1);
+    }
+}
+
 impl SseDecode for crate::api::types::RestoreResult {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -4444,6 +4911,84 @@ impl SseDecode for crate::api::types::SqlValue {
                 unimplemented!("");
             }
         }
+    }
+}
+
+impl SseDecode for crate::api::types::SyncApplyResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_applied = <u32>::sse_decode(deserializer);
+        let mut var_conflicts = <u32>::sse_decode(deserializer);
+        let mut var_skipped = <u32>::sse_decode(deserializer);
+        return crate::api::types::SyncApplyResult {
+            applied: var_applied,
+            conflicts: var_conflicts,
+            skipped: var_skipped,
+        };
+    }
+}
+
+impl SseDecode for crate::api::types::SyncConflict {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_id = <String>::sse_decode(deserializer);
+        let mut var_tableName = <String>::sse_decode(deserializer);
+        let mut var_rowId = <String>::sse_decode(deserializer);
+        let mut var_localData = <String>::sse_decode(deserializer);
+        let mut var_remoteData = <String>::sse_decode(deserializer);
+        let mut var_localClock = <String>::sse_decode(deserializer);
+        let mut var_remoteClock = <String>::sse_decode(deserializer);
+        let mut var_detectedAt = <i64>::sse_decode(deserializer);
+        let mut var_resolved = <bool>::sse_decode(deserializer);
+        return crate::api::types::SyncConflict {
+            id: var_id,
+            table_name: var_tableName,
+            row_id: var_rowId,
+            local_data: var_localData,
+            remote_data: var_remoteData,
+            local_clock: var_localClock,
+            remote_clock: var_remoteClock,
+            detected_at: var_detectedAt,
+            resolved: var_resolved,
+        };
+    }
+}
+
+impl SseDecode for crate::api::types::SyncDelta {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_records = <Vec<crate::api::types::SyncRecord>>::sse_decode(deserializer);
+        return crate::api::types::SyncDelta {
+            records: var_records,
+        };
+    }
+}
+
+impl SseDecode for crate::api::types::SyncRecord {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_id = <String>::sse_decode(deserializer);
+        let mut var_tableName = <String>::sse_decode(deserializer);
+        let mut var_rowId = <String>::sse_decode(deserializer);
+        let mut var_operation = <String>::sse_decode(deserializer);
+        let mut var_payload = <String>::sse_decode(deserializer);
+        let mut var_vectorClock = <String>::sse_decode(deserializer);
+        let mut var_createdAt = <i64>::sse_decode(deserializer);
+        let mut var_syncedAt = <Option<i64>>::sse_decode(deserializer);
+        let mut var_attempts = <i32>::sse_decode(deserializer);
+        let mut var_tenantId = <String>::sse_decode(deserializer);
+        return crate::api::types::SyncRecord {
+            id: var_id,
+            table_name: var_tableName,
+            row_id: var_rowId,
+            operation: var_operation,
+            payload: var_payload,
+            vector_clock: var_vectorClock,
+            created_at: var_createdAt,
+            synced_at: var_syncedAt,
+            attempts: var_attempts,
+            tenant_id: var_tenantId,
+        };
     }
 }
 
@@ -4566,6 +5111,14 @@ impl SseDecode for crate::api::types::VaultStats {
             page_count: var_pageCount,
             page_size: var_pageSize,
         };
+    }
+}
+
+impl SseDecode for crate::api::types::VectorClock {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_clocks = <std::collections::HashMap<String, u64>>::sse_decode(deserializer);
+        return crate::api::types::VectorClock { clocks: var_clocks };
     }
 }
 
@@ -4774,52 +5327,94 @@ fn pde_ffi_dispatcher_primary_impl(
             wire__crate__api__vault__IronVaultDb_set_actor_impl(port, ptr, rust_vec_len, data_len)
         }
         44 => wire__crate__api__vault__IronVaultDb_stats_impl(port, ptr, rust_vec_len, data_len),
-        45 => {
+        45 => wire__crate__api__vault__IronVaultDb_sync_add_to_outbox_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        46 => wire__crate__api__vault__IronVaultDb_sync_apply_delta_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        47 => wire__crate__api__vault__IronVaultDb_sync_get_conflicts_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        48 => wire__crate__api__vault__IronVaultDb_sync_get_delta_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        49 => wire__crate__api__vault__IronVaultDb_sync_increment_retry_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        50 => wire__crate__api__vault__IronVaultDb_sync_mark_synced_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        51 => wire__crate__api__vault__IronVaultDb_sync_resolve_conflict_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        52 => {
             wire__crate__api__vault__IronVaultDb_transaction_impl(port, ptr, rust_vec_len, data_len)
         }
-        46 => wire__crate__api__vault__IronVaultDb_update_with_version_impl(
+        53 => wire__crate__api__vault__IronVaultDb_update_with_version_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        47 => wire__crate__api__vault__IronVaultDb_vacuum_impl(port, ptr, rust_vec_len, data_len),
-        48 => wire__crate__api__vault__IronVaultDb_verify_audit_integrity_impl(
+        54 => wire__crate__api__vault__IronVaultDb_vacuum_impl(port, ptr, rust_vec_len, data_len),
+        55 => wire__crate__api__vault__IronVaultDb_verify_audit_integrity_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        49 => wire__crate__api__vault__IronVaultDb_verify_backup_impl(
+        56 => wire__crate__api__vault__IronVaultDb_verify_backup_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        50 => wire__crate__api__vault__IronVaultDb_watch_aggregate_impl(
+        57 => wire__crate__api__vault__IronVaultDb_watch_aggregate_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        51 => {
+        58 => {
             wire__crate__api__vault__IronVaultDb_watch_query_impl(port, ptr, rust_vec_len, data_len)
         }
-        52 => {
+        59 => {
             wire__crate__api__vault__IronVaultDb_watch_row_impl(port, ptr, rust_vec_len, data_len)
         }
-        53 => {
+        60 => {
             wire__crate__api__vault__IronVaultDb_write_audit_impl(port, ptr, rust_vec_len, data_len)
         }
-        54 => {
+        61 => {
             wire__crate__api__crypto__decrypt_field_static_impl(port, ptr, rust_vec_len, data_len)
         }
-        55 => wire__crate__api__crypto__derive_key_impl(port, ptr, rust_vec_len, data_len),
-        56 => {
+        62 => wire__crate__api__crypto__derive_key_impl(port, ptr, rust_vec_len, data_len),
+        63 => {
             wire__crate__api__crypto__encrypt_field_static_impl(port, ptr, rust_vec_len, data_len)
         }
-        59 => wire__crate__api__simple__init_app_impl(port, ptr, rust_vec_len, data_len),
-        60 => wire__crate__api__types__vault_config_default_impl(port, ptr, rust_vec_len, data_len),
+        66 => wire__crate__api__simple__init_app_impl(port, ptr, rust_vec_len, data_len),
+        67 => wire__crate__api__types__vault_config_default_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -4832,12 +5427,12 @@ fn pde_ffi_dispatcher_sync_impl(
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        57 => wire__crate__api__crypto__generate_salt_impl(ptr, rust_vec_len, data_len),
-        58 => wire__crate__api__simple__greet_impl(ptr, rust_vec_len, data_len),
-        61 => wire__crate__api__types__vault_config_development_impl(ptr, rust_vec_len, data_len),
-        62 => wire__crate__api__types__vault_config_low_memory_impl(ptr, rust_vec_len, data_len),
-        63 => wire__crate__api__types__vault_config_production_impl(ptr, rust_vec_len, data_len),
-        64 => wire__crate__api__types__vault_config_test_config_impl(ptr, rust_vec_len, data_len),
+        64 => wire__crate__api__crypto__generate_salt_impl(ptr, rust_vec_len, data_len),
+        65 => wire__crate__api__simple__greet_impl(ptr, rust_vec_len, data_len),
+        68 => wire__crate__api__types__vault_config_development_impl(ptr, rust_vec_len, data_len),
+        69 => wire__crate__api__types__vault_config_low_memory_impl(ptr, rust_vec_len, data_len),
+        70 => wire__crate__api__types__vault_config_production_impl(ptr, rust_vec_len, data_len),
+        71 => wire__crate__api__types__vault_config_test_config_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -5132,6 +5727,28 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::types::Condition>
     for crate::api::types::Condition
 {
     fn into_into_dart(self) -> crate::api::types::Condition {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::types::ConflictResolution {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::LastWriteWins => 0.into_dart(),
+            Self::LocalWins => 1.into_dart(),
+            Self::RemoteWins => 2.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::types::ConflictResolution
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::types::ConflictResolution>
+    for crate::api::types::ConflictResolution
+{
+    fn into_into_dart(self) -> crate::api::types::ConflictResolution {
         self
     }
 }
@@ -5507,6 +6124,96 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::types::SqlValue>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::types::SyncApplyResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.applied.into_into_dart().into_dart(),
+            self.conflicts.into_into_dart().into_dart(),
+            self.skipped.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::types::SyncApplyResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::types::SyncApplyResult>
+    for crate::api::types::SyncApplyResult
+{
+    fn into_into_dart(self) -> crate::api::types::SyncApplyResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::types::SyncConflict {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.id.into_into_dart().into_dart(),
+            self.table_name.into_into_dart().into_dart(),
+            self.row_id.into_into_dart().into_dart(),
+            self.local_data.into_into_dart().into_dart(),
+            self.remote_data.into_into_dart().into_dart(),
+            self.local_clock.into_into_dart().into_dart(),
+            self.remote_clock.into_into_dart().into_dart(),
+            self.detected_at.into_into_dart().into_dart(),
+            self.resolved.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::types::SyncConflict
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::types::SyncConflict>
+    for crate::api::types::SyncConflict
+{
+    fn into_into_dart(self) -> crate::api::types::SyncConflict {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::types::SyncDelta {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [self.records.into_into_dart().into_dart()].into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::types::SyncDelta {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::types::SyncDelta>
+    for crate::api::types::SyncDelta
+{
+    fn into_into_dart(self) -> crate::api::types::SyncDelta {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::types::SyncRecord {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.id.into_into_dart().into_dart(),
+            self.table_name.into_into_dart().into_dart(),
+            self.row_id.into_into_dart().into_dart(),
+            self.operation.into_into_dart().into_dart(),
+            self.payload.into_into_dart().into_dart(),
+            self.vector_clock.into_into_dart().into_dart(),
+            self.created_at.into_into_dart().into_dart(),
+            self.synced_at.into_into_dart().into_dart(),
+            self.attempts.into_into_dart().into_dart(),
+            self.tenant_id.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::types::SyncRecord {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::types::SyncRecord>
+    for crate::api::types::SyncRecord
+{
+    fn into_into_dart(self) -> crate::api::types::SyncRecord {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::types::TransactionResult {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -5621,6 +6328,23 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::types::VaultStats>
         self
     }
 }
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::types::VectorClock {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [self.clocks.into_into_dart().into_dart()].into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::types::VectorClock
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::types::VectorClock>
+    for crate::api::types::VectorClock
+{
+    fn into_into_dart(self) -> crate::api::types::VectorClock {
+        self
+    }
+}
 
 impl SseEncode for flutter_rust_bridge::for_generated::anyhow::Error {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -5650,6 +6374,13 @@ impl SseEncode for std::collections::HashMap<String, crate::api::types::SqlValue
             self.into_iter().collect(),
             serializer,
         );
+    }
+}
+
+impl SseEncode for std::collections::HashMap<String, u64> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<(String, u64)>>::sse_encode(self.into_iter().collect(), serializer);
     }
 }
 
@@ -5897,6 +6628,23 @@ impl SseEncode for crate::api::types::Condition {
     }
 }
 
+impl SseEncode for crate::api::types::ConflictResolution {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::types::ConflictResolution::LastWriteWins => 0,
+                crate::api::types::ConflictResolution::LocalWins => 1,
+                crate::api::types::ConflictResolution::RemoteWins => 2,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
 impl SseEncode for crate::api::types::ExportFormat {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -6119,6 +6867,16 @@ impl SseEncode for Vec<(String, String)> {
     }
 }
 
+impl SseEncode for Vec<(String, u64)> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <(String, u64)>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::api::types::SearchField> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -6145,6 +6903,26 @@ impl SseEncode for Vec<crate::api::types::SqlValue> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <crate::api::types::SqlValue>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::types::SyncConflict> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::types::SyncConflict>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::api::types::SyncRecord> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::types::SyncRecord>::sse_encode(item, serializer);
         }
     }
 }
@@ -6373,6 +7151,14 @@ impl SseEncode for (String, String) {
     }
 }
 
+impl SseEncode for (String, u64) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.0, serializer);
+        <u64>::sse_encode(self.1, serializer);
+    }
+}
+
 impl SseEncode for crate::api::types::RestoreResult {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -6427,6 +7213,53 @@ impl SseEncode for crate::api::types::SqlValue {
                 unimplemented!("");
             }
         }
+    }
+}
+
+impl SseEncode for crate::api::types::SyncApplyResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u32>::sse_encode(self.applied, serializer);
+        <u32>::sse_encode(self.conflicts, serializer);
+        <u32>::sse_encode(self.skipped, serializer);
+    }
+}
+
+impl SseEncode for crate::api::types::SyncConflict {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.id, serializer);
+        <String>::sse_encode(self.table_name, serializer);
+        <String>::sse_encode(self.row_id, serializer);
+        <String>::sse_encode(self.local_data, serializer);
+        <String>::sse_encode(self.remote_data, serializer);
+        <String>::sse_encode(self.local_clock, serializer);
+        <String>::sse_encode(self.remote_clock, serializer);
+        <i64>::sse_encode(self.detected_at, serializer);
+        <bool>::sse_encode(self.resolved, serializer);
+    }
+}
+
+impl SseEncode for crate::api::types::SyncDelta {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<crate::api::types::SyncRecord>>::sse_encode(self.records, serializer);
+    }
+}
+
+impl SseEncode for crate::api::types::SyncRecord {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.id, serializer);
+        <String>::sse_encode(self.table_name, serializer);
+        <String>::sse_encode(self.row_id, serializer);
+        <String>::sse_encode(self.operation, serializer);
+        <String>::sse_encode(self.payload, serializer);
+        <String>::sse_encode(self.vector_clock, serializer);
+        <i64>::sse_encode(self.created_at, serializer);
+        <Option<i64>>::sse_encode(self.synced_at, serializer);
+        <i32>::sse_encode(self.attempts, serializer);
+        <String>::sse_encode(self.tenant_id, serializer);
     }
 }
 
@@ -6518,6 +7351,13 @@ impl SseEncode for crate::api::types::VaultStats {
         <i32>::sse_encode(self.migration_version, serializer);
         <i64>::sse_encode(self.page_count, serializer);
         <i64>::sse_encode(self.page_size, serializer);
+    }
+}
+
+impl SseEncode for crate::api::types::VectorClock {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <std::collections::HashMap<String, u64>>::sse_encode(self.clocks, serializer);
     }
 }
 

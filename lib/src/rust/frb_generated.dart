@@ -69,7 +69,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.12.0';
 
   @override
-  int get rustContentHash => 198302690;
+  int get rustContentHash => 403074104;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -321,6 +321,49 @@ abstract class RustLibApi extends BaseApi {
   });
 
   Future<VaultStats> crateApiVaultIronVaultDbStats({required IronVaultDb that});
+
+  Future<String> crateApiVaultIronVaultDbSyncAddToOutbox({
+    required IronVaultDb that,
+    required String tableName,
+    required String rowId,
+    required String operation,
+    required String payload,
+    required VectorClock vectorClock,
+  });
+
+  Future<SyncApplyResult> crateApiVaultIronVaultDbSyncApplyDelta({
+    required IronVaultDb that,
+    required SyncDelta delta,
+    required ConflictResolution resolution,
+  });
+
+  Future<List<SyncConflict>> crateApiVaultIronVaultDbSyncGetConflicts({
+    required IronVaultDb that,
+  });
+
+  Future<SyncDelta> crateApiVaultIronVaultDbSyncGetDelta({
+    required IronVaultDb that,
+    required PlatformInt64 sinceSeq,
+    required int limit,
+  });
+
+  Future<bool> crateApiVaultIronVaultDbSyncIncrementRetry({
+    required IronVaultDb that,
+    required String recordId,
+    required int maxAttempts,
+    required String errorMessage,
+  });
+
+  Future<int> crateApiVaultIronVaultDbSyncMarkSynced({
+    required IronVaultDb that,
+    required List<String> recordIds,
+  });
+
+  Future<void> crateApiVaultIronVaultDbSyncResolveConflict({
+    required IronVaultDb that,
+    required String conflictId,
+    required String resolution,
+  });
 
   Future<TransactionResult> crateApiVaultIronVaultDbTransaction({
     required IronVaultDb that,
@@ -2145,6 +2188,295 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "IronVaultDb_stats", argNames: ["that"]);
 
   @override
+  Future<String> crateApiVaultIronVaultDbSyncAddToOutbox({
+    required IronVaultDb that,
+    required String tableName,
+    required String rowId,
+    required String operation,
+    required String payload,
+    required VectorClock vectorClock,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+            that,
+            serializer,
+          );
+          sse_encode_String(tableName, serializer);
+          sse_encode_String(rowId, serializer);
+          sse_encode_String(operation, serializer);
+          sse_encode_String(payload, serializer);
+          sse_encode_box_autoadd_vector_clock(vectorClock, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 45,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_String,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbSyncAddToOutboxConstMeta,
+        argValues: [that, tableName, rowId, operation, payload, vectorClock],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbSyncAddToOutboxConstMeta =>
+      const TaskConstMeta(
+        debugName: "IronVaultDb_sync_add_to_outbox",
+        argNames: [
+          "that",
+          "tableName",
+          "rowId",
+          "operation",
+          "payload",
+          "vectorClock",
+        ],
+      );
+
+  @override
+  Future<SyncApplyResult> crateApiVaultIronVaultDbSyncApplyDelta({
+    required IronVaultDb that,
+    required SyncDelta delta,
+    required ConflictResolution resolution,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+            that,
+            serializer,
+          );
+          sse_encode_box_autoadd_sync_delta(delta, serializer);
+          sse_encode_conflict_resolution(resolution, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 46,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_sync_apply_result,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbSyncApplyDeltaConstMeta,
+        argValues: [that, delta, resolution],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbSyncApplyDeltaConstMeta =>
+      const TaskConstMeta(
+        debugName: "IronVaultDb_sync_apply_delta",
+        argNames: ["that", "delta", "resolution"],
+      );
+
+  @override
+  Future<List<SyncConflict>> crateApiVaultIronVaultDbSyncGetConflicts({
+    required IronVaultDb that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 47,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_sync_conflict,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbSyncGetConflictsConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbSyncGetConflictsConstMeta =>
+      const TaskConstMeta(
+        debugName: "IronVaultDb_sync_get_conflicts",
+        argNames: ["that"],
+      );
+
+  @override
+  Future<SyncDelta> crateApiVaultIronVaultDbSyncGetDelta({
+    required IronVaultDb that,
+    required PlatformInt64 sinceSeq,
+    required int limit,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+            that,
+            serializer,
+          );
+          sse_encode_i_64(sinceSeq, serializer);
+          sse_encode_u_32(limit, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 48,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_sync_delta,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbSyncGetDeltaConstMeta,
+        argValues: [that, sinceSeq, limit],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbSyncGetDeltaConstMeta =>
+      const TaskConstMeta(
+        debugName: "IronVaultDb_sync_get_delta",
+        argNames: ["that", "sinceSeq", "limit"],
+      );
+
+  @override
+  Future<bool> crateApiVaultIronVaultDbSyncIncrementRetry({
+    required IronVaultDb that,
+    required String recordId,
+    required int maxAttempts,
+    required String errorMessage,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+            that,
+            serializer,
+          );
+          sse_encode_String(recordId, serializer);
+          sse_encode_i_32(maxAttempts, serializer);
+          sse_encode_String(errorMessage, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 49,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_bool,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbSyncIncrementRetryConstMeta,
+        argValues: [that, recordId, maxAttempts, errorMessage],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbSyncIncrementRetryConstMeta =>
+      const TaskConstMeta(
+        debugName: "IronVaultDb_sync_increment_retry",
+        argNames: ["that", "recordId", "maxAttempts", "errorMessage"],
+      );
+
+  @override
+  Future<int> crateApiVaultIronVaultDbSyncMarkSynced({
+    required IronVaultDb that,
+    required List<String> recordIds,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+            that,
+            serializer,
+          );
+          sse_encode_list_String(recordIds, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 50,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_u_32,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbSyncMarkSyncedConstMeta,
+        argValues: [that, recordIds],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbSyncMarkSyncedConstMeta =>
+      const TaskConstMeta(
+        debugName: "IronVaultDb_sync_mark_synced",
+        argNames: ["that", "recordIds"],
+      );
+
+  @override
+  Future<void> crateApiVaultIronVaultDbSyncResolveConflict({
+    required IronVaultDb that,
+    required String conflictId,
+    required String resolution,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+            that,
+            serializer,
+          );
+          sse_encode_String(conflictId, serializer);
+          sse_encode_String(resolution, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 51,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbSyncResolveConflictConstMeta,
+        argValues: [that, conflictId, resolution],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbSyncResolveConflictConstMeta =>
+      const TaskConstMeta(
+        debugName: "IronVaultDb_sync_resolve_conflict",
+        argNames: ["that", "conflictId", "resolution"],
+      );
+
+  @override
   Future<TransactionResult> crateApiVaultIronVaultDbTransaction({
     required IronVaultDb that,
     required List<Op> ops,
@@ -2161,7 +2493,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 45,
+            funcId: 52,
             port: port_,
           );
         },
@@ -2205,7 +2537,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 46,
+            funcId: 53,
             port: port_,
           );
         },
@@ -2239,7 +2571,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 47,
+            funcId: 54,
             port: port_,
           );
         },
@@ -2276,7 +2608,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 48,
+            funcId: 55,
             port: port_,
           );
         },
@@ -2314,7 +2646,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 49,
+            funcId: 56,
             port: port_,
           );
         },
@@ -2360,7 +2692,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 50,
+              funcId: 57,
               port: port_,
             );
           },
@@ -2406,7 +2738,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 51,
+              funcId: 58,
               port: port_,
             );
           },
@@ -2454,7 +2786,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 52,
+              funcId: 59,
               port: port_,
             );
           },
@@ -2504,7 +2836,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 53,
+            funcId: 60,
             port: port_,
           );
         },
@@ -2555,7 +2887,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 54,
+            funcId: 61,
             port: port_,
           );
         },
@@ -2596,7 +2928,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 55,
+            funcId: 62,
             port: port_,
           );
         },
@@ -2630,7 +2962,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 56,
+            funcId: 63,
             port: port_,
           );
         },
@@ -2657,7 +2989,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 57)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 64)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_list_prim_u_8_strict,
@@ -2680,7 +3012,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(name, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 58)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 65)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -2705,7 +3037,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 59,
+            funcId: 66,
             port: port_,
           );
         },
@@ -2732,7 +3064,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 60,
+            funcId: 67,
             port: port_,
           );
         },
@@ -2756,7 +3088,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 61)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 68)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_vault_config,
@@ -2778,7 +3110,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 62)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 69)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_vault_config,
@@ -2800,7 +3132,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 63)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 70)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_vault_config,
@@ -2822,7 +3154,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 64)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 71)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_vault_config,
@@ -2896,6 +3228,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       dco_decode_list_record_string_sql_value(
         raw,
       ).map((e) => MapEntry(e.$1, e.$2)),
+    );
+  }
+
+  @protected
+  Map<String, BigInt> dco_decode_Map_String_u_64_None(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return Map.fromEntries(
+      dco_decode_list_record_string_u_64(raw).map((e) => MapEntry(e.$1, e.$2)),
     );
   }
 
@@ -3056,6 +3396,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SyncDelta dco_decode_box_autoadd_sync_delta(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_sync_delta(raw);
+  }
+
+  @protected
   int dco_decode_box_autoadd_u_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
@@ -3065,6 +3411,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   VaultConfig dco_decode_box_autoadd_vault_config(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_vault_config(raw);
+  }
+
+  @protected
+  VectorClock dco_decode_box_autoadd_vector_clock(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_vector_clock(raw);
   }
 
   @protected
@@ -3152,6 +3504,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       default:
         throw Exception("unreachable");
     }
+  }
+
+  @protected
+  ConflictResolution dco_decode_conflict_resolution(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return ConflictResolution.values[raw as int];
   }
 
   @protected
@@ -3323,6 +3681,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<(String, BigInt)> dco_decode_list_record_string_u_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_record_string_u_64).toList();
+  }
+
+  @protected
   List<SearchField> dco_decode_list_search_field(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_search_field).toList();
@@ -3338,6 +3702,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<SqlValue> dco_decode_list_sql_value(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_sql_value).toList();
+  }
+
+  @protected
+  List<SyncConflict> dco_decode_list_sync_conflict(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_sync_conflict).toList();
+  }
+
+  @protected
+  List<SyncRecord> dco_decode_list_sync_record(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_sync_record).toList();
   }
 
   @protected
@@ -3527,6 +3903,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  (String, BigInt) dco_decode_record_string_u_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2) {
+      throw Exception('Expected 2 elements, got ${arr.length}');
+    }
+    return (dco_decode_String(arr[0]), dco_decode_u_64(arr[1]));
+  }
+
+  @protected
   RestoreResult dco_decode_restore_result(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -3582,6 +3968,67 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       default:
         throw Exception("unreachable");
     }
+  }
+
+  @protected
+  SyncApplyResult dco_decode_sync_apply_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return SyncApplyResult(
+      applied: dco_decode_u_32(arr[0]),
+      conflicts: dco_decode_u_32(arr[1]),
+      skipped: dco_decode_u_32(arr[2]),
+    );
+  }
+
+  @protected
+  SyncConflict dco_decode_sync_conflict(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 9)
+      throw Exception('unexpected arr length: expect 9 but see ${arr.length}');
+    return SyncConflict(
+      id: dco_decode_String(arr[0]),
+      tableName: dco_decode_String(arr[1]),
+      rowId: dco_decode_String(arr[2]),
+      localData: dco_decode_String(arr[3]),
+      remoteData: dco_decode_String(arr[4]),
+      localClock: dco_decode_String(arr[5]),
+      remoteClock: dco_decode_String(arr[6]),
+      detectedAt: dco_decode_i_64(arr[7]),
+      resolved: dco_decode_bool(arr[8]),
+    );
+  }
+
+  @protected
+  SyncDelta dco_decode_sync_delta(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 1)
+      throw Exception('unexpected arr length: expect 1 but see ${arr.length}');
+    return SyncDelta(records: dco_decode_list_sync_record(arr[0]));
+  }
+
+  @protected
+  SyncRecord dco_decode_sync_record(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 10)
+      throw Exception('unexpected arr length: expect 10 but see ${arr.length}');
+    return SyncRecord(
+      id: dco_decode_String(arr[0]),
+      tableName: dco_decode_String(arr[1]),
+      rowId: dco_decode_String(arr[2]),
+      operation: dco_decode_String(arr[3]),
+      payload: dco_decode_String(arr[4]),
+      vectorClock: dco_decode_String(arr[5]),
+      createdAt: dco_decode_i_64(arr[6]),
+      syncedAt: dco_decode_opt_box_autoadd_i_64(arr[7]),
+      attempts: dco_decode_i_32(arr[8]),
+      tenantId: dco_decode_String(arr[9]),
+    );
   }
 
   @protected
@@ -3688,6 +4135,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  VectorClock dco_decode_vector_clock(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 1)
+      throw Exception('unexpected arr length: expect 1 but see ${arr.length}');
+    return VectorClock(clocks: dco_decode_Map_String_u_64_None(arr[0]));
+  }
+
+  @protected
   AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_String(deserializer);
@@ -3745,6 +4201,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_list_record_string_sql_value(deserializer);
+    return Map.fromEntries(inner.map((e) => MapEntry(e.$1, e.$2)));
+  }
+
+  @protected
+  Map<String, BigInt> sse_decode_Map_String_u_64_None(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_list_record_string_u_64(deserializer);
     return Map.fromEntries(inner.map((e) => MapEntry(e.$1, e.$2)));
   }
 
@@ -3926,6 +4391,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  SyncDelta sse_decode_box_autoadd_sync_delta(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_sync_delta(deserializer));
+  }
+
+  @protected
   int sse_decode_box_autoadd_u_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_u_32(deserializer));
@@ -3937,6 +4408,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_vault_config(deserializer));
+  }
+
+  @protected
+  VectorClock sse_decode_box_autoadd_vector_clock(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_vector_clock(deserializer));
   }
 
   @protected
@@ -4021,6 +4500,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       default:
         throw UnimplementedError('');
     }
+  }
+
+  @protected
+  ConflictResolution sse_decode_conflict_resolution(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return ConflictResolution.values[inner];
   }
 
   @protected
@@ -4267,6 +4755,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<(String, BigInt)> sse_decode_list_record_string_u_64(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <(String, BigInt)>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_record_string_u_64(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<SearchField> sse_decode_list_search_field(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -4298,6 +4800,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <SqlValue>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_sql_value(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SyncConflict> sse_decode_list_sync_conflict(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SyncConflict>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_sync_conflict(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SyncRecord> sse_decode_list_sync_record(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SyncRecord>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_sync_record(deserializer));
     }
     return ans_;
   }
@@ -4548,6 +5076,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  (String, BigInt) sse_decode_record_string_u_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_field0 = sse_decode_String(deserializer);
+    var var_field1 = sse_decode_u_64(deserializer);
+    return (var_field0, var_field1);
+  }
+
+  @protected
   RestoreResult sse_decode_restore_result(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_pagesRestored = sse_decode_u_64(deserializer);
@@ -4605,6 +5141,78 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       default:
         throw UnimplementedError('');
     }
+  }
+
+  @protected
+  SyncApplyResult sse_decode_sync_apply_result(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_applied = sse_decode_u_32(deserializer);
+    var var_conflicts = sse_decode_u_32(deserializer);
+    var var_skipped = sse_decode_u_32(deserializer);
+    return SyncApplyResult(
+      applied: var_applied,
+      conflicts: var_conflicts,
+      skipped: var_skipped,
+    );
+  }
+
+  @protected
+  SyncConflict sse_decode_sync_conflict(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_String(deserializer);
+    var var_tableName = sse_decode_String(deserializer);
+    var var_rowId = sse_decode_String(deserializer);
+    var var_localData = sse_decode_String(deserializer);
+    var var_remoteData = sse_decode_String(deserializer);
+    var var_localClock = sse_decode_String(deserializer);
+    var var_remoteClock = sse_decode_String(deserializer);
+    var var_detectedAt = sse_decode_i_64(deserializer);
+    var var_resolved = sse_decode_bool(deserializer);
+    return SyncConflict(
+      id: var_id,
+      tableName: var_tableName,
+      rowId: var_rowId,
+      localData: var_localData,
+      remoteData: var_remoteData,
+      localClock: var_localClock,
+      remoteClock: var_remoteClock,
+      detectedAt: var_detectedAt,
+      resolved: var_resolved,
+    );
+  }
+
+  @protected
+  SyncDelta sse_decode_sync_delta(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_records = sse_decode_list_sync_record(deserializer);
+    return SyncDelta(records: var_records);
+  }
+
+  @protected
+  SyncRecord sse_decode_sync_record(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_String(deserializer);
+    var var_tableName = sse_decode_String(deserializer);
+    var var_rowId = sse_decode_String(deserializer);
+    var var_operation = sse_decode_String(deserializer);
+    var var_payload = sse_decode_String(deserializer);
+    var var_vectorClock = sse_decode_String(deserializer);
+    var var_createdAt = sse_decode_i_64(deserializer);
+    var var_syncedAt = sse_decode_opt_box_autoadd_i_64(deserializer);
+    var var_attempts = sse_decode_i_32(deserializer);
+    var var_tenantId = sse_decode_String(deserializer);
+    return SyncRecord(
+      id: var_id,
+      tableName: var_tableName,
+      rowId: var_rowId,
+      operation: var_operation,
+      payload: var_payload,
+      vectorClock: var_vectorClock,
+      createdAt: var_createdAt,
+      syncedAt: var_syncedAt,
+      attempts: var_attempts,
+      tenantId: var_tenantId,
+    );
   }
 
   @protected
@@ -4717,6 +5325,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  VectorClock sse_decode_vector_clock(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_clocks = sse_decode_Map_String_u_64_None(deserializer);
+    return VectorClock(clocks: var_clocks);
+  }
+
+  @protected
   void sse_encode_AnyhowException(
     AnyhowException self,
     SseSerializer serializer,
@@ -4783,6 +5398,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_list_record_string_sql_value(
+      self.entries.map((e) => (e.key, e.value)).toList(),
+      serializer,
+    );
+  }
+
+  @protected
+  void sse_encode_Map_String_u_64_None(
+    Map<String, BigInt> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_record_string_u_64(
       self.entries.map((e) => (e.key, e.value)).toList(),
       serializer,
     );
@@ -4967,6 +5594,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_sync_delta(
+    SyncDelta self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_sync_delta(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_u_32(self, serializer);
@@ -4979,6 +5615,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_vault_config(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_vector_clock(
+    VectorClock self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_vector_clock(self, serializer);
   }
 
   @protected
@@ -5060,6 +5705,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(sql, serializer);
         sse_encode_list_sql_value(params, serializer);
     }
+  }
+
+  @protected
+  void sse_encode_conflict_resolution(
+    ConflictResolution self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
   }
 
   @protected
@@ -5287,6 +5941,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_record_string_u_64(
+    List<(String, BigInt)> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_record_string_u_64(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_search_field(
     List<SearchField> self,
     SseSerializer serializer,
@@ -5319,6 +5985,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_sql_value(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_sync_conflict(
+    List<SyncConflict> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_sync_conflict(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_sync_record(
+    List<SyncRecord> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_sync_record(item, serializer);
     }
   }
 
@@ -5536,6 +6226,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_record_string_u_64(
+    (String, BigInt) self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.$1, serializer);
+    sse_encode_u_64(self.$2, serializer);
+  }
+
+  @protected
   void sse_encode_restore_result(RestoreResult self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_u_64(self.pagesRestored, serializer);
@@ -5578,6 +6278,52 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_i_32(4, serializer);
         sse_encode_list_prim_u_8_strict(field0, serializer);
     }
+  }
+
+  @protected
+  void sse_encode_sync_apply_result(
+    SyncApplyResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_32(self.applied, serializer);
+    sse_encode_u_32(self.conflicts, serializer);
+    sse_encode_u_32(self.skipped, serializer);
+  }
+
+  @protected
+  void sse_encode_sync_conflict(SyncConflict self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.id, serializer);
+    sse_encode_String(self.tableName, serializer);
+    sse_encode_String(self.rowId, serializer);
+    sse_encode_String(self.localData, serializer);
+    sse_encode_String(self.remoteData, serializer);
+    sse_encode_String(self.localClock, serializer);
+    sse_encode_String(self.remoteClock, serializer);
+    sse_encode_i_64(self.detectedAt, serializer);
+    sse_encode_bool(self.resolved, serializer);
+  }
+
+  @protected
+  void sse_encode_sync_delta(SyncDelta self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_sync_record(self.records, serializer);
+  }
+
+  @protected
+  void sse_encode_sync_record(SyncRecord self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.id, serializer);
+    sse_encode_String(self.tableName, serializer);
+    sse_encode_String(self.rowId, serializer);
+    sse_encode_String(self.operation, serializer);
+    sse_encode_String(self.payload, serializer);
+    sse_encode_String(self.vectorClock, serializer);
+    sse_encode_i_64(self.createdAt, serializer);
+    sse_encode_opt_box_autoadd_i_64(self.syncedAt, serializer);
+    sse_encode_i_32(self.attempts, serializer);
+    sse_encode_String(self.tenantId, serializer);
   }
 
   @protected
@@ -5661,6 +6407,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.migrationVersion, serializer);
     sse_encode_i_64(self.pageCount, serializer);
     sse_encode_i_64(self.pageSize, serializer);
+  }
+
+  @protected
+  void sse_encode_vector_clock(VectorClock self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_Map_String_u_64_None(self.clocks, serializer);
   }
 }
 
@@ -6118,6 +6870,74 @@ class IronVaultDbImpl extends RustOpaque implements IronVaultDb {
   /// Return a snapshot of database statistics.
   Future<VaultStats> stats() =>
       RustLib.instance.api.crateApiVaultIronVaultDbStats(that: this);
+
+  /// Add a record to the sync outbox.
+  Future<String> syncAddToOutbox({
+    required String tableName,
+    required String rowId,
+    required String operation,
+    required String payload,
+    required VectorClock vectorClock,
+  }) => RustLib.instance.api.crateApiVaultIronVaultDbSyncAddToOutbox(
+    that: this,
+    tableName: tableName,
+    rowId: rowId,
+    operation: operation,
+    payload: payload,
+    vectorClock: vectorClock,
+  );
+
+  /// Apply incoming sync records with conflict detection.
+  Future<SyncApplyResult> syncApplyDelta({
+    required SyncDelta delta,
+    required ConflictResolution resolution,
+  }) => RustLib.instance.api.crateApiVaultIronVaultDbSyncApplyDelta(
+    that: this,
+    delta: delta,
+    resolution: resolution,
+  );
+
+  /// Get unresolved sync conflicts.
+  Future<List<SyncConflict>> syncGetConflicts() =>
+      RustLib.instance.api.crateApiVaultIronVaultDbSyncGetConflicts(that: this);
+
+  /// Get pending outbox records.
+  Future<SyncDelta> syncGetDelta({
+    required PlatformInt64 sinceSeq,
+    required int limit,
+  }) => RustLib.instance.api.crateApiVaultIronVaultDbSyncGetDelta(
+    that: this,
+    sinceSeq: sinceSeq,
+    limit: limit,
+  );
+
+  /// Increment retry on a failed outbox record. Returns false if moved to dead-letter.
+  Future<bool> syncIncrementRetry({
+    required String recordId,
+    required int maxAttempts,
+    required String errorMessage,
+  }) => RustLib.instance.api.crateApiVaultIronVaultDbSyncIncrementRetry(
+    that: this,
+    recordId: recordId,
+    maxAttempts: maxAttempts,
+    errorMessage: errorMessage,
+  );
+
+  /// Mark outbox records as synced.
+  Future<int> syncMarkSynced({required List<String> recordIds}) => RustLib
+      .instance
+      .api
+      .crateApiVaultIronVaultDbSyncMarkSynced(that: this, recordIds: recordIds);
+
+  /// Resolve a sync conflict.
+  Future<void> syncResolveConflict({
+    required String conflictId,
+    required String resolution,
+  }) => RustLib.instance.api.crateApiVaultIronVaultDbSyncResolveConflict(
+    that: this,
+    conflictId: conflictId,
+    resolution: resolution,
+  );
 
   /// Execute multiple operations in a single ACID transaction.
   ///

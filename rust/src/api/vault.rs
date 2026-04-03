@@ -1,5 +1,5 @@
 use crate::api::types::*;
-use crate::engine::{audit, backup, connection, convert, crypto, export, migration, notifier, query_builder, search, transaction, write_ops};
+use crate::engine::{audit, backup, connection, convert, crypto, export, migration, notifier, query_builder, search, sync, transaction, write_ops};
 use anyhow::{anyhow, Context, Result};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
@@ -1121,6 +1121,78 @@ impl IronVaultDb {
     pub fn search_index_stats(&self, table: String) -> Result<IndexStats> {
         self.ensure_open()?;
         self.search_engine.index_stats(&table)
+    }
+
+    // ── Sync Engine ──────────────────────────────────────────────
+
+    /// Add a record to the sync outbox.
+    pub fn sync_add_to_outbox(
+        &self,
+        table_name: String,
+        row_id: String,
+        operation: String,
+        payload: String,
+        vector_clock: VectorClock,
+    ) -> Result<String> {
+        self.ensure_open()?;
+        let conn = self.acquire_writer()?;
+        sync::add_to_outbox(&conn, &table_name, &row_id, &operation, &payload, &vector_clock, &self.tenant_id)
+    }
+
+    /// Get pending outbox records.
+    pub fn sync_get_delta(&self, since_seq: i64, limit: u32) -> Result<SyncDelta> {
+        self.ensure_open()?;
+        let conn = self.acquire_reader()?;
+        sync::get_delta(&conn, &self.tenant_id, since_seq, limit)
+    }
+
+    /// Mark outbox records as synced.
+    pub fn sync_mark_synced(&self, record_ids: Vec<String>) -> Result<u32> {
+        self.ensure_open()?;
+        let conn = self.acquire_writer()?;
+        sync::mark_synced(&conn, &record_ids)
+    }
+
+    /// Apply incoming sync records with conflict detection.
+    pub fn sync_apply_delta(
+        &self,
+        delta: SyncDelta,
+        resolution: ConflictResolution,
+    ) -> Result<SyncApplyResult> {
+        self.ensure_open()?;
+        let conn = self.acquire_writer()?;
+        sync::apply_delta(&conn, &delta, &resolution, &self.tenant_id)
+    }
+
+    /// Get unresolved sync conflicts.
+    pub fn sync_get_conflicts(&self) -> Result<Vec<SyncConflict>> {
+        self.ensure_open()?;
+        let conn = self.acquire_reader()?;
+        sync::get_pending_conflicts(&conn, &self.tenant_id)
+    }
+
+    /// Resolve a sync conflict.
+    pub fn sync_resolve_conflict(
+        &self,
+        conflict_id: String,
+        resolution: String,
+    ) -> Result<()> {
+        self.ensure_open()?;
+        let conn = self.acquire_writer()?;
+        let actor = self.actor_id.lock().unwrap().clone();
+        sync::resolve_conflict(&conn, &conflict_id, &resolution, &actor)
+    }
+
+    /// Increment retry on a failed outbox record. Returns false if moved to dead-letter.
+    pub fn sync_increment_retry(
+        &self,
+        record_id: String,
+        max_attempts: i32,
+        error_message: String,
+    ) -> Result<bool> {
+        self.ensure_open()?;
+        let conn = self.acquire_writer()?;
+        sync::increment_retry(&conn, &record_id, max_attempts, &error_message)
     }
 
     // ── Private Helpers ──────────────────────────────────────────

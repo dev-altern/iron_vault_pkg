@@ -8,7 +8,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'types.freezed.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 @freezed
 sealed class AggExpr with _$AggExpr {
@@ -341,6 +341,18 @@ sealed class Condition with _$Condition {
     required String sql,
     required List<SqlValue> params,
   }) = Condition_Raw;
+}
+
+/// Strategy for resolving sync conflicts.
+enum ConflictResolution {
+  /// Most recent timestamp wins.
+  lastWriteWins,
+
+  /// Local data always kept.
+  localWins,
+
+  /// Remote data always applied.
+  remoteWins,
 }
 
 /// Export format for table data.
@@ -791,6 +803,156 @@ sealed class SqlValue with _$SqlValue {
   const factory SqlValue.blob(Uint8List field0) = SqlValue_Blob;
 }
 
+/// Result of applying incoming sync records.
+class SyncApplyResult {
+  final int applied;
+  final int conflicts;
+  final int skipped;
+
+  const SyncApplyResult({
+    required this.applied,
+    required this.conflicts,
+    required this.skipped,
+  });
+
+  @override
+  int get hashCode => applied.hashCode ^ conflicts.hashCode ^ skipped.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SyncApplyResult &&
+          runtimeType == other.runtimeType &&
+          applied == other.applied &&
+          conflicts == other.conflicts &&
+          skipped == other.skipped;
+}
+
+/// A detected sync conflict between local and remote data.
+class SyncConflict {
+  final String id;
+  final String tableName;
+  final String rowId;
+  final String localData;
+  final String remoteData;
+  final String localClock;
+  final String remoteClock;
+  final PlatformInt64 detectedAt;
+  final bool resolved;
+
+  const SyncConflict({
+    required this.id,
+    required this.tableName,
+    required this.rowId,
+    required this.localData,
+    required this.remoteData,
+    required this.localClock,
+    required this.remoteClock,
+    required this.detectedAt,
+    required this.resolved,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      tableName.hashCode ^
+      rowId.hashCode ^
+      localData.hashCode ^
+      remoteData.hashCode ^
+      localClock.hashCode ^
+      remoteClock.hashCode ^
+      detectedAt.hashCode ^
+      resolved.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SyncConflict &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          tableName == other.tableName &&
+          rowId == other.rowId &&
+          localData == other.localData &&
+          remoteData == other.remoteData &&
+          localClock == other.localClock &&
+          remoteClock == other.remoteClock &&
+          detectedAt == other.detectedAt &&
+          resolved == other.resolved;
+}
+
+/// A batch of sync records to push or pull.
+class SyncDelta {
+  final List<SyncRecord> records;
+
+  const SyncDelta({required this.records});
+
+  @override
+  int get hashCode => records.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SyncDelta &&
+          runtimeType == other.runtimeType &&
+          records == other.records;
+}
+
+/// A record in the sync outbox (pending upload to server).
+class SyncRecord {
+  final String id;
+  final String tableName;
+  final String rowId;
+  final String operation;
+  final String payload;
+  final String vectorClock;
+  final PlatformInt64 createdAt;
+  final PlatformInt64? syncedAt;
+  final int attempts;
+  final String tenantId;
+
+  const SyncRecord({
+    required this.id,
+    required this.tableName,
+    required this.rowId,
+    required this.operation,
+    required this.payload,
+    required this.vectorClock,
+    required this.createdAt,
+    this.syncedAt,
+    required this.attempts,
+    required this.tenantId,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      tableName.hashCode ^
+      rowId.hashCode ^
+      operation.hashCode ^
+      payload.hashCode ^
+      vectorClock.hashCode ^
+      createdAt.hashCode ^
+      syncedAt.hashCode ^
+      attempts.hashCode ^
+      tenantId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SyncRecord &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          tableName == other.tableName &&
+          rowId == other.rowId &&
+          operation == other.operation &&
+          payload == other.payload &&
+          vectorClock == other.vectorClock &&
+          createdAt == other.createdAt &&
+          syncedAt == other.syncedAt &&
+          attempts == other.attempts &&
+          tenantId == other.tenantId;
+}
+
 /// Result of a multi-operation transaction.
 class TransactionResult {
   /// IDs of all inserted rows (in op order).
@@ -1019,4 +1181,25 @@ class VaultStats {
           migrationVersion == other.migrationVersion &&
           pageCount == other.pageCount &&
           pageSize == other.pageSize;
+}
+
+/// Vector clock for causality tracking in sync.
+///
+/// Maps node_id → counter. Used to detect concurrent edits
+/// and determine happens-before relationships.
+class VectorClock {
+  /// Node ID → logical timestamp.
+  final Map<String, BigInt> clocks;
+
+  const VectorClock({required this.clocks});
+
+  @override
+  int get hashCode => clocks.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is VectorClock &&
+          runtimeType == other.runtimeType &&
+          clocks == other.clocks;
 }

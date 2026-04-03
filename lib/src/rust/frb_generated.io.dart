@@ -53,6 +53,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Map<String, SqlValue> dco_decode_Map_String_sql_value_None(dynamic raw);
 
   @protected
+  Map<String, BigInt> dco_decode_Map_String_u_64_None(dynamic raw);
+
+  @protected
   IronVaultDb
   dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
     dynamic raw,
@@ -101,10 +104,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SqlValue dco_decode_box_autoadd_sql_value(dynamic raw);
 
   @protected
+  SyncDelta dco_decode_box_autoadd_sync_delta(dynamic raw);
+
+  @protected
   int dco_decode_box_autoadd_u_32(dynamic raw);
 
   @protected
   VaultConfig dco_decode_box_autoadd_vault_config(dynamic raw);
+
+  @protected
+  VectorClock dco_decode_box_autoadd_vector_clock(dynamic raw);
 
   @protected
   CheckpointMode dco_decode_checkpoint_mode(dynamic raw);
@@ -114,6 +123,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Condition dco_decode_condition(dynamic raw);
+
+  @protected
+  ConflictResolution dco_decode_conflict_resolution(dynamic raw);
 
   @protected
   ExportFormat dco_decode_export_format(dynamic raw);
@@ -184,6 +196,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<(String, String)> dco_decode_list_record_string_string(dynamic raw);
 
   @protected
+  List<(String, BigInt)> dco_decode_list_record_string_u_64(dynamic raw);
+
+  @protected
   List<SearchField> dco_decode_list_search_field(dynamic raw);
 
   @protected
@@ -191,6 +206,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SqlValue> dco_decode_list_sql_value(dynamic raw);
+
+  @protected
+  List<SyncConflict> dco_decode_list_sync_conflict(dynamic raw);
+
+  @protected
+  List<SyncRecord> dco_decode_list_sync_record(dynamic raw);
 
   @protected
   List<UpdateEntry> dco_decode_list_update_entry(dynamic raw);
@@ -238,6 +259,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   (String, String) dco_decode_record_string_string(dynamic raw);
 
   @protected
+  (String, BigInt) dco_decode_record_string_u_64(dynamic raw);
+
+  @protected
   RestoreResult dco_decode_restore_result(dynamic raw);
 
   @protected
@@ -248,6 +272,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SqlValue dco_decode_sql_value(dynamic raw);
+
+  @protected
+  SyncApplyResult dco_decode_sync_apply_result(dynamic raw);
+
+  @protected
+  SyncConflict dco_decode_sync_conflict(dynamic raw);
+
+  @protected
+  SyncDelta dco_decode_sync_delta(dynamic raw);
+
+  @protected
+  SyncRecord dco_decode_sync_record(dynamic raw);
 
   @protected
   TransactionResult dco_decode_transaction_result(dynamic raw);
@@ -280,6 +316,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   VaultStats dco_decode_vault_stats(dynamic raw);
 
   @protected
+  VectorClock dco_decode_vector_clock(dynamic raw);
+
+  @protected
   AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
 
   @protected
@@ -307,6 +346,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Map<String, SqlValue> sse_decode_Map_String_sql_value_None(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  Map<String, BigInt> sse_decode_Map_String_u_64_None(
     SseDeserializer deserializer,
   );
 
@@ -369,10 +413,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SqlValue sse_decode_box_autoadd_sql_value(SseDeserializer deserializer);
 
   @protected
+  SyncDelta sse_decode_box_autoadd_sync_delta(SseDeserializer deserializer);
+
+  @protected
   int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
   VaultConfig sse_decode_box_autoadd_vault_config(SseDeserializer deserializer);
+
+  @protected
+  VectorClock sse_decode_box_autoadd_vector_clock(SseDeserializer deserializer);
 
   @protected
   CheckpointMode sse_decode_checkpoint_mode(SseDeserializer deserializer);
@@ -382,6 +432,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Condition sse_decode_condition(SseDeserializer deserializer);
+
+  @protected
+  ConflictResolution sse_decode_conflict_resolution(
+    SseDeserializer deserializer,
+  );
 
   @protected
   ExportFormat sse_decode_export_format(SseDeserializer deserializer);
@@ -460,6 +515,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<(String, BigInt)> sse_decode_list_record_string_u_64(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<SearchField> sse_decode_list_search_field(SseDeserializer deserializer);
 
   @protected
@@ -467,6 +527,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SqlValue> sse_decode_list_sql_value(SseDeserializer deserializer);
+
+  @protected
+  List<SyncConflict> sse_decode_list_sync_conflict(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SyncRecord> sse_decode_list_sync_record(SseDeserializer deserializer);
 
   @protected
   List<UpdateEntry> sse_decode_list_update_entry(SseDeserializer deserializer);
@@ -522,6 +590,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  (String, BigInt) sse_decode_record_string_u_64(SseDeserializer deserializer);
+
+  @protected
   RestoreResult sse_decode_restore_result(SseDeserializer deserializer);
 
   @protected
@@ -532,6 +603,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SqlValue sse_decode_sql_value(SseDeserializer deserializer);
+
+  @protected
+  SyncApplyResult sse_decode_sync_apply_result(SseDeserializer deserializer);
+
+  @protected
+  SyncConflict sse_decode_sync_conflict(SseDeserializer deserializer);
+
+  @protected
+  SyncDelta sse_decode_sync_delta(SseDeserializer deserializer);
+
+  @protected
+  SyncRecord sse_decode_sync_record(SseDeserializer deserializer);
 
   @protected
   TransactionResult sse_decode_transaction_result(SseDeserializer deserializer);
@@ -562,6 +645,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   VaultStats sse_decode_vault_stats(SseDeserializer deserializer);
+
+  @protected
+  VectorClock sse_decode_vector_clock(SseDeserializer deserializer);
 
   @protected
   void sse_encode_AnyhowException(
@@ -599,6 +685,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_Map_String_sql_value_None(
     Map<String, SqlValue> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_Map_String_u_64_None(
+    Map<String, BigInt> self,
     SseSerializer serializer,
   );
 
@@ -673,11 +765,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_sync_delta(
+    SyncDelta self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_box_autoadd_vault_config(
     VaultConfig self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_vector_clock(
+    VectorClock self,
     SseSerializer serializer,
   );
 
@@ -695,6 +799,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_condition(Condition self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_conflict_resolution(
+    ConflictResolution self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_export_format(ExportFormat self, SseSerializer serializer);
@@ -793,6 +903,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_record_string_u_64(
+    List<(String, BigInt)> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_search_field(
     List<SearchField> self,
     SseSerializer serializer,
@@ -806,6 +922,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_list_sql_value(List<SqlValue> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_sync_conflict(
+    List<SyncConflict> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_sync_record(
+    List<SyncRecord> self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_list_update_entry(
@@ -877,6 +1005,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_record_string_u_64(
+    (String, BigInt) self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_restore_result(RestoreResult self, SseSerializer serializer);
 
   @protected
@@ -887,6 +1021,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_sql_value(SqlValue self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_sync_apply_result(
+    SyncApplyResult self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_sync_conflict(SyncConflict self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_sync_delta(SyncDelta self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_sync_record(SyncRecord self, SseSerializer serializer);
 
   @protected
   void sse_encode_transaction_result(
@@ -923,6 +1072,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_vault_stats(VaultStats self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_vector_clock(VectorClock self, SseSerializer serializer);
 }
 
 // Section: wire_class
