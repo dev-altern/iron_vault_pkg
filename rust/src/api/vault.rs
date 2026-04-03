@@ -415,6 +415,7 @@ impl IronVaultDb {
             .with_context(|| format!("InsertException: {}", table))?;
         let after = audit::snapshot_row(&conn, &table, &id, &self.tenant_id);
         self.auto_audit(&conn, &table, &id, "INSERT", None, after);
+        self.auto_index_row(&conn, &table, &id);
         self.notifier.notify(&table, &self.tenant_id);
         Ok(id)
     }
@@ -439,6 +440,7 @@ impl IronVaultDb {
         if affected > 0 {
             let after = audit::snapshot_row(&conn, &table, &id, &self.tenant_id);
             self.auto_audit(&conn, &table, &id, "UPDATE", before, after);
+            self.auto_index_row(&conn, &table, &id);
             self.notifier.notify(&table, &self.tenant_id);
         }
         Ok(affected as u64)
@@ -476,6 +478,7 @@ impl IronVaultDb {
             .with_context(|| format!("DeleteException: {} id={}", table, id))?;
         if affected > 0 {
             self.auto_audit(&conn, &table, &id, "DELETE", before, None);
+            self.auto_remove_from_index(&table, &id);
             self.notifier.notify(&table, &self.tenant_id);
         }
         Ok(affected as u64)
@@ -494,6 +497,7 @@ impl IronVaultDb {
             .with_context(|| format!("HardDeleteException: {} id={}", table, id))?;
         if affected > 0 {
             self.auto_audit(&conn, &table, &id, "HARD_DELETE", before, None);
+            self.auto_remove_from_index(&table, &id);
             self.notifier.notify(&table, &self.tenant_id);
         }
         Ok(affected as u64)
@@ -1375,6 +1379,47 @@ impl IronVaultDb {
                 changed.as_deref(),
                 &hmac_key,
             );
+        }
+    }
+
+    /// Auto-index a row in the search engine if the table has an index configured.
+    /// Best-effort — doesn't fail the write if indexing fails.
+    fn auto_index_row(
+        &self,
+        conn: &r2d2::PooledConnection<SqliteConnectionManager>,
+        table: &str,
+        row_id: &str,
+    ) {
+        if let Some(field_names) = self.search_engine.indexed_fields(table) {
+            // Fetch the row's text values for indexing
+            let sql = format!(
+                "SELECT {} FROM {} WHERE id = ?1 AND tenant_id = ?2",
+                field_names.join(", "),
+                table
+            );
+            if let Ok(mut stmt) = conn.prepare(&sql) {
+                let result: Result<HashMap<String, String>, _> = stmt.query_row(
+                    rusqlite::params![row_id, &self.tenant_id],
+                    |row| {
+                        let mut fields = HashMap::new();
+                        for (i, name) in field_names.iter().enumerate() {
+                            let val: String = row.get(i).unwrap_or_default();
+                            fields.insert(name.clone(), val);
+                        }
+                        Ok(fields)
+                    },
+                );
+                if let Ok(fields) = result {
+                    let _ = self.search_engine.index_row(table, row_id, &fields);
+                }
+            }
+        }
+    }
+
+    /// Auto-remove a row from the search index if the table has an index.
+    fn auto_remove_from_index(&self, table: &str, row_id: &str) {
+        if self.search_engine.indexed_fields(table).is_some() {
+            let _ = self.search_engine.remove_from_index(table, row_id);
         }
     }
 

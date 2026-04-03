@@ -9,6 +9,7 @@ pub mod wal;
 // Phase 2: Query Builder
 pub mod audit;
 pub mod auto_audit;
+pub mod auto_fts;
 pub mod backup_export;
 pub mod cross_phase;
 pub mod edge_cases;
