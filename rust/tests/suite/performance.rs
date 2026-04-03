@@ -56,8 +56,8 @@ fn single_insert_under_1ms_p99() {
     times.sort();
     let p99 = times[98]; // 99th percentile
     assert!(
-        p99 < 5000, // 5ms generous — encrypted DB is slower
-        "Single insert p99 = {}μs, expected < 5000μs",
+        p99 < 10000, // 10ms — encrypted DB + auto-audit overhead
+        "Single insert p99 = {}μs, expected < 10000μs",
         p99
     );
 }

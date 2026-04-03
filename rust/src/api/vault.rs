@@ -413,6 +413,8 @@ impl IronVaultDb {
         let conn = self.acquire_writer()?;
         conn.execute(&sql, rusqlite::params_from_iter(params))
             .with_context(|| format!("InsertException: {}", table))?;
+        let after = audit::snapshot_row(&conn, &table, &id, &self.tenant_id);
+        self.auto_audit(&conn, &table, &id, "INSERT", None, after);
         self.notifier.notify(&table, &self.tenant_id);
         Ok(id)
     }
@@ -430,10 +432,13 @@ impl IronVaultDb {
         self.ensure_open()?;
         let (sql, params) = write_ops::build_update(&table, &id, data, &self.tenant_id)?;
         let conn = self.acquire_writer()?;
+        let before = audit::snapshot_row(&conn, &table, &id, &self.tenant_id);
         let affected = conn
             .execute(&sql, rusqlite::params_from_iter(params))
             .with_context(|| format!("UpdateException: {} id={}", table, id))?;
         if affected > 0 {
+            let after = audit::snapshot_row(&conn, &table, &id, &self.tenant_id);
+            self.auto_audit(&conn, &table, &id, "UPDATE", before, after);
             self.notifier.notify(&table, &self.tenant_id);
         }
         Ok(affected as u64)
@@ -465,10 +470,12 @@ impl IronVaultDb {
         self.ensure_open()?;
         let (sql, params) = write_ops::build_soft_delete(&table, &id, &self.tenant_id)?;
         let conn = self.acquire_writer()?;
+        let before = audit::snapshot_row(&conn, &table, &id, &self.tenant_id);
         let affected = conn
             .execute(&sql, rusqlite::params_from_iter(params))
             .with_context(|| format!("DeleteException: {} id={}", table, id))?;
         if affected > 0 {
+            self.auto_audit(&conn, &table, &id, "DELETE", before, None);
             self.notifier.notify(&table, &self.tenant_id);
         }
         Ok(affected as u64)
@@ -481,10 +488,12 @@ impl IronVaultDb {
         self.ensure_open()?;
         let (sql, params) = write_ops::build_hard_delete(&table, &id, &self.tenant_id)?;
         let conn = self.acquire_writer()?;
+        let before = audit::snapshot_row(&conn, &table, &id, &self.tenant_id);
         let affected = conn
             .execute(&sql, rusqlite::params_from_iter(params))
             .with_context(|| format!("HardDeleteException: {} id={}", table, id))?;
         if affected > 0 {
+            self.auto_audit(&conn, &table, &id, "HARD_DELETE", before, None);
             self.notifier.notify(&table, &self.tenant_id);
         }
         Ok(affected as u64)
@@ -1336,6 +1345,37 @@ impl IronVaultDb {
         self.read_pool
             .get()
             .map_err(|e| anyhow!("PoolExhaustedException: {}", e))
+    }
+
+    /// Record an audit entry for a write operation (best-effort, doesn't fail the write).
+    fn auto_audit(
+        &self,
+        conn: &r2d2::PooledConnection<SqliteConnectionManager>,
+        table: &str,
+        row_id: &str,
+        operation: &str,
+        before: Option<String>,
+        after: Option<String>,
+    ) {
+        let changed = match (&before, &after) {
+            (Some(b), Some(a)) => audit::compute_changed_fields(b, a),
+            _ => None,
+        };
+        let actor = self.actor_id.lock().unwrap().clone();
+        if let Ok(hmac_key) = crypto::hkdf_derive(&self.encryption_key, "audit_hmac") {
+            let _ = audit::record(
+                conn,
+                table,
+                row_id,
+                operation,
+                &actor,
+                &self.tenant_id,
+                before.as_deref(),
+                after.as_deref(),
+                changed.as_deref(),
+                &hmac_key,
+            );
+        }
     }
 
     /// Execute a read query with pre-built SQL and params, returning rows.

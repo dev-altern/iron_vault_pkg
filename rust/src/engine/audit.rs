@@ -110,6 +110,155 @@ pub(crate) fn record(
     Ok(id)
 }
 
+/// Snapshot a row as a JSON string for audit before/after capture.
+///
+/// Returns None if the row doesn't exist (e.g., before INSERT).
+pub(crate) fn snapshot_row(
+    conn: &PooledConnection<SqliteConnectionManager>,
+    table: &str,
+    row_id: &str,
+    tenant_id: &str,
+) -> Option<String> {
+    // Query all columns for this row
+    let sql = format!(
+        "SELECT * FROM {} WHERE id = ?1 AND tenant_id = ?2",
+        table
+    );
+    let mut stmt = conn.prepare(&sql).ok()?;
+    let col_names: Vec<String> = stmt.column_names().iter().map(|c| c.to_string()).collect();
+    let col_count = col_names.len();
+
+    let result: Option<String> = stmt
+        .query_row(rusqlite::params![row_id, tenant_id], |row| {
+            let mut json = String::from("{");
+            for i in 0..col_count {
+                if i > 0 {
+                    json.push(',');
+                }
+                json.push('"');
+                json.push_str(&col_names[i]);
+                json.push_str("\":");
+                let val: rusqlite::types::Value = row.get(i)?;
+                match val {
+                    rusqlite::types::Value::Null => json.push_str("null"),
+                    rusqlite::types::Value::Integer(v) => json.push_str(&v.to_string()),
+                    rusqlite::types::Value::Real(v) => json.push_str(&v.to_string()),
+                    rusqlite::types::Value::Text(v) => {
+                        json.push('"');
+                        json.push_str(&v.replace('\\', "\\\\").replace('"', "\\\""));
+                        json.push('"');
+                    }
+                    rusqlite::types::Value::Blob(_) => json.push_str("\"<blob>\""),
+                }
+            }
+            json.push('}');
+            Ok(json)
+        })
+        .ok();
+
+    result
+}
+
+/// Compute which fields changed between two JSON snapshots.
+///
+/// Returns a JSON array of field names, e.g., `["name","email"]`.
+pub(crate) fn compute_changed_fields(before: &str, after: &str) -> Option<String> {
+    // Simple approach: compare key-value pairs from the JSON strings
+    // Parse manually (avoid serde for minimal deps)
+    let before_map = parse_simple_json(before);
+    let after_map = parse_simple_json(after);
+
+    let mut changed = Vec::new();
+    for (key, after_val) in &after_map {
+        match before_map.get(key) {
+            Some(before_val) if before_val != after_val => changed.push(key.clone()),
+            None => changed.push(key.clone()), // new field
+            _ => {}
+        }
+    }
+
+    if changed.is_empty() {
+        None
+    } else {
+        Some(format!(
+            "[{}]",
+            changed
+                .iter()
+                .map(|k| format!("\"{}\"", k))
+                .collect::<Vec<_>>()
+                .join(",")
+        ))
+    }
+}
+
+/// Very simple JSON object parser for {"key":"value",...} — enough for diff.
+fn parse_simple_json(json: &str) -> std::collections::HashMap<String, String> {
+    let mut map = std::collections::HashMap::new();
+    let trimmed = json.trim().trim_start_matches('{').trim_end_matches('}');
+    // Split by top-level commas (ignoring commas inside strings)
+    let mut key = String::new();
+    let mut val = String::new();
+    let mut in_key = false;
+    let mut in_val = false;
+    let mut in_string = false;
+    let mut escape = false;
+
+    for ch in trimmed.chars() {
+        if escape {
+            if in_key {
+                key.push(ch);
+            } else if in_val {
+                val.push(ch);
+            }
+            escape = false;
+            continue;
+        }
+        if ch == '\\' {
+            escape = true;
+            if in_key {
+                key.push(ch);
+            } else if in_val {
+                val.push(ch);
+            }
+            continue;
+        }
+        if ch == '"' {
+            if !in_key && !in_val {
+                in_key = true;
+            } else if in_key && !in_string {
+                in_string = true;
+            } else if in_key && in_string {
+                in_string = false;
+                in_key = false;
+            } else if in_val {
+                in_string = !in_string;
+                val.push(ch);
+            }
+            continue;
+        }
+        if ch == ':' && !in_key && !in_val && !in_string {
+            in_val = true;
+            continue;
+        }
+        if ch == ',' && !in_string && in_val {
+            map.insert(key.trim().to_string(), val.trim().to_string());
+            key.clear();
+            val.clear();
+            in_val = false;
+            continue;
+        }
+        if in_key {
+            key.push(ch);
+        } else if in_val {
+            val.push(ch);
+        }
+    }
+    if !key.is_empty() {
+        map.insert(key.trim().to_string(), val.trim().to_string());
+    }
+    map
+}
+
 /// Get audit history for a specific row.
 pub(crate) fn get_history(
     conn: &PooledConnection<SqliteConnectionManager>,
