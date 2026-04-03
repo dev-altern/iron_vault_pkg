@@ -418,6 +418,7 @@ fn search_results_ordered_by_score() {
 }
 
 #[test]
+#[cfg_attr(target_os = "windows", ignore)] // Tantivy 500-doc index too slow on Windows CI
 fn many_documents_searchable() {
     let dir = tempfile::TempDir::new().unwrap();
     let db = open_test_db(&dir);
