@@ -317,6 +317,66 @@ fn bench_paginate_100_pages() {
     );
 }
 
+// ─── Soak: Sustained Read/Write ──────────────────────────────────────
+
+#[test]
+fn soak_sustained_crud_500_iterations() {
+    let dir = tempfile::TempDir::new().unwrap();
+    let db = open_test_db(&dir);
+    create_users_table(&db);
+
+    for i in 0..500 {
+        // Insert
+        let id = insert_user(
+            &db,
+            &format!("User{}", i),
+            &format!("u{}@t.com", i),
+            if i % 3 == 0 { "admin" } else { "member" },
+            i as f64,
+        );
+
+        // Read back
+        let mut spec = query("users");
+        spec.conditions.push(Condition::Eq {
+            column: "id".into(),
+            value: SqlValue::Text(id.clone()),
+        });
+        let row = db.query_first(spec).unwrap();
+        assert!(row.is_some());
+
+        // Update every 3rd
+        if i % 3 == 0 {
+            let mut data = HashMap::new();
+            data.insert("score".into(), SqlValue::Real(i as f64 * 2.0));
+            db.query_update("users".into(), id.clone(), data).unwrap();
+        }
+
+        // Delete every 5th
+        if i % 5 == 0 {
+            db.query_delete("users".into(), id).unwrap();
+        }
+
+        // Count periodically
+        if i % 50 == 0 {
+            let count = db.query_count(query("users")).unwrap();
+            assert!(count <= (i + 1) as u64);
+        }
+    }
+
+    // Final count: 500 inserted - (500/5 = 100 deleted) = 400
+    let final_count = db.query_count(query("users")).unwrap();
+    assert_eq!(final_count, 400);
+
+    // Audit integrity should pass for all auto-audited entries
+    let report = db.verify_audit_integrity(None, None).unwrap();
+    assert!(report.is_clean);
+    assert!(report.total_checked >= 500); // at least 500 entries (inserts + updates + deletes)
+
+    // Stats should be consistent
+    let stats = db.stats().unwrap();
+    assert_eq!(stats.total_tables, 1);
+}
+
 // ─── Benchmark: FTS Search Throughput ────────────────────────────────
 
 #[test]

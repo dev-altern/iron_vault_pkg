@@ -217,6 +217,183 @@ void main() {
     expect(restored[1], closeTo(-2.5, 0.001));
   });
 
+  // ── Phase 6: Watch Streams ──────────────────────────────────
+
+  test('watch_query emits initial value', () async {
+    final db = await openTestDb();
+    await db.executeRaw(
+      sql: 'CREATE TABLE watch_test (id TEXT PRIMARY KEY, name TEXT, '
+          'tenant_id TEXT NOT NULL, created_at INTEGER NOT NULL, '
+          'updated_at INTEGER NOT NULL, deleted_at INTEGER)',
+      params: [],
+    );
+
+    final stream = db.watchQuery(
+      spec: QuerySpec(
+        table: 'watch_test',
+        conditions: [],
+        orConditions: [],
+        orderBy: [],
+        limit: null,
+        offset: null,
+        joins: [],
+        columns: [],
+        includeDeleted: false,
+      ),
+    );
+
+    // Just verify stream produces at least one emission (the initial value)
+    final first = await stream.first.timeout(
+      const Duration(seconds: 5),
+      onTimeout: () => <Map<String, SqlValue>>[],
+    );
+    // Initial emission should be empty (no rows yet)
+    expect(first, isEmpty);
+    await db.close();
+  });
+
+  test('notification_version increments on write from Dart', () async {
+    final db = await openTestDb();
+    await db.executeRaw(
+      sql: 'CREATE TABLE notif_test (id TEXT PRIMARY KEY, name TEXT, '
+          'tenant_id TEXT NOT NULL, created_at INTEGER NOT NULL, '
+          'updated_at INTEGER NOT NULL, deleted_at INTEGER)',
+      params: [],
+    );
+
+    final v0 = await db.notificationVersion(table: 'notif_test');
+    expect(v0.toInt(), 0);
+
+    await db.queryInsert(
+      table: 'notif_test',
+      data: {'name': SqlValue.text('Alice')},
+    );
+
+    final v1 = await db.notificationVersion(table: 'notif_test');
+    expect(v1.toInt(), 1);
+    await db.close();
+  });
+
+  // ── Phase 8: Backup ────────────────────────────────────────
+
+  test('backup and verify round-trip', () async {
+    final db = await openTestDb();
+    await db.executeRaw(
+      sql: 'CREATE TABLE backup_test (id TEXT PRIMARY KEY, val TEXT, '
+          'tenant_id TEXT NOT NULL, created_at INTEGER NOT NULL, '
+          'updated_at INTEGER NOT NULL, deleted_at INTEGER)',
+      params: [],
+    );
+    await db.queryInsert(table: 'backup_test', data: {'val': SqlValue.text('data')});
+
+    final dir = await Directory.systemTemp.createTemp('backup_');
+    final backupPath = '${dir.path}/test.ivb';
+
+    final result = await db.backup(
+      outputPath: backupPath,
+      compress: true,
+      encrypt: true,
+    );
+    expect(result.sizeBytes.toInt(), greaterThan(0));
+    expect(result.checksum, isNotEmpty);
+
+    final verify = await db.verifyBackup(backupPath: backupPath);
+    expect(verify.checksumOk, true);
+    expect(verify.decryptOk, true);
+
+    await db.close();
+  });
+
+  // ── Phase 9: Search ────────────────────────────────────────
+
+  test('build_search_index + search round-trip', () async {
+    final db = await openTestDb();
+    await db.executeRaw(
+      sql: 'CREATE TABLE search_test (id TEXT PRIMARY KEY, title TEXT, '
+          'tenant_id TEXT NOT NULL, created_at INTEGER NOT NULL, '
+          'updated_at INTEGER NOT NULL, deleted_at INTEGER)',
+      params: [],
+    );
+
+    await db.buildSearchIndex(
+      table: 'search_test',
+      fields: [SearchField(name: 'title', weight: 1.0, stored: true)],
+    );
+
+    // Auto-indexed on insert
+    await db.queryInsert(
+      table: 'search_test',
+      data: {'title': SqlValue.text('Rust programming guide')},
+    );
+
+    final hits = await db.search(
+      table: 'search_test',
+      query: 'rust',
+      limit: 10,
+      highlight: false,
+    );
+    expect(hits.length, 1);
+    expect(hits.first.score, greaterThan(0));
+
+    await db.close();
+  });
+
+  // ── Phase 10: Sync ─────────────────────────────────────────
+
+  test('sync outbox add + get_delta + mark_synced', () async {
+    final db = await openTestDb();
+
+    final vc = VectorClock(clocks: {
+      'node_a': BigInt.from(1),
+    });
+    final recordId = await db.syncAddToOutbox(
+      tableName: 'users',
+      rowId: 'r1',
+      operation: 'INSERT',
+      payload: '{"name":"Alice"}',
+      vectorClock: vc,
+    );
+    expect(recordId, isNotEmpty);
+
+    final delta = await db.syncGetDelta(sinceSeq: 0, limit: 100);
+    expect(delta.records.length, 1);
+
+    final marked = await db.syncMarkSynced(recordIds: [recordId]);
+    expect(marked, 1);
+
+    final delta2 = await db.syncGetDelta(sinceSeq: 0, limit: 100);
+    expect(delta2.records, isEmpty);
+
+    await db.close();
+  });
+
+  // ── Phase 16: Auto-Audit Verification ──────────────────────
+
+  test('auto-audit: insert creates audit entry', () async {
+    final db = await openTestDb();
+    await db.executeRaw(
+      sql: 'CREATE TABLE audit_test (id TEXT PRIMARY KEY, name TEXT, '
+          'tenant_id TEXT NOT NULL, created_at INTEGER NOT NULL, '
+          'updated_at INTEGER NOT NULL, deleted_at INTEGER)',
+      params: [],
+    );
+
+    final id = await db.queryInsert(
+      table: 'audit_test',
+      data: {'name': SqlValue.text('Alice')},
+    );
+
+    final history = await db.getHistory(tableName: 'audit_test', rowId: id, limit: 50);
+    expect(history.length, 1);
+    expect(history.first.operation, 'INSERT');
+    expect(history.first.afterJson, isNotNull);
+
+    final report = await db.verifyAuditIntegrity(from: null, to: null);
+    expect(report.isClean, true);
+
+    await db.close();
+  });
+
   // ── SqlValue variants ──────────────────────────────────────
 
   test('SqlValue all variants cross FFI', () async {

@@ -35,9 +35,13 @@ pub(crate) fn build_insert(
         .or_insert(SqlValue::Integer(now));
 
     // Build SQL — collect in deterministic order
-    let mut columns = Vec::with_capacity(data.len());
-    let mut values = Vec::with_capacity(data.len());
-    for (col, val) in &data {
+    // Sort columns for deterministic SQL (enables query plan caching)
+    let mut sorted_cols: Vec<(&String, &SqlValue)> = data.iter().collect();
+    sorted_cols.sort_by_key(|(k, _)| k.as_str());
+
+    let mut columns = Vec::with_capacity(sorted_cols.len());
+    let mut values = Vec::with_capacity(sorted_cols.len());
+    for (col, val) in &sorted_cols {
         validate::column_name(col)?;
         columns.push(col.as_str());
         values.push(convert::to_rusqlite(val));
@@ -83,9 +87,12 @@ pub(crate) fn build_update(
     data.entry("updated_at".into())
         .or_insert(SqlValue::Integer(current_epoch_ms()));
 
-    let mut set_parts = Vec::with_capacity(data.len());
-    let mut params = Vec::with_capacity(data.len() + 2);
-    for (col, val) in &data {
+    let mut sorted_cols: Vec<(&String, &SqlValue)> = data.iter().collect();
+    sorted_cols.sort_by_key(|(k, _)| k.as_str());
+
+    let mut set_parts = Vec::with_capacity(sorted_cols.len());
+    let mut params = Vec::with_capacity(sorted_cols.len() + 2);
+    for (col, val) in &sorted_cols {
         validate::column_name(col)?;
         set_parts.push(format!("{} = ?", col));
         params.push(convert::to_rusqlite(val));
@@ -135,9 +142,12 @@ pub(crate) fn build_upsert(
     data.entry("updated_at".into())
         .or_insert(SqlValue::Integer(now));
 
-    let mut columns = Vec::with_capacity(data.len());
-    let mut values = Vec::with_capacity(data.len());
-    for (col, val) in &data {
+    let mut sorted_cols: Vec<(&String, &SqlValue)> = data.iter().collect();
+    sorted_cols.sort_by_key(|(k, _)| k.as_str());
+
+    let mut columns = Vec::with_capacity(sorted_cols.len());
+    let mut values = Vec::with_capacity(sorted_cols.len());
+    for (col, val) in &sorted_cols {
         validate::column_name(col)?;
         columns.push(col.as_str());
         values.push(convert::to_rusqlite(val));
