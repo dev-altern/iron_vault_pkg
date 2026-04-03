@@ -9,11 +9,19 @@ fn cross_tenant_upsert_does_not_overwrite_other_tenant() {
     let dir = tempfile::TempDir::new().unwrap();
     let path = dir.path().join("shared.db").to_str().unwrap().to_string();
     let db_a = iron_vault_core::api::vault::IronVaultDb::open(
-        path.clone(), test_key(), "tenant_a".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path.clone(),
+        test_key(),
+        "tenant_a".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
     let db_b = iron_vault_core::api::vault::IronVaultDb::open(
-        path, test_key(), "tenant_b".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path,
+        test_key(),
+        "tenant_b".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
 
     create_users_table(&db_a);
     // Unique index on id (PK) — upsert on "id" column
@@ -23,7 +31,8 @@ fn cross_tenant_upsert_does_not_overwrite_other_tenant() {
     data_a.insert("name".into(), SqlValue::Text("Alice".into()));
     data_a.insert("email".into(), SqlValue::Text("a@t.com".into()));
     data_a.insert("status".into(), SqlValue::Text("active".into()));
-    db_a.query_upsert("users".into(), data_a, "id".into()).unwrap();
+    db_a.query_upsert("users".into(), data_a, "id".into())
+        .unwrap();
 
     // Tenant B upserts with same id — must NOT overwrite A's row.
     // With the tenant-scoped WHERE in DO UPDATE, this conflicts on id
@@ -37,10 +46,12 @@ fn cross_tenant_upsert_does_not_overwrite_other_tenant() {
     let _ = db_b.query_upsert("users".into(), data_b, "id".into());
 
     // Tenant A's row must still show "Alice"
-    let rows_a = db_a.query_raw(
-        "SELECT name FROM users WHERE id = 'shared-id'".into(),
-        vec![],
-    ).unwrap();
+    let rows_a = db_a
+        .query_raw(
+            "SELECT name FROM users WHERE id = 'shared-id'".into(),
+            vec![],
+        )
+        .unwrap();
     assert_eq!(rows_a.len(), 1);
     assert!(
         matches!(rows_a[0].get("name"), Some(SqlValue::Text(n)) if n == "Alice"),
@@ -70,7 +81,9 @@ fn raw_join_spec() {
 
     let mut spec = query("orders");
     spec.joins.push(JoinSpec::Raw {
-        expression: "INNER JOIN users ON orders.user_id = users.id AND users.tenant_id = orders.tenant_id".into(),
+        expression:
+            "INNER JOIN users ON orders.user_id = users.id AND users.tenant_id = orders.tenant_id"
+                .into(),
     });
     spec.columns = vec!["orders.*".into(), "users.name".into()];
     let rows = db.query_get(spec).unwrap();
@@ -226,7 +239,8 @@ fn migrate_then_use_query_builder() {
         up: "CREATE TABLE products (\
              id TEXT PRIMARY KEY, name TEXT NOT NULL, price REAL, \
              tenant_id TEXT NOT NULL, created_at INTEGER NOT NULL, \
-             updated_at INTEGER NOT NULL, deleted_at INTEGER)".into(),
+             updated_at INTEGER NOT NULL, deleted_at INTEGER)"
+            .into(),
         down: Some("DROP TABLE products".into()),
     }])
     .unwrap();
@@ -266,7 +280,8 @@ fn transaction_across_multiple_migrated_tables() {
             up: "CREATE TABLE accounts (\
                  id TEXT PRIMARY KEY, name TEXT NOT NULL, balance REAL DEFAULT 0, \
                  tenant_id TEXT NOT NULL, created_at INTEGER NOT NULL, \
-                 updated_at INTEGER NOT NULL, deleted_at INTEGER)".into(),
+                 updated_at INTEGER NOT NULL, deleted_at INTEGER)"
+                .into(),
             down: Some("DROP TABLE accounts".into()),
         },
         VaultMigration {
@@ -276,7 +291,8 @@ fn transaction_across_multiple_migrated_tables() {
                  id TEXT PRIMARY KEY, from_id TEXT NOT NULL, to_id TEXT NOT NULL, \
                  amount REAL NOT NULL, \
                  tenant_id TEXT NOT NULL, created_at INTEGER NOT NULL, \
-                 updated_at INTEGER NOT NULL, deleted_at INTEGER)".into(),
+                 updated_at INTEGER NOT NULL, deleted_at INTEGER)"
+                .into(),
             down: Some("DROP TABLE transfers".into()),
         },
     ])
@@ -323,16 +339,20 @@ fn transaction_across_multiple_migrated_tables() {
     // Raw ops don't report table names — only Op::Insert/Update/Delete do
 
     // Verify balances
-    let rows = db.query_raw(
-        "SELECT balance FROM accounts WHERE id = 'acc-1' AND tenant_id = 'tenant_test'".into(),
-        vec![],
-    ).unwrap();
+    let rows = db
+        .query_raw(
+            "SELECT balance FROM accounts WHERE id = 'acc-1' AND tenant_id = 'tenant_test'".into(),
+            vec![],
+        )
+        .unwrap();
     assert!(matches!(rows[0].get("balance"), Some(SqlValue::Real(v)) if (*v - 800.0).abs() < 0.01));
 
-    let rows = db.query_raw(
-        "SELECT balance FROM accounts WHERE id = 'acc-2' AND tenant_id = 'tenant_test'".into(),
-        vec![],
-    ).unwrap();
+    let rows = db
+        .query_raw(
+            "SELECT balance FROM accounts WHERE id = 'acc-2' AND tenant_id = 'tenant_test'".into(),
+            vec![],
+        )
+        .unwrap();
     assert!(matches!(rows[0].get("balance"), Some(SqlValue::Real(v)) if (*v - 700.0).abs() < 0.01));
 }
 
@@ -349,7 +369,8 @@ fn optimistic_lock_on_migrated_table_with_encryption() {
         up: "CREATE TABLE secrets (\
              id TEXT PRIMARY KEY, data_enc TEXT, version INTEGER NOT NULL DEFAULT 1, \
              tenant_id TEXT NOT NULL, created_at INTEGER NOT NULL, \
-             updated_at INTEGER NOT NULL, deleted_at INTEGER)".into(),
+             updated_at INTEGER NOT NULL, deleted_at INTEGER)"
+            .into(),
         down: Some("DROP TABLE secrets".into()),
     }])
     .unwrap();

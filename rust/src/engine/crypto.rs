@@ -116,7 +116,7 @@ pub(crate) fn encrypt_field(plaintext: &str, key: &[u8]) -> Result<String> {
     let json = format!(
         "{{\"ct\":\"{}\",\"nonce\":\"{}\",\"kid\":\"v1\"}}",
         b64.encode(&ciphertext),
-        b64.encode(&nonce_bytes),
+        b64.encode(nonce_bytes),
     );
     Ok(json)
 }
@@ -158,9 +158,9 @@ pub(crate) fn decrypt_field(ciphertext_json: &str, key: &[u8]) -> Result<String>
         .map_err(|e| anyhow!("EncryptionException: invalid key: {}", e))?;
     let nonce = Nonce::from_slice(&nonce_bytes);
 
-    let plaintext_bytes = cipher
-        .decrypt(nonce, ct_bytes.as_ref())
-        .map_err(|_| anyhow!("EncryptionException: decryption failed (wrong key or tampered data)"))?;
+    let plaintext_bytes = cipher.decrypt(nonce, ct_bytes.as_ref()).map_err(|_| {
+        anyhow!("EncryptionException: decryption failed (wrong key or tampered data)")
+    })?;
 
     String::from_utf8(plaintext_bytes)
         .context("EncryptionException: decrypted data is not valid UTF-8")
@@ -299,7 +299,10 @@ mod tests {
         let key = vec![0x42u8; 32];
         let enc1 = encrypt_field("test", &key).unwrap();
         let enc2 = encrypt_field("test", &key).unwrap();
-        assert_ne!(enc1, enc2, "Random nonce should produce different ciphertext");
+        assert_ne!(
+            enc1, enc2,
+            "Random nonce should produce different ciphertext"
+        );
     }
 
     #[test]
@@ -309,7 +312,10 @@ mod tests {
         let encrypted = encrypt_field("secret", &key1).unwrap();
         let result = decrypt_field(&encrypted, &key2);
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("EncryptionException"));
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("EncryptionException"));
     }
 
     #[test]

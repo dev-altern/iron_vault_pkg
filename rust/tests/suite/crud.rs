@@ -7,8 +7,13 @@ fn test_key() -> Vec<u8> {
 
 fn open_test_db(dir: &tempfile::TempDir) -> IronVaultDb {
     let path = dir.path().join("test.db").to_str().unwrap().to_string();
-    IronVaultDb::open(path, test_key(), "tenant_test".into(), VaultConfig::test_config())
-        .expect("failed to open test database")
+    IronVaultDb::open(
+        path,
+        test_key(),
+        "tenant_test".into(),
+        VaultConfig::test_config(),
+    )
+    .expect("failed to open test database")
 }
 
 #[test]
@@ -45,7 +50,10 @@ fn execute_and_query_raw() {
     .unwrap();
 
     let rows = db
-        .query_raw("SELECT id, name, score FROM test_users ORDER BY id".into(), vec![])
+        .query_raw(
+            "SELECT id, name, score FROM test_users ORDER BY id".into(),
+            vec![],
+        )
         .unwrap();
     assert_eq!(rows.len(), 2);
 
@@ -136,7 +144,10 @@ fn null_and_blob_values() {
     .unwrap();
 
     let rows = db
-        .query_raw("SELECT data, note FROM blob_test WHERE id = 1".into(), vec![])
+        .query_raw(
+            "SELECT data, note FROM blob_test WHERE id = 1".into(),
+            vec![],
+        )
         .unwrap();
     assert_eq!(rows.len(), 1);
 
@@ -157,10 +168,15 @@ fn empty_result_set() {
     let dir = tempfile::TempDir::new().unwrap();
     let db = open_test_db(&dir);
 
-    db.execute_raw("CREATE TABLE empty_test (id INTEGER PRIMARY KEY)".into(), vec![])
-        .unwrap();
+    db.execute_raw(
+        "CREATE TABLE empty_test (id INTEGER PRIMARY KEY)".into(),
+        vec![],
+    )
+    .unwrap();
 
-    let rows = db.query_raw("SELECT * FROM empty_test".into(), vec![]).unwrap();
+    let rows = db
+        .query_raw("SELECT * FROM empty_test".into(), vec![])
+        .unwrap();
     assert!(rows.is_empty());
 }
 
@@ -169,8 +185,11 @@ fn large_batch_insert_and_query() {
     let dir = tempfile::TempDir::new().unwrap();
     let db = open_test_db(&dir);
 
-    db.execute_raw("CREATE TABLE batch (id INTEGER PRIMARY KEY, val TEXT)".into(), vec![])
-        .unwrap();
+    db.execute_raw(
+        "CREATE TABLE batch (id INTEGER PRIMARY KEY, val TEXT)".into(),
+        vec![],
+    )
+    .unwrap();
 
     db.execute_raw("BEGIN".into(), vec![]).unwrap();
     for i in 0..1000 {
@@ -203,7 +222,9 @@ fn bad_sql_returns_error() {
 
     assert!(db.execute_raw("NOT VALID SQL".into(), vec![]).is_err());
     assert!(db.query_raw("SELECT FROM WHERE".into(), vec![]).is_err());
-    assert!(db.query_raw("SELECT * FROM nonexistent_table".into(), vec![]).is_err());
+    assert!(db
+        .query_raw("SELECT * FROM nonexistent_table".into(), vec![])
+        .is_err());
 
     // Wrong number of params — must not crash
     let _result = db.execute_raw("SELECT ?1, ?2".into(), vec![SqlValue::Integer(1)]);
@@ -214,8 +235,11 @@ fn foreign_keys_enforced() {
     let dir = tempfile::TempDir::new().unwrap();
     let db = open_test_db(&dir);
 
-    db.execute_raw("CREATE TABLE parent (id INTEGER PRIMARY KEY)".into(), vec![])
-        .unwrap();
+    db.execute_raw(
+        "CREATE TABLE parent (id INTEGER PRIMARY KEY)".into(),
+        vec![],
+    )
+    .unwrap();
     db.execute_raw(
         "CREATE TABLE child (id INTEGER PRIMARY KEY, parent_id INTEGER REFERENCES parent(id))"
             .into(),

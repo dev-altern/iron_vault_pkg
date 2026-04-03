@@ -68,14 +68,22 @@ pub(crate) fn get_delta(
     )?;
     let rows = stmt.query_map(rusqlite::params![tenant_id, since_seq, limit], |row| {
         Ok(SyncRecord {
-            id: row.get(0)?, table_name: row.get(1)?, row_id: row.get(2)?,
-            operation: row.get(3)?, payload: row.get(4)?, vector_clock: row.get(5)?,
-            created_at: row.get(6)?, synced_at: row.get(7)?, attempts: row.get(8)?,
+            id: row.get(0)?,
+            table_name: row.get(1)?,
+            row_id: row.get(2)?,
+            operation: row.get(3)?,
+            payload: row.get(4)?,
+            vector_clock: row.get(5)?,
+            created_at: row.get(6)?,
+            synced_at: row.get(7)?,
+            attempts: row.get(8)?,
             tenant_id: row.get(9)?,
         })
     })?;
     let mut records = Vec::new();
-    for r in rows { records.push(r?); }
+    for r in rows {
+        records.push(r?);
+    }
     Ok(SyncDelta { records })
 }
 
@@ -176,7 +184,11 @@ pub(crate) fn apply_delta(
         }
     }
 
-    Ok(SyncApplyResult { applied, conflicts, skipped })
+    Ok(SyncApplyResult {
+        applied,
+        conflicts,
+        skipped,
+    })
 }
 
 /// Get unresolved sync conflicts.
@@ -192,14 +204,21 @@ pub(crate) fn get_pending_conflicts(
     )?;
     let rows = stmt.query_map([], |row| {
         Ok(SyncConflict {
-            id: row.get(0)?, table_name: row.get(1)?, row_id: row.get(2)?,
-            local_data: row.get(3)?, remote_data: row.get(4)?,
-            local_clock: row.get(5)?, remote_clock: row.get(6)?,
-            detected_at: row.get(7)?, resolved: row.get::<_, i32>(8)? != 0,
+            id: row.get(0)?,
+            table_name: row.get(1)?,
+            row_id: row.get(2)?,
+            local_data: row.get(3)?,
+            remote_data: row.get(4)?,
+            local_clock: row.get(5)?,
+            remote_clock: row.get(6)?,
+            detected_at: row.get(7)?,
+            resolved: row.get::<_, i32>(8)? != 0,
         })
     })?;
     let mut result = Vec::new();
-    for r in rows { result.push(r?); }
+    for r in rows {
+        result.push(r?);
+    }
     Ok(result)
 }
 
@@ -217,7 +236,10 @@ pub(crate) fn resolve_conflict(
         rusqlite::params![resolution, now, resolved_by, conflict_id],
     )?;
     if affected == 0 {
-        return Err(anyhow!("SyncException: conflict '{}' not found", conflict_id));
+        return Err(anyhow!(
+            "SyncException: conflict '{}' not found",
+            conflict_id
+        ));
     }
     Ok(())
 }
@@ -235,7 +257,10 @@ pub(crate) fn move_to_dead_letter(
          FROM _sync_outbox WHERE id = ?2",
         rusqlite::params![error_message, record_id],
     )?;
-    conn.execute("DELETE FROM _sync_outbox WHERE id = ?1", rusqlite::params![record_id])?;
+    conn.execute(
+        "DELETE FROM _sync_outbox WHERE id = ?1",
+        rusqlite::params![record_id],
+    )?;
     Ok(())
 }
 

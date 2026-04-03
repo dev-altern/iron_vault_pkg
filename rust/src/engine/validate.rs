@@ -68,11 +68,7 @@ fn validate_identifier_part(part: &str, label: &str) -> Result<()> {
         ));
     }
     if !part.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
-        return Err(anyhow!(
-            "{} contains invalid characters: '{}'",
-            label,
-            part
-        ));
+        return Err(anyhow!("{} contains invalid characters: '{}'", label, part));
     }
     Ok(())
 }

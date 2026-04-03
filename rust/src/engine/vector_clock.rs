@@ -1,9 +1,17 @@
 use crate::api::types::VectorClock;
 use std::collections::HashMap;
 
+impl Default for VectorClock {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl VectorClock {
     pub fn new() -> Self {
-        Self { clocks: HashMap::new() }
+        Self {
+            clocks: HashMap::new(),
+        }
     }
 
     pub fn from_map(clocks: HashMap<String, u64>) -> Self {
@@ -64,7 +72,9 @@ impl VectorClock {
 
     /// Serialize to JSON string.
     pub fn to_json(&self) -> String {
-        let parts: Vec<String> = self.clocks.iter()
+        let parts: Vec<String> = self
+            .clocks
+            .iter()
             .map(|(k, v)| format!("\"{}\":{}", k, v))
             .collect();
         format!("{{{}}}", parts.join(","))

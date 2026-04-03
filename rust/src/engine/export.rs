@@ -72,9 +72,10 @@ fn export_csv(columns: &[String], rows: &[Vec<SqlValue>]) -> Result<Vec<u8>> {
                 SqlValue::Integer(i) => i.to_string(),
                 SqlValue::Real(f) => f.to_string(),
                 SqlValue::Text(s) => csv_escape(s),
-                SqlValue::Blob(b) => format!("base64:{}", base64::Engine::encode(
-                    &base64::engine::general_purpose::STANDARD, b
-                )),
+                SqlValue::Blob(b) => format!(
+                    "base64:{}",
+                    base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b)
+                ),
             })
             .collect();
         output.push_str(&cells.join(","));
@@ -130,9 +131,10 @@ fn sql_value_to_json(val: &SqlValue) -> String {
         SqlValue::Integer(i) => i.to_string(),
         SqlValue::Real(f) => f.to_string(),
         SqlValue::Text(s) => format!("\"{}\"", json_escape(s)),
-        SqlValue::Blob(b) => format!("\"base64:{}\"", base64::Engine::encode(
-            &base64::engine::general_purpose::STANDARD, b
-        )),
+        SqlValue::Blob(b) => format!(
+            "\"base64:{}\"",
+            base64::Engine::encode(&base64::engine::general_purpose::STANDARD, b)
+        ),
     }
 }
 

@@ -1,6 +1,5 @@
 use crate::common::*;
 
-
 use iron_vault_core::api::types::*;
 use std::collections::HashMap;
 
@@ -161,7 +160,13 @@ fn limit_restricts_results() {
     let db = open_test_db(&dir);
     create_users_table(&db);
     for i in 0..10 {
-        insert_user(&db, &format!("User{}", i), &format!("u{}@t.com", i), "member", i as f64);
+        insert_user(
+            &db,
+            &format!("User{}", i),
+            &format!("u{}@t.com", i),
+            "member",
+            i as f64,
+        );
     }
 
     let mut spec = query("users");

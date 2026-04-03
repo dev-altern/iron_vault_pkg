@@ -40,3 +40,7 @@ tempfile = "3"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }
+
+[lints.clippy]
+too_many_arguments = "allow"
+needless_range_loop = "allow"

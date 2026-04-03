@@ -38,11 +38,7 @@ impl SearchEngine {
     }
 
     /// Build or open a search index for a table.
-    pub(crate) fn build_index(
-        &self,
-        table: &str,
-        fields: &[SearchField],
-    ) -> Result<()> {
+    pub(crate) fn build_index(&self, table: &str, fields: &[SearchField]) -> Result<()> {
         if fields.is_empty() {
             return Err(anyhow!("SearchException: at least one field required"));
         }
@@ -61,7 +57,9 @@ impl SearchEngine {
                 .set_tokenizer("default")
                 .set_index_option(tantivy::schema::IndexRecordOption::WithFreqsAndPositions);
             let opts = if f.stored {
-                TextOptions::default().set_indexing_options(indexing).set_stored()
+                TextOptions::default()
+                    .set_indexing_options(indexing)
+                    .set_stored()
             } else {
                 TextOptions::default().set_indexing_options(indexing)
             };
@@ -188,8 +186,7 @@ impl SearchEngine {
 
             // Generate snippet
             let snippet = if highlight && !field_refs.is_empty() {
-                let mut snippet_gen =
-                    SnippetGenerator::create(&searcher, &query, field_refs[0])?;
+                let mut snippet_gen = SnippetGenerator::create(&searcher, &query, field_refs[0])?;
                 snippet_gen.set_max_num_chars(200);
                 let s = snippet_gen.snippet_from_doc(&doc);
                 s.to_html()

@@ -1,6 +1,5 @@
 use crate::common::*;
 
-
 use iron_vault_core::api::types::*;
 use std::collections::HashMap;
 
@@ -38,10 +37,7 @@ fn tenant_id_cannot_be_forged_by_caller() {
     data.insert("name".into(), SqlValue::Text("Hacker".into()));
     data.insert("email".into(), SqlValue::Text("h@evil.com".into()));
     data.insert("status".into(), SqlValue::Text("active".into()));
-    data.insert(
-        "tenant_id".into(),
-        SqlValue::Text("evil_tenant".into()),
-    );
+    data.insert("tenant_id".into(), SqlValue::Text("evil_tenant".into()));
     let id = db.query_insert("users".into(), data).unwrap();
 
     // Verify the stored tenant_id is the DbContext one, not the forged one
@@ -122,8 +118,13 @@ fn update_only_affects_own_tenant() {
     // Tenant B tries to update tenant A's row — should affect 0 rows
     let mut data = HashMap::new();
     data.insert("name".into(), SqlValue::Text("HACKED".into()));
-    let affected = db_b.query_update("users".into(), id_a.clone(), data).unwrap();
-    assert_eq!(affected, 0, "Tenant B should not be able to update tenant A's row");
+    let affected = db_b
+        .query_update("users".into(), id_a.clone(), data)
+        .unwrap();
+    assert_eq!(
+        affected, 0,
+        "Tenant B should not be able to update tenant A's row"
+    );
 
     // Verify Alice's name is unchanged
     let rows = db_a
@@ -159,7 +160,10 @@ fn delete_only_affects_own_tenant() {
 
     // Tenant B tries to delete tenant A's row
     let affected = db_b.query_delete("users".into(), id_a.clone()).unwrap();
-    assert_eq!(affected, 0, "Tenant B should not be able to delete tenant A's row");
+    assert_eq!(
+        affected, 0,
+        "Tenant B should not be able to delete tenant A's row"
+    );
 
     // Alice should still exist for tenant A
     assert_eq!(db_a.query_count(query("users")).unwrap(), 1);
@@ -188,7 +192,10 @@ fn soft_delete_sets_deleted_at() {
         )
         .unwrap();
     assert_eq!(rows.len(), 1);
-    assert!(matches!(rows[0].get("deleted_at"), Some(SqlValue::Integer(_))));
+    assert!(matches!(
+        rows[0].get("deleted_at"),
+        Some(SqlValue::Integer(_))
+    ));
 }
 
 #[test]
@@ -285,7 +292,10 @@ fn hard_delete_after_soft_delete_succeeds() {
     assert_eq!(affected, 1, "hard_delete should work on soft-deleted rows");
 
     let rows = db
-        .query_raw("SELECT * FROM users WHERE id = ?1".into(), vec![SqlValue::Text(id)])
+        .query_raw(
+            "SELECT * FROM users WHERE id = ?1".into(),
+            vec![SqlValue::Text(id)],
+        )
         .unwrap();
     assert!(rows.is_empty(), "Row should be permanently gone");
 }
@@ -297,16 +307,26 @@ fn cross_tenant_hard_delete_blocked() {
     let dir = tempfile::TempDir::new().unwrap();
     let path = dir.path().join("shared.db").to_str().unwrap().to_string();
     let db_a = iron_vault_core::api::vault::IronVaultDb::open(
-        path.clone(), test_key(), "tenant_a".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path.clone(),
+        test_key(),
+        "tenant_a".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
     let db_b = iron_vault_core::api::vault::IronVaultDb::open(
-        path, test_key(), "tenant_b".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path,
+        test_key(),
+        "tenant_b".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
 
     create_users_table(&db_a);
     let id_a = insert_user_on(&db_a, "Alice");
 
-    let affected = db_b.query_hard_delete("users".into(), id_a.clone()).unwrap();
+    let affected = db_b
+        .query_hard_delete("users".into(), id_a.clone())
+        .unwrap();
     assert_eq!(affected, 0, "Tenant B must not hard-delete tenant A's row");
 
     // Verify row still exists for tenant A
@@ -320,11 +340,19 @@ fn cross_tenant_batch_update_blocked() {
     let dir = tempfile::TempDir::new().unwrap();
     let path = dir.path().join("shared.db").to_str().unwrap().to_string();
     let db_a = iron_vault_core::api::vault::IronVaultDb::open(
-        path.clone(), test_key(), "tenant_a".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path.clone(),
+        test_key(),
+        "tenant_a".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
     let db_b = iron_vault_core::api::vault::IronVaultDb::open(
-        path, test_key(), "tenant_b".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path,
+        test_key(),
+        "tenant_b".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
 
     create_users_table(&db_a);
     let id_a = insert_user_on(&db_a, "Alice");
@@ -338,7 +366,10 @@ fn cross_tenant_batch_update_blocked() {
         },
     }];
     let affected = db_b.query_update_batch("users".into(), updates).unwrap();
-    assert_eq!(affected, 0, "Tenant B batch_update must not affect tenant A");
+    assert_eq!(
+        affected, 0,
+        "Tenant B batch_update must not affect tenant A"
+    );
 }
 
 #[test]
@@ -346,17 +377,28 @@ fn cross_tenant_batch_delete_blocked() {
     let dir = tempfile::TempDir::new().unwrap();
     let path = dir.path().join("shared.db").to_str().unwrap().to_string();
     let db_a = iron_vault_core::api::vault::IronVaultDb::open(
-        path.clone(), test_key(), "tenant_a".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path.clone(),
+        test_key(),
+        "tenant_a".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
     let db_b = iron_vault_core::api::vault::IronVaultDb::open(
-        path, test_key(), "tenant_b".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path,
+        test_key(),
+        "tenant_b".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
 
     create_users_table(&db_a);
     let id_a = insert_user_on(&db_a, "Alice");
 
     let affected = db_b.query_delete_batch("users".into(), vec![id_a]).unwrap();
-    assert_eq!(affected, 0, "Tenant B batch_delete must not affect tenant A");
+    assert_eq!(
+        affected, 0,
+        "Tenant B batch_delete must not affect tenant A"
+    );
     assert_eq!(db_a.query_count(query("users")).unwrap(), 1);
 }
 
@@ -374,15 +416,23 @@ fn query_builder_ops_fail_after_close() {
     assert!(db.query_count(query("users")).is_err());
     assert!(db.query_exists(query("users")).is_err());
     assert!(db.query_paginate(query("users"), 0, 10).is_err());
-    assert!(db.query_aggregate(query("users"), vec![
-        AggExpr::Count { column: "*".into(), alias: "c".into() },
-    ]).is_err());
+    assert!(db
+        .query_aggregate(
+            query("users"),
+            vec![AggExpr::Count {
+                column: "*".into(),
+                alias: "c".into()
+            },]
+        )
+        .is_err());
     assert!(db.query_insert("users".into(), HashMap::new()).is_err());
-    assert!(db.query_update("users".into(), "x".into(), {
-        let mut d = HashMap::new();
-        d.insert("name".into(), SqlValue::Text("x".into()));
-        d
-    }).is_err());
+    assert!(db
+        .query_update("users".into(), "x".into(), {
+            let mut d = HashMap::new();
+            d.insert("name".into(), SqlValue::Text("x".into()));
+            d
+        })
+        .is_err());
     assert!(db.query_delete("users".into(), "x".into()).is_err());
     assert!(db.query_hard_delete("users".into(), "x".into()).is_err());
     assert!(db.query_insert_batch("users".into(), vec![]).is_err());

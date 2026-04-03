@@ -206,10 +206,7 @@ pub(crate) fn build_hard_delete(
 ) -> Result<(String, Vec<Value>)> {
     validate::table_name(table)?;
 
-    let sql = format!(
-        "DELETE FROM {} WHERE id = ? AND tenant_id = ?",
-        table,
-    );
+    let sql = format!("DELETE FROM {} WHERE id = ? AND tenant_id = ?", table,);
     let params = vec![
         Value::Text(id.to_string()),
         Value::Text(tenant_id.to_string()),

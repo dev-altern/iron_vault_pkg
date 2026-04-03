@@ -1,5 +1,8 @@
 use crate::api::types::*;
-use crate::engine::{audit, backup, connection, convert, crypto, export, migration, notifier, onnx_embed, query_builder, search, semantic, sync, transaction, write_ops};
+use crate::engine::{
+    audit, backup, connection, convert, crypto, export, migration, notifier, onnx_embed,
+    query_builder, search, semantic, sync, transaction, write_ops,
+};
 use anyhow::{anyhow, Context, Result};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
@@ -151,8 +154,7 @@ impl IronVaultDb {
     pub fn execute_raw(&self, sql: String, params: Vec<SqlValue>) -> Result<u64> {
         self.ensure_open()?;
         let conn = self.acquire_writer()?;
-        let values: Vec<rusqlite::types::Value> =
-            params.iter().map(convert::to_rusqlite).collect();
+        let values: Vec<rusqlite::types::Value> = params.iter().map(convert::to_rusqlite).collect();
         let affected = conn
             .execute(&sql, rusqlite::params_from_iter(values))
             .with_context(|| format!("ExecuteException: {}", sql))?;
@@ -171,14 +173,12 @@ impl IronVaultDb {
     ) -> Result<Vec<HashMap<String, SqlValue>>> {
         self.ensure_open()?;
         let conn = self.acquire_reader()?;
-        let values: Vec<rusqlite::types::Value> =
-            params.iter().map(convert::to_rusqlite).collect();
+        let values: Vec<rusqlite::types::Value> = params.iter().map(convert::to_rusqlite).collect();
         let mut stmt = conn
             .prepare(&sql)
             .with_context(|| format!("QueryException: failed to prepare: {}", sql))?;
 
-        let column_names: Vec<String> =
-            stmt.column_names().iter().map(|c| c.to_string()).collect();
+        let column_names: Vec<String> = stmt.column_names().iter().map(|c| c.to_string()).collect();
         let column_count = column_names.len();
 
         let rows = stmt
@@ -240,11 +240,7 @@ impl IronVaultDb {
             .unwrap_or(0);
 
         let migration_version: i32 = conn
-            .query_row(
-                "SELECT MAX(version) FROM _migrations",
-                [],
-                |row| row.get(0),
-            )
+            .query_row("SELECT MAX(version) FROM _migrations", [], |row| row.get(0))
             .unwrap_or(0);
 
         Ok(VaultStats {
@@ -301,20 +297,14 @@ impl IronVaultDb {
     /// Execute a query and return all matching rows.
     ///
     /// Tenant isolation and soft-delete guard are auto-injected.
-    pub fn query_get(
-        &self,
-        spec: QuerySpec,
-    ) -> Result<Vec<HashMap<String, SqlValue>>> {
+    pub fn query_get(&self, spec: QuerySpec) -> Result<Vec<HashMap<String, SqlValue>>> {
         self.ensure_open()?;
         let (sql, params) = query_builder::build_select(&spec, &self.tenant_id)?;
         self.execute_read_query(&sql, params)
     }
 
     /// Execute a query and return the first matching row (or None).
-    pub fn query_first(
-        &self,
-        spec: QuerySpec,
-    ) -> Result<Option<HashMap<String, SqlValue>>> {
+    pub fn query_first(&self, spec: QuerySpec) -> Result<Option<HashMap<String, SqlValue>>> {
         self.ensure_open()?;
         let mut limited = spec;
         limited.limit = Some(1);
@@ -343,12 +333,7 @@ impl IronVaultDb {
     /// Execute a paginated query.
     ///
     /// `page` is 0-based. Returns a `Page` with items, total, and metadata.
-    pub fn query_paginate(
-        &self,
-        spec: QuerySpec,
-        page: u32,
-        page_size: u32,
-    ) -> Result<Page> {
+    pub fn query_paginate(&self, spec: QuerySpec, page: u32, page_size: u32) -> Result<Page> {
         self.ensure_open()?;
         if page_size == 0 {
             return Err(anyhow!("page_size must be > 0"));
@@ -359,7 +344,7 @@ impl IronVaultDb {
         let total_pages = if total == 0 {
             0
         } else {
-            ((total as u32) + page_size - 1) / page_size
+            (total as u32).div_ceil(page_size)
         };
 
         // Get page items
@@ -385,8 +370,7 @@ impl IronVaultDb {
         expressions: Vec<AggExpr>,
     ) -> Result<HashMap<String, SqlValue>> {
         self.ensure_open()?;
-        let (sql, params) =
-            query_builder::build_aggregate(&spec, &expressions, &self.tenant_id)?;
+        let (sql, params) = query_builder::build_aggregate(&spec, &expressions, &self.tenant_id)?;
         let rows = self.execute_read_query(&sql, params)?;
         Ok(rows.into_iter().next().unwrap_or_default())
     }
@@ -397,14 +381,9 @@ impl IronVaultDb {
     ///
     /// `tenant_id` is auto-injected. `id` is auto-generated (UUID) if not in data.
     /// `created_at` and `updated_at` are auto-set if not provided.
-    pub fn query_insert(
-        &self,
-        table: String,
-        data: HashMap<String, SqlValue>,
-    ) -> Result<String> {
+    pub fn query_insert(&self, table: String, data: HashMap<String, SqlValue>) -> Result<String> {
         self.ensure_open()?;
-        let (sql, params, id) =
-            write_ops::build_insert(&table, data, &self.tenant_id)?;
+        let (sql, params, id) = write_ops::build_insert(&table, data, &self.tenant_id)?;
         let conn = self.acquire_writer()?;
         conn.execute(&sql, rusqlite::params_from_iter(params))
             .with_context(|| format!("InsertException: {}", table))?;
@@ -423,8 +402,7 @@ impl IronVaultDb {
         data: HashMap<String, SqlValue>,
     ) -> Result<u64> {
         self.ensure_open()?;
-        let (sql, params) =
-            write_ops::build_update(&table, &id, data, &self.tenant_id)?;
+        let (sql, params) = write_ops::build_update(&table, &id, data, &self.tenant_id)?;
         let conn = self.acquire_writer()?;
         let affected = conn
             .execute(&sql, rusqlite::params_from_iter(params))
@@ -459,8 +437,7 @@ impl IronVaultDb {
     /// Returns rows affected (0 if not found or already deleted).
     pub fn query_delete(&self, table: String, id: String) -> Result<u64> {
         self.ensure_open()?;
-        let (sql, params) =
-            write_ops::build_soft_delete(&table, &id, &self.tenant_id)?;
+        let (sql, params) = write_ops::build_soft_delete(&table, &id, &self.tenant_id)?;
         let conn = self.acquire_writer()?;
         let affected = conn
             .execute(&sql, rusqlite::params_from_iter(params))
@@ -476,8 +453,7 @@ impl IronVaultDb {
     /// Tenant isolation is enforced. Returns rows affected.
     pub fn query_hard_delete(&self, table: String, id: String) -> Result<u64> {
         self.ensure_open()?;
-        let (sql, params) =
-            write_ops::build_hard_delete(&table, &id, &self.tenant_id)?;
+        let (sql, params) = write_ops::build_hard_delete(&table, &id, &self.tenant_id)?;
         let conn = self.acquire_writer()?;
         let affected = conn
             .execute(&sql, rusqlite::params_from_iter(params))
@@ -502,8 +478,7 @@ impl IronVaultDb {
             .context("Failed to begin transaction")?;
 
         for row_data in rows {
-            let (sql, params, id) =
-                write_ops::build_insert(&table, row_data, &self.tenant_id)?;
+            let (sql, params, id) = write_ops::build_insert(&table, row_data, &self.tenant_id)?;
             match conn.execute(&sql, rusqlite::params_from_iter(params)) {
                 Ok(_) => ids.push(id),
                 Err(e) => {
@@ -526,11 +501,7 @@ impl IronVaultDb {
     }
 
     /// Update multiple rows in a single transaction. Returns total rows affected.
-    pub fn query_update_batch(
-        &self,
-        table: String,
-        updates: Vec<UpdateEntry>,
-    ) -> Result<u64> {
+    pub fn query_update_batch(&self, table: String, updates: Vec<UpdateEntry>) -> Result<u64> {
         self.ensure_open()?;
         let conn = self.acquire_writer()?;
         let mut total_affected = 0u64;
@@ -564,11 +535,7 @@ impl IronVaultDb {
     }
 
     /// Soft-delete multiple rows in a single transaction. Returns total rows affected.
-    pub fn query_delete_batch(
-        &self,
-        table: String,
-        ids: Vec<String>,
-    ) -> Result<u64> {
+    pub fn query_delete_batch(&self, table: String, ids: Vec<String>) -> Result<u64> {
         self.ensure_open()?;
         let conn = self.acquire_writer()?;
         let mut total_affected = 0u64;
@@ -577,8 +544,7 @@ impl IronVaultDb {
             .context("Failed to begin transaction")?;
 
         for id in &ids {
-            let (sql, params) =
-                write_ops::build_soft_delete(&table, id, &self.tenant_id)?;
+            let (sql, params) = write_ops::build_soft_delete(&table, id, &self.tenant_id)?;
             match conn.execute(&sql, rusqlite::params_from_iter(params)) {
                 Ok(n) => total_affected += n as u64,
                 Err(e) => {
@@ -749,8 +715,8 @@ impl IronVaultDb {
             let key = format!("{}:{}", table, tenant_id);
 
             // Initial emission
-            let initial = Self::execute_query_on_pool(&read_pool, &spec, &tenant_id)
-                .unwrap_or_default();
+            let initial =
+                Self::execute_query_on_pool(&read_pool, &spec, &tenant_id).unwrap_or_default();
             let mut prev_hash = Self::hash_results(&initial);
             let _ = sink.add(initial);
 
@@ -759,8 +725,8 @@ impl IronVaultDb {
                     break; // DB closed
                 }
 
-                let new_results = Self::execute_query_on_pool(&read_pool, &spec, &tenant_id)
-                    .unwrap_or_default();
+                let new_results =
+                    Self::execute_query_on_pool(&read_pool, &spec, &tenant_id).unwrap_or_default();
                 let new_hash = Self::hash_results(&new_results);
 
                 if new_hash != prev_hash {
@@ -805,8 +771,8 @@ impl IronVaultDb {
                 include_deleted: false,
             };
 
-            let initial = Self::execute_query_on_pool(&read_pool, &spec, &tenant_id)
-                .unwrap_or_default();
+            let initial =
+                Self::execute_query_on_pool(&read_pool, &spec, &tenant_id).unwrap_or_default();
             let row = initial.into_iter().next();
             let mut prev_hash = format!("{:?}", row);
             let _ = sink.add(row);
@@ -816,8 +782,8 @@ impl IronVaultDb {
                     break;
                 }
 
-                let results = Self::execute_query_on_pool(&read_pool, &spec, &tenant_id)
-                    .unwrap_or_default();
+                let results =
+                    Self::execute_query_on_pool(&read_pool, &spec, &tenant_id).unwrap_or_default();
                 let new_row = results.into_iter().next();
                 let new_hash = format!("{:?}", new_row);
 
@@ -850,13 +816,13 @@ impl IronVaultDb {
             let key = format!("{}:{}", table, tenant_id);
 
             let exec = || -> HashMap<String, SqlValue> {
-                let (sql, params) =
-                    query_builder::build_aggregate(&spec, &expressions, &tenant_id)
-                        .unwrap_or_default();
+                let (sql, params) = query_builder::build_aggregate(&spec, &expressions, &tenant_id)
+                    .unwrap_or_default();
                 let conn = read_pool.get().ok();
                 conn.and_then(|c| {
                     let mut stmt = c.prepare(&sql).ok()?;
-                    let cols: Vec<String> = stmt.column_names().iter().map(|c| c.to_string()).collect();
+                    let cols: Vec<String> =
+                        stmt.column_names().iter().map(|c| c.to_string()).collect();
                     let count = cols.len();
                     stmt.query_row(rusqlite::params_from_iter(params), |row| {
                         let mut map = HashMap::with_capacity(count);
@@ -865,7 +831,8 @@ impl IronVaultDb {
                             map.insert(cols[i].clone(), convert::from_rusqlite(v));
                         }
                         Ok(map)
-                    }).ok()
+                    })
+                    .ok()
                 })
                 .unwrap_or_default()
             };
@@ -944,9 +911,16 @@ impl IronVaultDb {
         let actor = self.actor_id.lock().unwrap().clone();
         let hmac_key = crypto::hkdf_derive(&self.encryption_key, "audit_hmac")?;
         audit::record(
-            &conn, &table_name, &row_id, &operation, &actor,
-            &self.tenant_id, before_json.as_deref(), after_json.as_deref(),
-            changed_fields.as_deref(), &hmac_key,
+            &conn,
+            &table_name,
+            &row_id,
+            &operation,
+            &actor,
+            &self.tenant_id,
+            before_json.as_deref(),
+            after_json.as_deref(),
+            changed_fields.as_deref(),
+            &hmac_key,
         )
     }
 
@@ -1073,11 +1047,7 @@ impl IronVaultDb {
     ///
     /// Call after creating the table (via migration or raw SQL).
     /// Fields define which columns are indexed and their weights.
-    pub fn build_search_index(
-        &self,
-        table: String,
-        fields: Vec<SearchField>,
-    ) -> Result<()> {
+    pub fn build_search_index(&self, table: String, fields: Vec<SearchField>) -> Result<()> {
         self.ensure_open()?;
         self.search_engine.build_index(&table, &fields)
     }
@@ -1139,7 +1109,15 @@ impl IronVaultDb {
     ) -> Result<String> {
         self.ensure_open()?;
         let conn = self.acquire_writer()?;
-        sync::add_to_outbox(&conn, &table_name, &row_id, &operation, &payload, &vector_clock, &self.tenant_id)
+        sync::add_to_outbox(
+            &conn,
+            &table_name,
+            &row_id,
+            &operation,
+            &payload,
+            &vector_clock,
+            &self.tenant_id,
+        )
     }
 
     /// Get pending outbox records.
@@ -1175,11 +1153,7 @@ impl IronVaultDb {
     }
 
     /// Resolve a sync conflict.
-    pub fn sync_resolve_conflict(
-        &self,
-        conflict_id: String,
-        resolution: String,
-    ) -> Result<()> {
+    pub fn sync_resolve_conflict(&self, conflict_id: String, resolution: String) -> Result<()> {
         self.ensure_open()?;
         let conn = self.acquire_writer()?;
         let actor = self.actor_id.lock().unwrap().clone();
@@ -1204,23 +1178,14 @@ impl IronVaultDb {
     ///
     /// The table must have an `embedding BLOB` column.
     /// The vector is serialized as little-endian f32 bytes.
-    pub fn store_embedding(
-        &self,
-        table: String,
-        id: String,
-        embedding: Vec<f32>,
-    ) -> Result<()> {
+    pub fn store_embedding(&self, table: String, id: String, embedding: Vec<f32>) -> Result<()> {
         self.ensure_open()?;
         let conn = self.acquire_writer()?;
         semantic::store_embedding(&conn, &table, &id, &embedding, &self.tenant_id)
     }
 
     /// Retrieve an embedding vector for a row.
-    pub fn get_embedding(
-        &self,
-        table: String,
-        id: String,
-    ) -> Result<Vec<f32>> {
+    pub fn get_embedding(&self, table: String, id: String) -> Result<Vec<f32>> {
         self.ensure_open()?;
         let conn = self.acquire_reader()?;
         semantic::get_embedding(&conn, &table, &id, &self.tenant_id)
@@ -1251,7 +1216,14 @@ impl IronVaultDb {
     ) -> Result<Vec<SemanticHit>> {
         self.ensure_open()?;
         let conn = self.acquire_reader()?;
-        semantic::search_semantic(&conn, &table, &query_embedding, &self.tenant_id, top_k, threshold)
+        semantic::search_semantic(
+            &conn,
+            &table,
+            &query_embedding,
+            &self.tenant_id,
+            top_k,
+            threshold,
+        )
     }
 
     /// Hybrid search combining FTS (Tantivy) and semantic (cosine) scores.
@@ -1273,8 +1245,14 @@ impl IronVaultDb {
         let fts_hits = self.search(table.clone(), query, limit * 2, false)?;
         let conn = self.acquire_reader()?;
         semantic::search_hybrid(
-            &conn, &table, &query_embedding, &fts_hits,
-            fts_weight, semantic_weight, &self.tenant_id, limit,
+            &conn,
+            &table,
+            &query_embedding,
+            &fts_hits,
+            fts_weight,
+            semantic_weight,
+            &self.tenant_id,
+            limit,
         )
     }
 
@@ -1282,11 +1260,7 @@ impl IronVaultDb {
     ///
     /// Requires the `onnx` feature flag. Without it, returns an error.
     /// `dimension` is the expected output embedding size (e.g., 384).
-    pub fn load_embedding_model(
-        &self,
-        model_path: String,
-        dimension: u32,
-    ) -> Result<()> {
+    pub fn load_embedding_model(&self, model_path: String, dimension: u32) -> Result<()> {
         self.ensure_open()?;
         let embedder = onnx_embed::OnnxEmbedder::load(&model_path, dimension as usize)?;
         *self.embedder.lock().unwrap() = Some(embedder);
@@ -1301,9 +1275,9 @@ impl IronVaultDb {
     pub fn embed_text(&self, text: String) -> Result<Vec<f32>> {
         self.ensure_open()?;
         let guard = self.embedder.lock().unwrap();
-        let embedder = guard
-            .as_ref()
-            .ok_or_else(|| anyhow!("OnnxException: no model loaded — call load_embedding_model first"))?;
+        let embedder = guard.as_ref().ok_or_else(|| {
+            anyhow!("OnnxException: no model loaded — call load_embedding_model first")
+        })?;
         embedder.embed(&text)
     }
 
@@ -1325,17 +1299,13 @@ impl IronVaultDb {
         }
     }
 
-    fn acquire_writer(
-        &self,
-    ) -> Result<r2d2::PooledConnection<SqliteConnectionManager>> {
+    fn acquire_writer(&self) -> Result<r2d2::PooledConnection<SqliteConnectionManager>> {
         self.write_pool
             .get()
             .map_err(|e| anyhow!("PoolExhaustedException: {}", e))
     }
 
-    fn acquire_reader(
-        &self,
-    ) -> Result<r2d2::PooledConnection<SqliteConnectionManager>> {
+    fn acquire_reader(&self) -> Result<r2d2::PooledConnection<SqliteConnectionManager>> {
         self.read_pool
             .get()
             .map_err(|e| anyhow!("PoolExhaustedException: {}", e))
@@ -1352,8 +1322,7 @@ impl IronVaultDb {
             .prepare(sql)
             .with_context(|| format!("QueryException: failed to prepare: {}", sql))?;
 
-        let column_names: Vec<String> =
-            stmt.column_names().iter().map(|c| c.to_string()).collect();
+        let column_names: Vec<String> = stmt.column_names().iter().map(|c| c.to_string()).collect();
         let column_count = column_names.len();
 
         let rows = stmt
@@ -1381,10 +1350,11 @@ impl IronVaultDb {
         tenant_id: &str,
     ) -> Result<Vec<HashMap<String, SqlValue>>> {
         let (sql, params) = query_builder::build_select(spec, tenant_id)?;
-        let conn = pool.get().map_err(|e| anyhow!("PoolExhaustedException: {}", e))?;
+        let conn = pool
+            .get()
+            .map_err(|e| anyhow!("PoolExhaustedException: {}", e))?;
         let mut stmt = conn.prepare(&sql)?;
-        let column_names: Vec<String> =
-            stmt.column_names().iter().map(|c| c.to_string()).collect();
+        let column_names: Vec<String> = stmt.column_names().iter().map(|c| c.to_string()).collect();
         let column_count = column_names.len();
         let rows = stmt.query_map(rusqlite::params_from_iter(params), |row| {
             let mut map = HashMap::with_capacity(column_count);
@@ -1418,16 +1388,12 @@ impl IronVaultDb {
             CheckpointMode::Truncate => "TRUNCATE",
         };
         let result = conn
-            .query_row(
-                &format!("PRAGMA wal_checkpoint({})", mode_str),
-                [],
-                |row| {
-                    Ok(CheckpointResult {
-                        wal_pages: row.get(1).unwrap_or(0),
-                        checkpointed_pages: row.get(2).unwrap_or(0),
-                    })
-                },
-            )
+            .query_row(&format!("PRAGMA wal_checkpoint({})", mode_str), [], |row| {
+                Ok(CheckpointResult {
+                    wal_pages: row.get(1).unwrap_or(0),
+                    checkpointed_pages: row.get(2).unwrap_or(0),
+                })
+            })
             .context("Failed to checkpoint WAL")?;
         Ok(result)
     }

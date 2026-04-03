@@ -138,8 +138,7 @@ fn execute_single_op(
 ) -> Result<OpResult> {
     match op {
         Op::Insert { table, data } => {
-            let (sql, params, id) =
-                write_ops::build_insert(table, data.clone(), tenant_id)?;
+            let (sql, params, id) = write_ops::build_insert(table, data.clone(), tenant_id)?;
             let affected = conn
                 .execute(&sql, rusqlite::params_from_iter(params))
                 .with_context(|| format!("Insert into {} failed", table))?;
@@ -151,8 +150,7 @@ fn execute_single_op(
         }
 
         Op::Update { table, id, data } => {
-            let (sql, params) =
-                write_ops::build_update(table, id, data.clone(), tenant_id)?;
+            let (sql, params) = write_ops::build_update(table, id, data.clone(), tenant_id)?;
             let affected = conn
                 .execute(&sql, rusqlite::params_from_iter(params))
                 .with_context(|| format!("Update {} id={} failed", table, id))?;
@@ -181,8 +179,7 @@ fn execute_single_op(
         }
 
         Op::Delete { table, id } => {
-            let (sql, params) =
-                write_ops::build_soft_delete(table, id, tenant_id)?;
+            let (sql, params) = write_ops::build_soft_delete(table, id, tenant_id)?;
             let affected = conn
                 .execute(&sql, rusqlite::params_from_iter(params))
                 .with_context(|| format!("Soft-delete {} id={} failed", table, id))?;
@@ -194,8 +191,7 @@ fn execute_single_op(
         }
 
         Op::HardDelete { table, id } => {
-            let (sql, params) =
-                write_ops::build_hard_delete(table, id, tenant_id)?;
+            let (sql, params) = write_ops::build_hard_delete(table, id, tenant_id)?;
             let affected = conn
                 .execute(&sql, rusqlite::params_from_iter(params))
                 .with_context(|| format!("Hard-delete {} id={} failed", table, id))?;

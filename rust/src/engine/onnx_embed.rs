@@ -47,11 +47,7 @@ impl OnnxEmbedder {
 
         // Simple tokenization: convert chars to token IDs
         // This is a placeholder — real models need a WordPiece/BPE tokenizer
-        let token_ids: Vec<i64> = text
-            .chars()
-            .take(512)
-            .map(|c| c as i64)
-            .collect();
+        let token_ids: Vec<i64> = text.chars().take(512).map(|c| c as i64).collect();
         let attention_mask: Vec<i64> = vec![1i64; token_ids.len()];
         let seq_len = token_ids.len();
 
@@ -60,12 +56,14 @@ impl OnnxEmbedder {
         let attn_mask = Array2::from_shape_vec((1, seq_len), attention_mask)
             .context("OnnxException: failed to create attention mask")?;
 
-        let outputs = session.run(ort::inputs![input_ids, attn_mask]?)
+        let outputs = session
+            .run(ort::inputs![input_ids, attn_mask]?)
             .context("OnnxException: inference failed")?;
 
         // Extract embedding from output (typically shape [1, seq_len, dim] or [1, dim])
         let output = &outputs[0];
-        let tensor = output.try_extract_tensor::<f32>()
+        let tensor = output
+            .try_extract_tensor::<f32>()
             .context("OnnxException: failed to extract output tensor")?;
 
         // Mean pooling over sequence dimension
@@ -88,7 +86,10 @@ impl OnnxEmbedder {
             // [batch, dim]
             tensor.row(0).to_vec()
         } else {
-            return Err(anyhow!("OnnxException: unexpected output shape {:?}", shape));
+            return Err(anyhow!(
+                "OnnxException: unexpected output shape {:?}",
+                shape
+            ));
         };
 
         // Normalize to unit length

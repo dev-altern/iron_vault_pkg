@@ -29,8 +29,12 @@ fn backup_and_restore_compressed_encrypted() {
     // The restored file should be byte-identical to the original SQLCipher file
     // Reopen with same key and verify data
     let restored_db = iron_vault_core::api::vault::IronVaultDb::open(
-        restore_path, test_key(), "tenant_test".into(), VaultConfig::test_config(),
-    ).unwrap();
+        restore_path,
+        test_key(),
+        "tenant_test".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
     assert_eq!(restored_db.query_count(query("users")).unwrap(), 2);
 }
 
@@ -57,7 +61,13 @@ fn backup_compressed_only() {
     let db = open_test_db(&dir);
     create_users_table(&db);
     for i in 0..100 {
-        insert_user(&db, &format!("U{}", i), &format!("u{}@t.com", i), "m", i as f64);
+        insert_user(
+            &db,
+            &format!("U{}", i),
+            &format!("u{}@t.com", i),
+            "m",
+            i as f64,
+        );
     }
 
     let uncompressed_path = dir.path().join("raw.ivb").to_str().unwrap().to_string();
@@ -224,7 +234,8 @@ fn export_empty_table_csv() {
     create_users_table(&db);
 
     let csv = String::from_utf8(
-        db.export_table("users".into(), ExportFormat::Csv, None).unwrap(),
+        db.export_table("users".into(), ExportFormat::Csv, None)
+            .unwrap(),
     )
     .unwrap();
     // Just the header line
@@ -256,7 +267,8 @@ fn export_json_empty_table() {
     create_users_table(&db);
 
     let json = String::from_utf8(
-        db.export_table("users".into(), ExportFormat::Json, None).unwrap(),
+        db.export_table("users".into(), ExportFormat::Json, None)
+            .unwrap(),
     )
     .unwrap();
     assert_eq!(json, "[]");
@@ -273,7 +285,8 @@ fn export_jsonl_basic() {
     insert_user(&db, "Bob", "b@t.com", "member", 80.0);
 
     let jsonl = String::from_utf8(
-        db.export_table("users".into(), ExportFormat::Jsonl, None).unwrap(),
+        db.export_table("users".into(), ExportFormat::Jsonl, None)
+            .unwrap(),
     )
     .unwrap();
     let lines: Vec<&str> = jsonl.trim().lines().collect();
@@ -291,11 +304,19 @@ fn export_respects_tenant_isolation() {
     let dir = tempfile::TempDir::new().unwrap();
     let path = dir.path().join("shared.db").to_str().unwrap().to_string();
     let db_a = iron_vault_core::api::vault::IronVaultDb::open(
-        path.clone(), test_key(), "tenant_a".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path.clone(),
+        test_key(),
+        "tenant_a".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
     let db_b = iron_vault_core::api::vault::IronVaultDb::open(
-        path, test_key(), "tenant_b".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path,
+        test_key(),
+        "tenant_b".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
 
     create_users_table(&db_a);
     insert_user_on(&db_a, "Alice");
@@ -303,11 +324,15 @@ fn export_respects_tenant_isolation() {
     insert_user_on(&db_b, "Bob");
 
     let csv_a = String::from_utf8(
-        db_a.export_table("users".into(), ExportFormat::Csv, Some(vec!["name".into()])).unwrap(),
-    ).unwrap();
+        db_a.export_table("users".into(), ExportFormat::Csv, Some(vec!["name".into()]))
+            .unwrap(),
+    )
+    .unwrap();
     let csv_b = String::from_utf8(
-        db_b.export_table("users".into(), ExportFormat::Csv, Some(vec!["name".into()])).unwrap(),
-    ).unwrap();
+        db_b.export_table("users".into(), ExportFormat::Csv, Some(vec!["name".into()]))
+            .unwrap(),
+    )
+    .unwrap();
 
     assert_eq!(csv_a.trim().lines().count(), 3); // header + 2 rows
     assert_eq!(csv_b.trim().lines().count(), 2); // header + 1 row
@@ -324,7 +349,9 @@ fn backup_after_close_fails() {
     assert!(db.backup("x".into(), false, false).is_err());
     assert!(db.verify_backup("x".into()).is_err());
     assert!(db.restore_backup("x".into(), "y".into(), None).is_err());
-    assert!(db.export_table("t".into(), ExportFormat::Csv, None).is_err());
+    assert!(db
+        .export_table("t".into(), ExportFormat::Csv, None)
+        .is_err());
 }
 
 #[test]
@@ -365,9 +392,14 @@ fn export_excludes_soft_deleted() {
     db.query_delete("users".into(), id).unwrap();
 
     let csv = String::from_utf8(
-        db.export_table("users".into(), ExportFormat::Csv, Some(vec!["name".into()])).unwrap(),
-    ).unwrap();
-    assert!(!csv.contains("Alice"), "Soft-deleted row should be excluded");
+        db.export_table("users".into(), ExportFormat::Csv, Some(vec!["name".into()]))
+            .unwrap(),
+    )
+    .unwrap();
+    assert!(
+        !csv.contains("Alice"),
+        "Soft-deleted row should be excluded"
+    );
     assert!(csv.contains("Bob"));
 }
 

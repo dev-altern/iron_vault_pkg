@@ -26,7 +26,12 @@ fn wrong_key_fails() {
         .unwrap();
     }
 
-    let result = IronVaultDb::open(path, vec![0x02u8; 32], "t".into(), VaultConfig::test_config());
+    let result = IronVaultDb::open(
+        path,
+        vec![0x02u8; 32],
+        "t".into(),
+        VaultConfig::test_config(),
+    );
     assert!(result.is_err());
     let msg = result.unwrap_err().to_string();
     assert!(msg.contains("VaultOpenException"), "got: {}", msg);
@@ -37,8 +42,12 @@ fn invalid_key_length() {
     let dir = tempfile::TempDir::new().unwrap();
     let path = dir.path().join("test.db").to_str().unwrap().to_string();
 
-    let result =
-        IronVaultDb::open(path.clone(), vec![0u8; 16], "t".into(), VaultConfig::test_config());
+    let result = IronVaultDb::open(
+        path.clone(),
+        vec![0u8; 16],
+        "t".into(),
+        VaultConfig::test_config(),
+    );
     assert!(result.is_err());
     assert!(result.unwrap_err().to_string().contains("32 bytes"));
 
@@ -65,10 +74,16 @@ fn reopen_with_correct_key_persists_data() {
             vec![],
         )
         .unwrap();
-        db.execute_raw("INSERT INTO persist (id, msg) VALUES (1, 'hello')".into(), vec![])
-            .unwrap();
-        db.execute_raw("INSERT INTO persist (id, msg) VALUES (2, 'world')".into(), vec![])
-            .unwrap();
+        db.execute_raw(
+            "INSERT INTO persist (id, msg) VALUES (1, 'hello')".into(),
+            vec![],
+        )
+        .unwrap();
+        db.execute_raw(
+            "INSERT INTO persist (id, msg) VALUES (2, 'world')".into(),
+            vec![],
+        )
+        .unwrap();
     }
 
     {

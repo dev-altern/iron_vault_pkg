@@ -137,16 +137,25 @@ fn transaction_enforces_tenant_isolation() {
     let dir = tempfile::TempDir::new().unwrap();
     let path = dir.path().join("shared.db").to_str().unwrap().to_string();
     let db_a = iron_vault_core::api::vault::IronVaultDb::open(
-        path.clone(), test_key(), "tenant_a".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path.clone(),
+        test_key(),
+        "tenant_a".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
     let db_b = iron_vault_core::api::vault::IronVaultDb::open(
-        path, test_key(), "tenant_b".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path,
+        test_key(),
+        "tenant_b".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
 
     create_users_table(&db_a);
 
     // Tenant A inserts via transaction
-    db_a.transaction(vec![make_insert("Alice", "a@t.com")]).unwrap();
+    db_a.transaction(vec![make_insert("Alice", "a@t.com")])
+        .unwrap();
 
     // Tenant B should not see tenant A's data
     assert_eq!(db_b.query_count(query("users")).unwrap(), 0);
@@ -160,9 +169,9 @@ fn transaction_after_close_fails() {
     db.close().unwrap();
 
     assert!(db.transaction(vec![]).is_err());
-    assert!(db.update_with_version(
-        "t".into(), "id".into(), 1, HashMap::new()
-    ).is_err());
+    assert!(db
+        .update_with_version("t".into(), "id".into(), 1, HashMap::new())
+        .is_err());
 }
 
 // ─── Savepoints ──────────────────────────────────────────────────────
@@ -192,13 +201,13 @@ fn rollback_to_savepoint_undoes_partial_ops() {
     create_users_table(&db);
 
     db.transaction(vec![
-        make_insert("Alice", "a@t.com"),            // survives
+        make_insert("Alice", "a@t.com"), // survives
         Op::Savepoint { name: "sp1".into() },
-        make_insert("Bob", "b@t.com"),              // rolled back
-        make_insert("Carol", "c@t.com"),            // rolled back
+        make_insert("Bob", "b@t.com"),   // rolled back
+        make_insert("Carol", "c@t.com"), // rolled back
         Op::RollbackToSavepoint { name: "sp1".into() },
         Op::ReleaseSavepoint { name: "sp1".into() },
-        make_insert("Dave", "d@t.com"),             // survives (after rollback)
+        make_insert("Dave", "d@t.com"), // survives (after rollback)
     ])
     .unwrap();
 
@@ -206,12 +215,17 @@ fn rollback_to_savepoint_undoes_partial_ops() {
     assert_eq!(db.query_count(query("users")).unwrap(), 2);
 
     let mut spec = query("users");
-    spec.order_by.push(OrderBy::Asc { column: "name".into() });
+    spec.order_by.push(OrderBy::Asc {
+        column: "name".into(),
+    });
     let rows = db.query_get(spec).unwrap();
-    let names: Vec<&str> = rows.iter().filter_map(|r| match r.get("name") {
-        Some(SqlValue::Text(s)) => Some(s.as_str()),
-        _ => None,
-    }).collect();
+    let names: Vec<&str> = rows
+        .iter()
+        .filter_map(|r| match r.get("name") {
+            Some(SqlValue::Text(s)) => Some(s.as_str()),
+            _ => None,
+        })
+        .collect();
     assert_eq!(names, vec!["Alice", "Dave"]);
 }
 
@@ -223,13 +237,23 @@ fn nested_savepoints() {
 
     db.transaction(vec![
         make_insert("A", "a@t.com"),
-        Op::Savepoint { name: "outer".into() },
+        Op::Savepoint {
+            name: "outer".into(),
+        },
         make_insert("B", "b@t.com"),
-        Op::Savepoint { name: "inner".into() },
+        Op::Savepoint {
+            name: "inner".into(),
+        },
         make_insert("C", "c@t.com"),
-        Op::RollbackToSavepoint { name: "inner".into() },  // undo C
-        Op::ReleaseSavepoint { name: "inner".into() },
-        Op::ReleaseSavepoint { name: "outer".into() },
+        Op::RollbackToSavepoint {
+            name: "inner".into(),
+        }, // undo C
+        Op::ReleaseSavepoint {
+            name: "inner".into(),
+        },
+        Op::ReleaseSavepoint {
+            name: "outer".into(),
+        },
     ])
     .unwrap();
 
@@ -242,9 +266,9 @@ fn invalid_savepoint_name_rejected() {
     let dir = tempfile::TempDir::new().unwrap();
     let db = open_test_db(&dir);
 
-    let result = db.transaction(vec![
-        Op::Savepoint { name: "bad; DROP TABLE".into() },
-    ]);
+    let result = db.transaction(vec![Op::Savepoint {
+        name: "bad; DROP TABLE".into(),
+    }]);
     assert!(result.is_err());
 }
 
@@ -325,12 +349,14 @@ fn optimistic_lock_sequential_updates() {
     // Update v1 → v2
     let mut d1 = HashMap::new();
     d1.insert("amount".into(), SqlValue::Real(200.0));
-    db.update_with_version("invoices".into(), id.clone(), 1, d1).unwrap();
+    db.update_with_version("invoices".into(), id.clone(), 1, d1)
+        .unwrap();
 
     // Update v2 → v3
     let mut d2 = HashMap::new();
     d2.insert("amount".into(), SqlValue::Real(300.0));
-    db.update_with_version("invoices".into(), id.clone(), 2, d2).unwrap();
+    db.update_with_version("invoices".into(), id.clone(), 2, d2)
+        .unwrap();
 
     // Stale update at v1 should fail
     let mut d3 = HashMap::new();
@@ -355,11 +381,19 @@ fn optimistic_lock_respects_tenant_isolation() {
     let dir = tempfile::TempDir::new().unwrap();
     let path = dir.path().join("shared.db").to_str().unwrap().to_string();
     let db_a = iron_vault_core::api::vault::IronVaultDb::open(
-        path.clone(), test_key(), "tenant_a".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path.clone(),
+        test_key(),
+        "tenant_a".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
     let db_b = iron_vault_core::api::vault::IronVaultDb::open(
-        path, test_key(), "tenant_b".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path,
+        test_key(),
+        "tenant_b".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
 
     setup_versioned_table(&db_a);
 
@@ -406,16 +440,25 @@ fn transaction_with_delete_and_hard_delete() {
     let id2 = insert_user(&db, "Bob", "b@t.com", "member", 80.0);
 
     db.transaction(vec![
-        Op::Delete { table: "users".into(), id: id1.clone() },
-        Op::HardDelete { table: "users".into(), id: id2.clone() },
+        Op::Delete {
+            table: "users".into(),
+            id: id1.clone(),
+        },
+        Op::HardDelete {
+            table: "users".into(),
+            id: id2.clone(),
+        },
     ])
     .unwrap();
 
     // id1 soft-deleted (invisible to queries, still in DB)
     assert_eq!(db.query_count(query("users")).unwrap(), 0);
-    let raw = db.query_raw(
-        "SELECT id FROM users WHERE tenant_id = 'tenant_test'".into(), vec![],
-    ).unwrap();
+    let raw = db
+        .query_raw(
+            "SELECT id FROM users WHERE tenant_id = 'tenant_test'".into(),
+            vec![],
+        )
+        .unwrap();
     assert_eq!(raw.len(), 1); // only soft-deleted id1 remains
 }
 
@@ -502,7 +545,9 @@ fn transaction_single_op() {
     let db = open_test_db(&dir);
     create_users_table(&db);
 
-    let result = db.transaction(vec![make_insert("Solo", "s@t.com")]).unwrap();
+    let result = db
+        .transaction(vec![make_insert("Solo", "s@t.com")])
+        .unwrap();
     assert_eq!(result.inserted_ids.len(), 1);
     assert_eq!(db.query_count(query("users")).unwrap(), 1);
 }
@@ -541,11 +586,14 @@ fn optimistic_lock_empty_data_only_bumps_version() {
     d.insert("id".into(), SqlValue::Text("ignored".into()));
     d.insert("tenant_id".into(), SqlValue::Text("ignored".into()));
     d.insert("version".into(), SqlValue::Integer(999));
-    db.update_with_version("invoices".into(), id.clone(), 1, d).unwrap();
+    db.update_with_version("invoices".into(), id.clone(), 1, d)
+        .unwrap();
 
-    let rows = db.query_raw(
-        "SELECT version FROM invoices WHERE id = ?1 AND tenant_id = 'tenant_test'".into(),
-        vec![SqlValue::Text(id)],
-    ).unwrap();
+    let rows = db
+        .query_raw(
+            "SELECT version FROM invoices WHERE id = ?1 AND tenant_id = 'tenant_test'".into(),
+            vec![SqlValue::Text(id)],
+        )
+        .unwrap();
     assert!(matches!(rows[0].get("version"), Some(SqlValue::Integer(2))));
 }

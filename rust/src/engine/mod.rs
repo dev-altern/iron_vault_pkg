@@ -1,9 +1,9 @@
 pub(crate) mod audit;
 pub(crate) mod backup;
 pub(crate) mod connection;
-pub(crate) mod export;
 pub(crate) mod convert;
 pub(crate) mod crypto;
+pub(crate) mod export;
 pub(crate) mod migration;
 pub(crate) mod notifier;
 pub(crate) mod onnx_embed;
@@ -12,6 +12,6 @@ pub(crate) mod search;
 pub(crate) mod semantic;
 pub(crate) mod sync;
 pub(crate) mod transaction;
-pub(crate) mod vector_clock;
 pub(crate) mod validate;
+pub(crate) mod vector_clock;
 pub(crate) mod write_ops;

@@ -6,10 +6,7 @@ use rusqlite::types::Value;
 /// Build a SELECT query from a QuerySpec, injecting tenant_id and soft-delete guard.
 ///
 /// Returns `(sql, params)` ready for `conn.prepare(&sql)` + `params_from_iter(params)`.
-pub(crate) fn build_select(
-    spec: &QuerySpec,
-    tenant_id: &str,
-) -> Result<(String, Vec<Value>)> {
+pub(crate) fn build_select(spec: &QuerySpec, tenant_id: &str) -> Result<(String, Vec<Value>)> {
     validate::table_name(&spec.table)?;
     let mut sql = String::with_capacity(256);
     let mut params: Vec<Value> = Vec::new();
@@ -45,12 +42,7 @@ pub(crate) fn build_select(
         &mut sql,
         &mut params,
     );
-    build_user_conditions(
-        &spec.conditions,
-        &spec.or_conditions,
-        &mut sql,
-        &mut params,
-    )?;
+    build_user_conditions(&spec.conditions, &spec.or_conditions, &mut sql, &mut params)?;
 
     // ── ORDER BY ──
     build_order_by(&spec.order_by, &mut sql)?;
@@ -67,10 +59,7 @@ pub(crate) fn build_select(
 }
 
 /// Build a SELECT COUNT(*) query from a QuerySpec.
-pub(crate) fn build_count(
-    spec: &QuerySpec,
-    tenant_id: &str,
-) -> Result<(String, Vec<Value>)> {
+pub(crate) fn build_count(spec: &QuerySpec, tenant_id: &str) -> Result<(String, Vec<Value>)> {
     validate::table_name(&spec.table)?;
     let mut sql = String::with_capacity(256);
     let mut params: Vec<Value> = Vec::new();
@@ -89,12 +78,7 @@ pub(crate) fn build_count(
         &mut sql,
         &mut params,
     );
-    build_user_conditions(
-        &spec.conditions,
-        &spec.or_conditions,
-        &mut sql,
-        &mut params,
-    )?;
+    build_user_conditions(&spec.conditions, &spec.or_conditions, &mut sql, &mut params)?;
 
     Ok((sql, params))
 }
@@ -107,7 +91,9 @@ pub(crate) fn build_aggregate(
 ) -> Result<(String, Vec<Value>)> {
     validate::table_name(&spec.table)?;
     if expressions.is_empty() {
-        return Err(anyhow::anyhow!("At least one aggregate expression is required"));
+        return Err(anyhow::anyhow!(
+            "At least one aggregate expression is required"
+        ));
     }
 
     let mut sql = String::with_capacity(256);
@@ -144,12 +130,7 @@ pub(crate) fn build_aggregate(
         &mut sql,
         &mut params,
     );
-    build_user_conditions(
-        &spec.conditions,
-        &spec.or_conditions,
-        &mut sql,
-        &mut params,
-    )?;
+    build_user_conditions(&spec.conditions, &spec.or_conditions, &mut sql, &mut params)?;
 
     Ok((sql, params))
 }
@@ -437,7 +418,10 @@ mod tests {
     #[test]
     fn select_star_with_tenant_and_softdelete() {
         let (sql, params) = build_select(&empty_spec("users"), "t1").unwrap();
-        assert_eq!(sql, "SELECT * FROM users WHERE tenant_id = ? AND deleted_at IS NULL");
+        assert_eq!(
+            sql,
+            "SELECT * FROM users WHERE tenant_id = ? AND deleted_at IS NULL"
+        );
         assert_eq!(params.len(), 1);
         assert!(matches!(&params[0], Value::Text(t) if t == "t1"));
     }
@@ -519,7 +503,11 @@ mod tests {
             value: SqlValue::Integer(100),
         }]);
         let (sql, _) = build_select(&spec, "t1").unwrap();
-        assert!(sql.contains("AND ((role = ?) OR (score = ?))"), "SQL: {}", sql);
+        assert!(
+            sql.contains("AND ((role = ?) OR (score = ?))"),
+            "SQL: {}",
+            sql
+        );
     }
 
     #[test]
@@ -540,8 +528,12 @@ mod tests {
     #[test]
     fn select_order_by() {
         let mut spec = empty_spec("users");
-        spec.order_by.push(OrderBy::Desc { column: "created_at".into() });
-        spec.order_by.push(OrderBy::Asc { column: "name".into() });
+        spec.order_by.push(OrderBy::Desc {
+            column: "created_at".into(),
+        });
+        spec.order_by.push(OrderBy::Asc {
+            column: "name".into(),
+        });
         let (sql, _) = build_select(&spec, "t1").unwrap();
         assert!(sql.contains("ORDER BY created_at DESC, name ASC"));
     }
@@ -603,8 +595,14 @@ mod tests {
     #[test]
     fn aggregate_generates_correct_sql() {
         let exprs = vec![
-            AggExpr::Count { column: "*".into(), alias: "cnt".into() },
-            AggExpr::Sum { column: "amount".into(), alias: "total".into() },
+            AggExpr::Count {
+                column: "*".into(),
+                alias: "cnt".into(),
+            },
+            AggExpr::Sum {
+                column: "amount".into(),
+                alias: "total".into(),
+            },
         ];
         let (sql, _) = build_aggregate(&empty_spec("orders"), &exprs, "t1").unwrap();
         assert!(sql.contains("COUNT(*) AS cnt"));
@@ -634,7 +632,9 @@ mod tests {
     #[test]
     fn invalid_column_in_order_rejected() {
         let mut spec = empty_spec("users");
-        spec.order_by.push(OrderBy::Asc { column: "bad col".into() });
+        spec.order_by.push(OrderBy::Asc {
+            column: "bad col".into(),
+        });
         assert!(build_select(&spec, "t1").is_err());
     }
 

@@ -16,19 +16,11 @@ struct PragmaCustomizer {
     config: VaultConfig,
 }
 
-impl r2d2::CustomizeConnection<rusqlite::Connection, rusqlite::Error>
-    for PragmaCustomizer
-{
-    fn on_acquire(
-        &self,
-        conn: &mut rusqlite::Connection,
-    ) -> Result<(), rusqlite::Error> {
+impl r2d2::CustomizeConnection<rusqlite::Connection, rusqlite::Error> for PragmaCustomizer {
+    fn on_acquire(&self, conn: &mut rusqlite::Connection) -> Result<(), rusqlite::Error> {
         // ── Step 1: Set SQLCipher encryption key ──
         // MUST be the very first statement on a new connection.
-        conn.execute_batch(&format!(
-            "PRAGMA key = \"x'{}'\";",
-            *self.key_hex
-        ))?;
+        conn.execute_batch(&format!("PRAGMA key = \"x'{}'\";", *self.key_hex))?;
 
         // SQLCipher tuning: we use our own KDF (Argon2id), so disable
         // SQLCipher's internal PBKDF2 iterations.
@@ -52,7 +44,11 @@ impl r2d2::CustomizeConnection<rusqlite::Connection, rusqlite::Error>
              PRAGMA cache_size = -{};\
              PRAGMA mmap_size = {};\
              PRAGMA journal_size_limit = {};",
-            if self.config.foreign_keys { "ON" } else { "OFF" },
+            if self.config.foreign_keys {
+                "ON"
+            } else {
+                "OFF"
+            },
             self.config.busy_timeout_ms,
             self.config.cache_size_kb,
             self.config.mmap_size_bytes,
@@ -72,13 +68,7 @@ pub(crate) fn build_pools(
     path: &str,
     key_hex: Zeroizing<String>,
     config: &VaultConfig,
-) -> Result<
-    (
-        Pool<SqliteConnectionManager>,
-        Pool<SqliteConnectionManager>,
-    ),
-    String,
-> {
+) -> Result<(Pool<SqliteConnectionManager>, Pool<SqliteConnectionManager>), String> {
     let write_pool = Pool::builder()
         .max_size(config.write_pool_size.max(1))
         .connection_customizer(Box::new(PragmaCustomizer {

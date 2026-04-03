@@ -15,10 +15,15 @@ fn add_to_outbox_and_get_delta() {
     let db = open_test_db(&dir);
 
     let vc = make_clock(&[("node_a", 1)]);
-    let id = db.sync_add_to_outbox(
-        "users".into(), "row_1".into(), "INSERT".into(),
-        "{\"name\":\"Alice\"}".into(), vc,
-    ).unwrap();
+    let id = db
+        .sync_add_to_outbox(
+            "users".into(),
+            "row_1".into(),
+            "INSERT".into(),
+            "{\"name\":\"Alice\"}".into(),
+            vc,
+        )
+        .unwrap();
     assert!(!id.is_empty());
 
     let delta = db.sync_get_delta(0, 100).unwrap();
@@ -35,9 +40,15 @@ fn mark_synced_updates_outbox() {
     let db = open_test_db(&dir);
 
     let vc = make_clock(&[("a", 1)]);
-    let id = db.sync_add_to_outbox(
-        "users".into(), "r1".into(), "INSERT".into(), "{}".into(), vc,
-    ).unwrap();
+    let id = db
+        .sync_add_to_outbox(
+            "users".into(),
+            "r1".into(),
+            "INSERT".into(),
+            "{}".into(),
+            vc,
+        )
+        .unwrap();
 
     let marked = db.sync_mark_synced(vec![id]).unwrap();
     assert_eq!(marked, 1);
@@ -53,15 +64,25 @@ fn get_delta_respects_since_seq() {
     let db = open_test_db(&dir);
 
     let vc = make_clock(&[("a", 1)]);
-    db.sync_add_to_outbox("t".into(), "r1".into(), "INSERT".into(), "{}".into(), vc.clone()).unwrap();
+    db.sync_add_to_outbox(
+        "t".into(),
+        "r1".into(),
+        "INSERT".into(),
+        "{}".into(),
+        vc.clone(),
+    )
+    .unwrap();
 
     // Sleep briefly to ensure different timestamps
     std::thread::sleep(std::time::Duration::from_millis(10));
     let mid_time = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH).unwrap().as_millis() as i64;
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as i64;
 
     std::thread::sleep(std::time::Duration::from_millis(10));
-    db.sync_add_to_outbox("t".into(), "r2".into(), "UPDATE".into(), "{}".into(), vc).unwrap();
+    db.sync_add_to_outbox("t".into(), "r2".into(), "UPDATE".into(), "{}".into(), vc)
+        .unwrap();
 
     // Only records after mid_time
     let delta = db.sync_get_delta(mid_time, 100).unwrap();
@@ -76,7 +97,14 @@ fn get_delta_respects_limit() {
 
     let vc = make_clock(&[("a", 1)]);
     for i in 0..10 {
-        db.sync_add_to_outbox("t".into(), format!("r{}", i), "INSERT".into(), "{}".into(), vc.clone()).unwrap();
+        db.sync_add_to_outbox(
+            "t".into(),
+            format!("r{}", i),
+            "INSERT".into(),
+            "{}".into(),
+            vc.clone(),
+        )
+        .unwrap();
     }
 
     let delta = db.sync_get_delta(0, 3).unwrap();
@@ -92,14 +120,22 @@ fn apply_delta_no_local_record_applies() {
 
     let delta = SyncDelta {
         records: vec![SyncRecord {
-            id: "remote_1".into(), table_name: "users".into(), row_id: "r1".into(),
-            operation: "INSERT".into(), payload: "{\"name\":\"Bob\"}".into(),
+            id: "remote_1".into(),
+            table_name: "users".into(),
+            row_id: "r1".into(),
+            operation: "INSERT".into(),
+            payload: "{\"name\":\"Bob\"}".into(),
             vector_clock: make_clock(&[("remote", 1)]).to_json(),
-            created_at: 1000, synced_at: None, attempts: 0, tenant_id: "tenant_test".into(),
+            created_at: 1000,
+            synced_at: None,
+            attempts: 0,
+            tenant_id: "tenant_test".into(),
         }],
     };
 
-    let result = db.sync_apply_delta(delta, ConflictResolution::LastWriteWins).unwrap();
+    let result = db
+        .sync_apply_delta(delta, ConflictResolution::LastWriteWins)
+        .unwrap();
     assert_eq!(result.applied, 1);
     assert_eq!(result.conflicts, 0);
     assert_eq!(result.skipped, 0);
@@ -114,19 +150,34 @@ fn apply_delta_remote_ahead_applies() {
 
     // Local has clock (a:1)
     let local_vc = make_clock(&[("a", 1)]);
-    db.sync_add_to_outbox("users".into(), "r1".into(), "INSERT".into(), "{\"v\":1}".into(), local_vc).unwrap();
+    db.sync_add_to_outbox(
+        "users".into(),
+        "r1".into(),
+        "INSERT".into(),
+        "{\"v\":1}".into(),
+        local_vc,
+    )
+    .unwrap();
 
     // Remote has clock (a:2) — ahead
     let delta = SyncDelta {
         records: vec![SyncRecord {
-            id: "remote_1".into(), table_name: "users".into(), row_id: "r1".into(),
-            operation: "UPDATE".into(), payload: "{\"v\":2}".into(),
+            id: "remote_1".into(),
+            table_name: "users".into(),
+            row_id: "r1".into(),
+            operation: "UPDATE".into(),
+            payload: "{\"v\":2}".into(),
             vector_clock: make_clock(&[("a", 2)]).to_json(),
-            created_at: 2000, synced_at: None, attempts: 0, tenant_id: "tenant_test".into(),
+            created_at: 2000,
+            synced_at: None,
+            attempts: 0,
+            tenant_id: "tenant_test".into(),
         }],
     };
 
-    let result = db.sync_apply_delta(delta, ConflictResolution::LastWriteWins).unwrap();
+    let result = db
+        .sync_apply_delta(delta, ConflictResolution::LastWriteWins)
+        .unwrap();
     assert_eq!(result.applied, 1);
     assert_eq!(result.conflicts, 0);
 }
@@ -140,19 +191,34 @@ fn apply_delta_concurrent_creates_conflict() {
 
     // Local has clock (a:2, b:0)
     let local_vc = make_clock(&[("a", 2)]);
-    db.sync_add_to_outbox("users".into(), "r1".into(), "UPDATE".into(), "{\"local\":true}".into(), local_vc).unwrap();
+    db.sync_add_to_outbox(
+        "users".into(),
+        "r1".into(),
+        "UPDATE".into(),
+        "{\"local\":true}".into(),
+        local_vc,
+    )
+    .unwrap();
 
     // Remote has clock (a:0, b:2) — concurrent!
     let delta = SyncDelta {
         records: vec![SyncRecord {
-            id: "remote_1".into(), table_name: "users".into(), row_id: "r1".into(),
-            operation: "UPDATE".into(), payload: "{\"remote\":true}".into(),
+            id: "remote_1".into(),
+            table_name: "users".into(),
+            row_id: "r1".into(),
+            operation: "UPDATE".into(),
+            payload: "{\"remote\":true}".into(),
             vector_clock: make_clock(&[("b", 2)]).to_json(),
-            created_at: 2000, synced_at: None, attempts: 0, tenant_id: "tenant_test".into(),
+            created_at: 2000,
+            synced_at: None,
+            attempts: 0,
+            tenant_id: "tenant_test".into(),
         }],
     };
 
-    let result = db.sync_apply_delta(delta, ConflictResolution::LocalWins).unwrap();
+    let result = db
+        .sync_apply_delta(delta, ConflictResolution::LocalWins)
+        .unwrap();
     assert_eq!(result.conflicts, 1);
     assert_eq!(result.skipped, 1); // LocalWins → skip remote
 
@@ -169,18 +235,33 @@ fn apply_delta_concurrent_remote_wins() {
     let db = open_test_db(&dir);
 
     let local_vc = make_clock(&[("a", 2)]);
-    db.sync_add_to_outbox("users".into(), "r1".into(), "UPDATE".into(), "{}".into(), local_vc).unwrap();
+    db.sync_add_to_outbox(
+        "users".into(),
+        "r1".into(),
+        "UPDATE".into(),
+        "{}".into(),
+        local_vc,
+    )
+    .unwrap();
 
     let delta = SyncDelta {
         records: vec![SyncRecord {
-            id: "r1".into(), table_name: "users".into(), row_id: "r1".into(),
-            operation: "UPDATE".into(), payload: "{\"remote\":true}".into(),
+            id: "r1".into(),
+            table_name: "users".into(),
+            row_id: "r1".into(),
+            operation: "UPDATE".into(),
+            payload: "{\"remote\":true}".into(),
             vector_clock: make_clock(&[("b", 2)]).to_json(),
-            created_at: 2000, synced_at: None, attempts: 0, tenant_id: "tenant_test".into(),
+            created_at: 2000,
+            synced_at: None,
+            attempts: 0,
+            tenant_id: "tenant_test".into(),
         }],
     };
 
-    let result = db.sync_apply_delta(delta, ConflictResolution::RemoteWins).unwrap();
+    let result = db
+        .sync_apply_delta(delta, ConflictResolution::RemoteWins)
+        .unwrap();
     assert_eq!(result.applied, 1); // remote applied
     assert_eq!(result.conflicts, 1); // conflict recorded
 }
@@ -194,22 +275,37 @@ fn resolve_conflict() {
 
     // Create a conflict
     let local_vc = make_clock(&[("a", 1)]);
-    db.sync_add_to_outbox("users".into(), "r1".into(), "UPDATE".into(), "{}".into(), local_vc).unwrap();
+    db.sync_add_to_outbox(
+        "users".into(),
+        "r1".into(),
+        "UPDATE".into(),
+        "{}".into(),
+        local_vc,
+    )
+    .unwrap();
     let delta = SyncDelta {
         records: vec![SyncRecord {
-            id: "r1".into(), table_name: "users".into(), row_id: "r1".into(),
-            operation: "UPDATE".into(), payload: "{}".into(),
+            id: "r1".into(),
+            table_name: "users".into(),
+            row_id: "r1".into(),
+            operation: "UPDATE".into(),
+            payload: "{}".into(),
             vector_clock: make_clock(&[("b", 1)]).to_json(),
-            created_at: 1000, synced_at: None, attempts: 0, tenant_id: "tenant_test".into(),
+            created_at: 1000,
+            synced_at: None,
+            attempts: 0,
+            tenant_id: "tenant_test".into(),
         }],
     };
-    db.sync_apply_delta(delta, ConflictResolution::LocalWins).unwrap();
+    db.sync_apply_delta(delta, ConflictResolution::LocalWins)
+        .unwrap();
 
     let conflicts = db.sync_get_conflicts().unwrap();
     assert_eq!(conflicts.len(), 1);
 
     db.set_actor("admin".into()).unwrap();
-    db.sync_resolve_conflict(conflicts[0].id.clone(), "used_local".into()).unwrap();
+    db.sync_resolve_conflict(conflicts[0].id.clone(), "used_local".into())
+        .unwrap();
 
     let remaining = db.sync_get_conflicts().unwrap();
     assert!(remaining.is_empty());
@@ -223,10 +319,14 @@ fn increment_retry_with_backoff() {
     let db = open_test_db(&dir);
 
     let vc = make_clock(&[("a", 1)]);
-    let id = db.sync_add_to_outbox("t".into(), "r1".into(), "INSERT".into(), "{}".into(), vc).unwrap();
+    let id = db
+        .sync_add_to_outbox("t".into(), "r1".into(), "INSERT".into(), "{}".into(), vc)
+        .unwrap();
 
     // Retry once — should stay in outbox
-    let still_active = db.sync_increment_retry(id.clone(), 50, "timeout".into()).unwrap();
+    let still_active = db
+        .sync_increment_retry(id.clone(), 50, "timeout".into())
+        .unwrap();
     assert!(still_active);
 
     // Record is still in outbox (attempts < max)
@@ -238,10 +338,14 @@ fn dead_letter_after_max_attempts() {
     let db = open_test_db(&dir);
 
     let vc = make_clock(&[("a", 1)]);
-    let id = db.sync_add_to_outbox("t".into(), "r1".into(), "INSERT".into(), "{}".into(), vc).unwrap();
+    let id = db
+        .sync_add_to_outbox("t".into(), "r1".into(), "INSERT".into(), "{}".into(), vc)
+        .unwrap();
 
     // Set max_attempts = 1, so first increment moves to dead-letter
-    let still_active = db.sync_increment_retry(id.clone(), 1, "permanent failure".into()).unwrap();
+    let still_active = db
+        .sync_increment_retry(id.clone(), 1, "permanent failure".into())
+        .unwrap();
     assert!(!still_active, "Should have moved to dead-letter");
 
     // Outbox should be empty
@@ -249,10 +353,18 @@ fn dead_letter_after_max_attempts() {
     assert!(delta.records.is_empty());
 
     // Dead-letter should have the record
-    let dl_count: i64 = db.query_raw(
-        "SELECT count(*) as c FROM _sync_dead_letter WHERE id = ?1".into(),
-        vec![SqlValue::Text(id)],
-    ).unwrap()[0].get("c").and_then(|v| match v { SqlValue::Integer(i) => Some(*i), _ => None }).unwrap_or(0);
+    let dl_count: i64 = db
+        .query_raw(
+            "SELECT count(*) as c FROM _sync_dead_letter WHERE id = ?1".into(),
+            vec![SqlValue::Text(id)],
+        )
+        .unwrap()[0]
+        .get("c")
+        .and_then(|v| match v {
+            SqlValue::Integer(i) => Some(*i),
+            _ => None,
+        })
+        .unwrap_or(0);
     assert_eq!(dl_count, 1);
 }
 
@@ -265,10 +377,14 @@ fn sync_ops_fail_after_close() {
     db.close().unwrap();
 
     let vc = make_clock(&[("a", 1)]);
-    assert!(db.sync_add_to_outbox("t".into(), "r".into(), "I".into(), "{}".into(), vc).is_err());
+    assert!(db
+        .sync_add_to_outbox("t".into(), "r".into(), "I".into(), "{}".into(), vc)
+        .is_err());
     assert!(db.sync_get_delta(0, 10).is_err());
     assert!(db.sync_mark_synced(vec![]).is_err());
-    assert!(db.sync_apply_delta(SyncDelta { records: vec![] }, ConflictResolution::LocalWins).is_err());
+    assert!(db
+        .sync_apply_delta(SyncDelta { records: vec![] }, ConflictResolution::LocalWins)
+        .is_err());
     assert!(db.sync_get_conflicts().is_err());
     assert!(db.sync_resolve_conflict("x".into(), "y".into()).is_err());
 }
@@ -278,7 +394,12 @@ fn empty_delta_apply_is_noop() {
     let dir = tempfile::TempDir::new().unwrap();
     let db = open_test_db(&dir);
 
-    let result = db.sync_apply_delta(SyncDelta { records: vec![] }, ConflictResolution::LastWriteWins).unwrap();
+    let result = db
+        .sync_apply_delta(
+            SyncDelta { records: vec![] },
+            ConflictResolution::LastWriteWins,
+        )
+        .unwrap();
     assert_eq!(result.applied, 0);
     assert_eq!(result.conflicts, 0);
     assert_eq!(result.skipped, 0);
@@ -308,7 +429,8 @@ fn vector_clock_serialized_in_outbox() {
     let db = open_test_db(&dir);
 
     let vc = make_clock(&[("node_a", 5), ("node_b", 3)]);
-    db.sync_add_to_outbox("t".into(), "r1".into(), "INSERT".into(), "{}".into(), vc).unwrap();
+    db.sync_add_to_outbox("t".into(), "r1".into(), "INSERT".into(), "{}".into(), vc)
+        .unwrap();
 
     let delta = db.sync_get_delta(0, 100).unwrap();
     let stored_vc = &delta.records[0].vector_clock;

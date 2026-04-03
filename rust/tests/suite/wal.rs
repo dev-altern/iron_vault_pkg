@@ -31,8 +31,11 @@ fn checkpoint_passive() {
     let dir = tempfile::TempDir::new().unwrap();
     let db = open_wal_db(&dir);
 
-    db.execute_raw("CREATE TABLE ckpt_test (id INTEGER PRIMARY KEY)".into(), vec![])
-        .unwrap();
+    db.execute_raw(
+        "CREATE TABLE ckpt_test (id INTEGER PRIMARY KEY)".into(),
+        vec![],
+    )
+    .unwrap();
 
     let result = db.checkpoint(CheckpointMode::Passive).unwrap();
     assert!(result.wal_pages >= 0);

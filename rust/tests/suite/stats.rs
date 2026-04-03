@@ -7,8 +7,13 @@ fn test_key() -> Vec<u8> {
 
 fn open_test_db(dir: &tempfile::TempDir) -> IronVaultDb {
     let path = dir.path().join("test.db").to_str().unwrap().to_string();
-    IronVaultDb::open(path, test_key(), "tenant_test".into(), VaultConfig::test_config())
-        .expect("failed to open test database")
+    IronVaultDb::open(
+        path,
+        test_key(),
+        "tenant_test".into(),
+        VaultConfig::test_config(),
+    )
+    .expect("failed to open test database")
 }
 
 #[test]
@@ -104,7 +109,8 @@ fn vacuum_after_bulk_delete() {
         )
         .unwrap();
     }
-    db.execute_raw("DELETE FROM vac_test".into(), vec![]).unwrap();
+    db.execute_raw("DELETE FROM vac_test".into(), vec![])
+        .unwrap();
 
     db.vacuum().unwrap();
 }

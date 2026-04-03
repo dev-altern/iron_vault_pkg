@@ -16,7 +16,7 @@ pub(crate) fn serialize_vector(vec: &[f32]) -> Vec<u8> {
 
 /// Deserialize little-endian bytes back to Vec<f32>.
 pub(crate) fn deserialize_vector(bytes: &[u8]) -> Result<Vec<f32>> {
-    if bytes.len() % 4 != 0 {
+    if !bytes.len().is_multiple_of(4) {
         return Err(anyhow!(
             "SemanticException: blob size {} is not a multiple of 4",
             bytes.len()
@@ -149,17 +149,18 @@ pub(crate) fn search_semantic(
         if let Ok(embedding) = deserialize_vector(&blob) {
             if let Ok(score) = cosine_similarity(query_embedding, &embedding) {
                 if score >= threshold {
-                    hits.push(SemanticHit {
-                        id,
-                        score,
-                    });
+                    hits.push(SemanticHit { id, score });
                 }
             }
         }
     }
 
     // Sort by score descending
-    hits.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap_or(std::cmp::Ordering::Equal));
+    hits.sort_by(|a, b| {
+        b.score
+            .partial_cmp(&a.score)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     hits.truncate(top_k as usize);
 
     Ok(hits)
@@ -186,10 +187,7 @@ pub(crate) fn search_hybrid(
     }
 
     // Normalize FTS scores to [0, 1]
-    let max_fts = fts_hits
-        .iter()
-        .map(|h| h.score)
-        .fold(0.0f64, f64::max);
+    let max_fts = fts_hits.iter().map(|h| h.score).fold(0.0f64, f64::max);
     let max_fts = if max_fts == 0.0 { 1.0 } else { max_fts };
 
     let mut hybrid_hits = Vec::new();
@@ -214,7 +212,11 @@ pub(crate) fn search_hybrid(
         });
     }
 
-    hybrid_hits.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap_or(std::cmp::Ordering::Equal));
+    hybrid_hits.sort_by(|a, b| {
+        b.score
+            .partial_cmp(&a.score)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
     hybrid_hits.truncate(limit as usize);
 
     Ok(hybrid_hits)
@@ -228,7 +230,7 @@ mod tests {
 
     #[test]
     fn serialize_deserialize_round_trip() {
-        let vec = vec![1.0f32, -2.5, 0.0, 3.14159, f32::MAX, f32::MIN];
+        let vec = vec![1.0f32, -2.5, 0.0, 3.12345, f32::MAX, f32::MIN];
         let bytes = serialize_vector(&vec);
         assert_eq!(bytes.len(), vec.len() * 4);
         let restored = deserialize_vector(&bytes).unwrap();

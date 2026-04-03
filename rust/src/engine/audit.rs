@@ -8,9 +8,7 @@ use sha2::Sha256;
 type HmacSha256 = Hmac<Sha256>;
 
 /// Ensure the `_audit_log` table and indexes exist.
-pub(crate) fn ensure_table(
-    conn: &PooledConnection<SqliteConnectionManager>,
-) -> Result<()> {
+pub(crate) fn ensure_table(conn: &PooledConnection<SqliteConnectionManager>) -> Result<()> {
     conn.execute_batch(
         "CREATE TABLE IF NOT EXISTS _audit_log (\
             id              TEXT PRIMARY KEY,\
@@ -47,7 +45,11 @@ pub(crate) fn compute_checksum(
 ) -> Result<String> {
     let payload = format!(
         "{}:{}:{}:{}:{}:{}:{}",
-        table_name, row_id, operation, actor_id, tenant_id,
+        table_name,
+        row_id,
+        operation,
+        actor_id,
+        tenant_id,
         before_json.unwrap_or(""),
         after_json.unwrap_or(""),
     );
@@ -77,16 +79,31 @@ pub(crate) fn record(
         .unwrap()
         .as_millis() as i64;
     let checksum = compute_checksum(
-        table_name, row_id, operation, actor_id, tenant_id,
-        before_json, after_json, hmac_key,
+        table_name,
+        row_id,
+        operation,
+        actor_id,
+        tenant_id,
+        before_json,
+        after_json,
+        hmac_key,
     )?;
     conn.execute(
         "INSERT INTO _audit_log (id, table_name, row_id, operation, actor_id, \
          tenant_id, before_json, after_json, changed_fields, timestamp, checksum) \
          VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
         rusqlite::params![
-            id, table_name, row_id, operation, actor_id, tenant_id,
-            before_json, after_json, changed_fields, timestamp, checksum,
+            id,
+            table_name,
+            row_id,
+            operation,
+            actor_id,
+            tenant_id,
+            before_json,
+            after_json,
+            changed_fields,
+            timestamp,
+            checksum,
         ],
     )
     .context("Failed to insert audit entry")?;
@@ -96,7 +113,10 @@ pub(crate) fn record(
 /// Get audit history for a specific row.
 pub(crate) fn get_history(
     conn: &PooledConnection<SqliteConnectionManager>,
-    table_name: &str, row_id: &str, tenant_id: &str, limit: u32,
+    table_name: &str,
+    row_id: &str,
+    tenant_id: &str,
+    limit: u32,
 ) -> Result<Vec<AuditEntry>> {
     ensure_table(conn)?;
     let mut stmt = conn.prepare(
@@ -105,14 +125,20 @@ pub(crate) fn get_history(
          FROM _audit_log WHERE table_name = ?1 AND row_id = ?2 AND tenant_id = ?3 \
          ORDER BY timestamp DESC LIMIT ?4",
     )?;
-    read_entries(&mut stmt, rusqlite::params![table_name, row_id, tenant_id, limit])
+    read_entries(
+        &mut stmt,
+        rusqlite::params![table_name, row_id, tenant_id, limit],
+    )
 }
 
 /// Get audit history for a specific actor.
 pub(crate) fn get_actor_history(
     conn: &PooledConnection<SqliteConnectionManager>,
-    actor_id: &str, tenant_id: &str,
-    from: Option<i64>, to: Option<i64>, limit: u32,
+    actor_id: &str,
+    tenant_id: &str,
+    from: Option<i64>,
+    to: Option<i64>,
+    limit: u32,
 ) -> Result<Vec<AuditEntry>> {
     ensure_table(conn)?;
     let mut stmt = conn.prepare(
@@ -121,16 +147,26 @@ pub(crate) fn get_actor_history(
          FROM _audit_log WHERE actor_id = ?1 AND tenant_id = ?2 \
          AND timestamp >= ?3 AND timestamp <= ?4 ORDER BY timestamp DESC LIMIT ?5",
     )?;
-    read_entries(&mut stmt, rusqlite::params![
-        actor_id, tenant_id, from.unwrap_or(0), to.unwrap_or(i64::MAX), limit
-    ])
+    read_entries(
+        &mut stmt,
+        rusqlite::params![
+            actor_id,
+            tenant_id,
+            from.unwrap_or(0),
+            to.unwrap_or(i64::MAX),
+            limit
+        ],
+    )
 }
 
 /// Get audit history for an entire table.
 pub(crate) fn get_table_history(
     conn: &PooledConnection<SqliteConnectionManager>,
-    table_name: &str, tenant_id: &str,
-    from: Option<i64>, to: Option<i64>, limit: u32,
+    table_name: &str,
+    tenant_id: &str,
+    from: Option<i64>,
+    to: Option<i64>,
+    limit: u32,
 ) -> Result<Vec<AuditEntry>> {
     ensure_table(conn)?;
     let mut stmt = conn.prepare(
@@ -139,16 +175,25 @@ pub(crate) fn get_table_history(
          FROM _audit_log WHERE table_name = ?1 AND tenant_id = ?2 \
          AND timestamp >= ?3 AND timestamp <= ?4 ORDER BY timestamp DESC LIMIT ?5",
     )?;
-    read_entries(&mut stmt, rusqlite::params![
-        table_name, tenant_id, from.unwrap_or(0), to.unwrap_or(i64::MAX), limit
-    ])
+    read_entries(
+        &mut stmt,
+        rusqlite::params![
+            table_name,
+            tenant_id,
+            from.unwrap_or(0),
+            to.unwrap_or(i64::MAX),
+            limit
+        ],
+    )
 }
 
 /// Verify integrity of audit log entries by recomputing HMAC checksums.
 pub(crate) fn verify_integrity(
     conn: &PooledConnection<SqliteConnectionManager>,
-    tenant_id: &str, hmac_key: &[u8],
-    from: Option<i64>, to: Option<i64>,
+    tenant_id: &str,
+    hmac_key: &[u8],
+    from: Option<i64>,
+    to: Option<i64>,
 ) -> Result<AuditIntegrityReport> {
     ensure_table(conn)?;
     let mut stmt = conn.prepare(
@@ -157,15 +202,20 @@ pub(crate) fn verify_integrity(
          FROM _audit_log WHERE tenant_id = ?1 AND timestamp >= ?2 AND timestamp <= ?3 \
          ORDER BY timestamp ASC",
     )?;
-    let entries = read_entries(&mut stmt, rusqlite::params![
-        tenant_id, from.unwrap_or(0), to.unwrap_or(i64::MAX)
-    ])?;
+    let entries = read_entries(
+        &mut stmt,
+        rusqlite::params![tenant_id, from.unwrap_or(0), to.unwrap_or(i64::MAX)],
+    )?;
     let mut tampered_ids = Vec::new();
     for entry in &entries {
         let expected = compute_checksum(
-            &entry.table_name, &entry.row_id, &entry.operation,
-            &entry.actor_id, &entry.tenant_id,
-            entry.before_json.as_deref(), entry.after_json.as_deref(),
+            &entry.table_name,
+            &entry.row_id,
+            &entry.operation,
+            &entry.actor_id,
+            &entry.tenant_id,
+            entry.before_json.as_deref(),
+            entry.after_json.as_deref(),
             hmac_key,
         )?;
         if expected != entry.checksum {
@@ -185,15 +235,23 @@ fn read_entries(
 ) -> Result<Vec<AuditEntry>> {
     let rows = stmt.query_map(params, |row| {
         Ok(AuditEntry {
-            id: row.get(0)?, table_name: row.get(1)?, row_id: row.get(2)?,
-            operation: row.get(3)?, actor_id: row.get(4)?, tenant_id: row.get(5)?,
-            before_json: row.get(6)?, after_json: row.get(7)?,
-            changed_fields: row.get(8)?, timestamp: row.get(9)?,
+            id: row.get(0)?,
+            table_name: row.get(1)?,
+            row_id: row.get(2)?,
+            operation: row.get(3)?,
+            actor_id: row.get(4)?,
+            tenant_id: row.get(5)?,
+            before_json: row.get(6)?,
+            after_json: row.get(7)?,
+            changed_fields: row.get(8)?,
+            timestamp: row.get(9)?,
             checksum: row.get(10)?,
         })
     })?;
     let mut entries = Vec::new();
-    for row in rows { entries.push(row?); }
+    for row in rows {
+        entries.push(row?);
+    }
     Ok(entries)
 }
 
@@ -226,7 +284,8 @@ mod tests {
 
     #[test]
     fn checksum_is_64_hex_chars() {
-        let cs = compute_checksum("t", "r", "INSERT", "a", "t1", None, None, &[0x42u8; 32]).unwrap();
+        let cs =
+            compute_checksum("t", "r", "INSERT", "a", "t1", None, None, &[0x42u8; 32]).unwrap();
         assert_eq!(cs.len(), 64);
         assert!(cs.chars().all(|c| c.is_ascii_hexdigit()));
     }

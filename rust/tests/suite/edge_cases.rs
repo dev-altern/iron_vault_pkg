@@ -77,13 +77,13 @@ fn unicode_round_trip() {
     create_users_table(&db);
 
     let cases = [
-        ("\u{1F600}", "emoji"),                    // 😀
-        ("\u{4E16}\u{754C}", "chinese"),           // 世界
-        ("caf\u{00E9}", "accented"),               // café (precomposed)
-        ("cafe\u{0301}", "combining"),             // cafe + combining accent
-        ("\u{200D}", "zwj"),                       // zero-width joiner
-        ("\u{202E}RLO", "rtl_override"),           // right-to-left override
-        ("line1\nline2\ttab", "whitespace"),        // newlines and tabs
+        ("\u{1F600}", "emoji"),              // 😀
+        ("\u{4E16}\u{754C}", "chinese"),     // 世界
+        ("caf\u{00E9}", "accented"),         // café (precomposed)
+        ("cafe\u{0301}", "combining"),       // cafe + combining accent
+        ("\u{200D}", "zwj"),                 // zero-width joiner
+        ("\u{202E}RLO", "rtl_override"),     // right-to-left override
+        ("line1\nline2\ttab", "whitespace"), // newlines and tabs
     ];
 
     for (val, label) in &cases {
@@ -157,7 +157,13 @@ fn paginate_beyond_last_page() {
     let db = open_test_db(&dir);
     create_users_table(&db);
     for i in 0..5 {
-        insert_user(&db, &format!("U{}", i), &format!("u{}@t.com", i), "m", i as f64);
+        insert_user(
+            &db,
+            &format!("U{}", i),
+            &format!("u{}@t.com", i),
+            "m",
+            i as f64,
+        );
     }
 
     let page = db.query_paginate(query("users"), 100, 10).unwrap();
@@ -173,7 +179,13 @@ fn paginate_page_size_one() {
     let db = open_test_db(&dir);
     create_users_table(&db);
     for i in 0..5 {
-        insert_user(&db, &format!("U{}", i), &format!("u{}@t.com", i), "m", i as f64);
+        insert_user(
+            &db,
+            &format!("U{}", i),
+            &format!("u{}@t.com", i),
+            "m",
+            i as f64,
+        );
     }
 
     let page = db.query_paginate(query("users"), 0, 1).unwrap();
@@ -227,11 +239,26 @@ fn aggregate_on_empty_table() {
         .query_aggregate(
             query("users"),
             vec![
-                AggExpr::Count { column: "*".into(), alias: "cnt".into() },
-                AggExpr::Sum { column: "score".into(), alias: "total".into() },
-                AggExpr::Avg { column: "score".into(), alias: "avg_score".into() },
-                AggExpr::Min { column: "score".into(), alias: "min_score".into() },
-                AggExpr::Max { column: "score".into(), alias: "max_score".into() },
+                AggExpr::Count {
+                    column: "*".into(),
+                    alias: "cnt".into(),
+                },
+                AggExpr::Sum {
+                    column: "score".into(),
+                    alias: "total".into(),
+                },
+                AggExpr::Avg {
+                    column: "score".into(),
+                    alias: "avg_score".into(),
+                },
+                AggExpr::Min {
+                    column: "score".into(),
+                    alias: "min_score".into(),
+                },
+                AggExpr::Max {
+                    column: "score".into(),
+                    alias: "max_score".into(),
+                },
             ],
         )
         .unwrap();

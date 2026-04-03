@@ -12,9 +12,7 @@ pub(crate) fn checksum(sql: &str) -> String {
 }
 
 /// Ensure the `_migrations` tracking table exists.
-pub(crate) fn ensure_table(
-    conn: &PooledConnection<SqliteConnectionManager>,
-) -> Result<()> {
+pub(crate) fn ensure_table(conn: &PooledConnection<SqliteConnectionManager>) -> Result<()> {
     conn.execute_batch(
         "CREATE TABLE IF NOT EXISTS _migrations (\
             version      INTEGER PRIMARY KEY,\
@@ -30,15 +28,9 @@ pub(crate) fn ensure_table(
 }
 
 /// Read the current max version from `_migrations`, or 0 if empty.
-pub(crate) fn current_version(
-    conn: &PooledConnection<SqliteConnectionManager>,
-) -> Result<u32> {
+pub(crate) fn current_version(conn: &PooledConnection<SqliteConnectionManager>) -> Result<u32> {
     let version: Option<u32> = conn
-        .query_row(
-            "SELECT MAX(version) FROM _migrations",
-            [],
-            |row| row.get(0),
-        )
+        .query_row("SELECT MAX(version) FROM _migrations", [], |row| row.get(0))
         .unwrap_or(None);
     Ok(version.unwrap_or(0))
 }
@@ -128,13 +120,12 @@ pub(crate) fn migrate(
         // Apply this migration
         let start = std::time::Instant::now();
 
-        conn.execute_batch("BEGIN IMMEDIATE")
-            .with_context(|| {
-                format!(
-                    "MigrationFailedException: failed to begin transaction for v{} '{}'",
-                    migration.version, migration.name
-                )
-            })?;
+        conn.execute_batch("BEGIN IMMEDIATE").with_context(|| {
+            format!(
+                "MigrationFailedException: failed to begin transaction for v{} '{}'",
+                migration.version, migration.name
+            )
+        })?;
 
         match conn.execute_batch(&migration.up) {
             Ok(()) => {}
@@ -245,13 +236,12 @@ pub(crate) fn rollback_to(
             )
         })?;
 
-        conn.execute_batch("BEGIN IMMEDIATE")
-            .with_context(|| {
-                format!(
-                    "MigrationFailedException: failed to begin rollback for v{} '{}'",
-                    migration.version, migration.name
-                )
-            })?;
+        conn.execute_batch("BEGIN IMMEDIATE").with_context(|| {
+            format!(
+                "MigrationFailedException: failed to begin rollback for v{} '{}'",
+                migration.version, migration.name
+            )
+        })?;
 
         match conn.execute_batch(down_sql) {
             Ok(()) => {}

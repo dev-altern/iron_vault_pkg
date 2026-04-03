@@ -38,7 +38,8 @@ fn update_zero_rows_does_not_fire() {
     let v_before = db.notification_version("users".into()).unwrap();
     let mut data = HashMap::new();
     data.insert("name".into(), SqlValue::Text("Ghost".into()));
-    db.query_update("users".into(), "nonexistent".into(), data).unwrap();
+    db.query_update("users".into(), "nonexistent".into(), data)
+        .unwrap();
     assert_eq!(db.notification_version("users".into()).unwrap(), v_before);
 }
 
@@ -146,7 +147,8 @@ fn batch_delete_fires_notification() {
     let id2 = insert_user(&db, "B", "b@t.com", "m", 2.0);
 
     let v_before = db.notification_version("users".into()).unwrap();
-    db.query_delete_batch("users".into(), vec![id1, id2]).unwrap();
+    db.query_delete_batch("users".into(), vec![id1, id2])
+        .unwrap();
     assert!(db.notification_version("users".into()).unwrap() > v_before);
 }
 
@@ -209,7 +211,8 @@ fn optimistic_lock_update_fires_notification() {
     let v_before = db.notification_version("versioned".into()).unwrap();
     let mut update = HashMap::new();
     update.insert("val".into(), SqlValue::Text("updated".into()));
-    db.update_with_version("versioned".into(), id, 1, update).unwrap();
+    db.update_with_version("versioned".into(), id, 1, update)
+        .unwrap();
     assert!(db.notification_version("versioned".into()).unwrap() > v_before);
 }
 
@@ -220,11 +223,19 @@ fn notifications_scoped_to_tenant() {
     let dir = tempfile::TempDir::new().unwrap();
     let path = dir.path().join("shared.db").to_str().unwrap().to_string();
     let db_a = iron_vault_core::api::vault::IronVaultDb::open(
-        path.clone(), test_key(), "tenant_a".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path.clone(),
+        test_key(),
+        "tenant_a".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
     let db_b = iron_vault_core::api::vault::IronVaultDb::open(
-        path, test_key(), "tenant_b".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path,
+        test_key(),
+        "tenant_b".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
 
     create_users_table(&db_a);
 

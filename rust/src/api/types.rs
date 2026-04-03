@@ -184,9 +184,15 @@ pub enum Condition {
         high: SqlValue,
     },
     /// `column IN (v1, v2, ...)`
-    In { column: String, values: Vec<SqlValue> },
+    In {
+        column: String,
+        values: Vec<SqlValue>,
+    },
     /// `column NOT IN (v1, v2, ...)`
-    NotIn { column: String, values: Vec<SqlValue> },
+    NotIn {
+        column: String,
+        values: Vec<SqlValue>,
+    },
     /// `column IS NULL`
     IsNull { column: String },
     /// `column IS NOT NULL`

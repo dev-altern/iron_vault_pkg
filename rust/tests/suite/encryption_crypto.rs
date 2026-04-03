@@ -137,21 +137,35 @@ fn different_tenants_produce_different_ciphertext_keys() {
     let path = dir.path().join("shared.db").to_str().unwrap().to_string();
 
     let db_a = iron_vault_core::api::vault::IronVaultDb::open(
-        path.clone(), test_key(), "tenant_a".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path.clone(),
+        test_key(),
+        "tenant_a".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
     let db_b = iron_vault_core::api::vault::IronVaultDb::open(
-        path, test_key(), "tenant_b".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path,
+        test_key(),
+        "tenant_b".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
 
     let enc_a = db_a.encrypt_field("secret".into()).unwrap();
     let enc_b = db_b.encrypt_field("secret".into()).unwrap();
 
     // Different tenants → different keys → tenant A can't decrypt tenant B's data
     let result = db_a.decrypt_field(enc_b);
-    assert!(result.is_err(), "Tenant A should not decrypt tenant B's ciphertext");
+    assert!(
+        result.is_err(),
+        "Tenant A should not decrypt tenant B's ciphertext"
+    );
 
     let result = db_b.decrypt_field(enc_a);
-    assert!(result.is_err(), "Tenant B should not decrypt tenant A's ciphertext");
+    assert!(
+        result.is_err(),
+        "Tenant B should not decrypt tenant A's ciphertext"
+    );
 }
 
 // ─── HKDF Key Isolation ──────────────────────────────────────────────

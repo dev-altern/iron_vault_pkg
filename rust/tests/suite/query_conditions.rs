@@ -1,6 +1,5 @@
 use crate::common::*;
 
-
 use iron_vault_core::api::types::*;
 use std::collections::HashMap;
 

@@ -51,8 +51,12 @@ pub(crate) fn create_backup(
 
     // Build binary format
     let mut flags: u8 = 0;
-    if compress { flags |= FLAG_COMPRESSED; }
-    if encrypt { flags |= FLAG_ENCRYPTED; }
+    if compress {
+        flags |= FLAG_COMPRESSED;
+    }
+    if encrypt {
+        flags |= FLAG_ENCRYPTED;
+    }
 
     let mut file_data = Vec::with_capacity(HEADER_LEN + final_data.len() + 32);
     file_data.extend_from_slice(MAGIC);
@@ -67,7 +71,9 @@ pub(crate) fn create_backup(
     file_data.extend_from_slice(checksum.as_bytes());
 
     if let Some(parent) = Path::new(output_path).parent() {
-        if !parent.as_os_str().is_empty() { std::fs::create_dir_all(parent)?; }
+        if !parent.as_os_str().is_empty() {
+            std::fs::create_dir_all(parent)?;
+        }
     }
     std::fs::write(output_path, &file_data)
         .with_context(|| format!("BackupException: failed to write {}", output_path))?;
@@ -86,17 +92,34 @@ pub(crate) fn verify_backup(backup_path: &str, decrypt_key: &[u8]) -> Result<Bac
     let file_data = std::fs::read(backup_path)
         .with_context(|| format!("BackupException: cannot read {}", backup_path))?;
     let checksum_ok = verify_checksum(&file_data).unwrap_or(false);
-    let decrypt_ok = if checksum_ok { parse_and_decrypt(&file_data, decrypt_key).is_ok() } else { false };
+    let decrypt_ok = if checksum_ok {
+        parse_and_decrypt(&file_data, decrypt_key).is_ok()
+    } else {
+        false
+    };
     let decompress_ok = if decrypt_ok {
         let (flags, data) = parse_and_decrypt(&file_data, decrypt_key).unwrap();
-        if flags & FLAG_COMPRESSED != 0 { zstd::decode_all(data.as_slice()).is_ok() } else { true }
-    } else { false };
-    Ok(BackupVerifyReport { checksum_ok, decrypt_ok, decompress_ok })
+        if flags & FLAG_COMPRESSED != 0 {
+            zstd::decode_all(data.as_slice()).is_ok()
+        } else {
+            true
+        }
+    } else {
+        false
+    };
+    Ok(BackupVerifyReport {
+        checksum_ok,
+        decrypt_ok,
+        decompress_ok,
+    })
 }
 
 /// Restore a backup to a target database path.
 pub(crate) fn restore_backup(
-    backup_path: &str, target_path: &str, decrypt_key: &[u8], expected_checksum: Option<&str>,
+    backup_path: &str,
+    target_path: &str,
+    decrypt_key: &[u8],
+    expected_checksum: Option<&str>,
 ) -> Result<RestoreResult> {
     let file_data = std::fs::read(backup_path)
         .with_context(|| format!("RestoreException: cannot read {}", backup_path))?;
@@ -118,13 +141,18 @@ pub(crate) fn restore_backup(
     };
 
     if let Some(parent) = Path::new(target_path).parent() {
-        if !parent.as_os_str().is_empty() { std::fs::create_dir_all(parent)?; }
+        if !parent.as_os_str().is_empty() {
+            std::fs::create_dir_all(parent)?;
+        }
     }
     std::fs::write(target_path, &raw_db).context("RestoreException: failed to write")?;
     let _ = std::fs::remove_file(format!("{}-wal", target_path));
     let _ = std::fs::remove_file(format!("{}-shm", target_path));
 
-    Ok(RestoreResult { pages_restored: (raw_db.len() / 4096) as u64, integrity_ok: true })
+    Ok(RestoreResult {
+        pages_restored: (raw_db.len() / 4096) as u64,
+        integrity_ok: true,
+    })
 }
 
 fn verify_checksum(file_data: &[u8]) -> Result<bool> {
@@ -145,17 +173,22 @@ fn parse_and_decrypt(file_data: &[u8], decrypt_key: &[u8]) -> Result<(u8, Vec<u8
         return Err(anyhow!("BackupException: file too small"));
     }
     let version = u32::from_le_bytes(file_data[4..8].try_into().unwrap());
-    if version != VERSION { return Err(anyhow!("BackupException: unsupported version {}", version)); }
+    if version != VERSION {
+        return Err(anyhow!("BackupException: unsupported version {}", version));
+    }
     let flags = file_data[8];
     let nonce_bytes: [u8; NONCE_LEN] = file_data[9..21].try_into().unwrap();
     let _uncompressed_size = u64::from_le_bytes(file_data[21..29].try_into().unwrap());
     let payload = &file_data[HEADER_LEN..file_data.len() - 32];
 
     let decrypted = if flags & FLAG_ENCRYPTED != 0 {
-        if decrypt_key.len() != 32 { return Err(anyhow!("BackupException: key must be 32 bytes")); }
+        if decrypt_key.len() != 32 {
+            return Err(anyhow!("BackupException: key must be 32 bytes"));
+        }
         let cipher = Aes256Gcm::new_from_slice(decrypt_key)
             .map_err(|e| anyhow!("BackupException: invalid key: {}", e))?;
-        cipher.decrypt(Nonce::from_slice(&nonce_bytes), payload)
+        cipher
+            .decrypt(Nonce::from_slice(&nonce_bytes), payload)
             .map_err(|_| anyhow!("RestoreException: decryption failed (wrong key)"))?
     } else {
         payload.to_vec()
