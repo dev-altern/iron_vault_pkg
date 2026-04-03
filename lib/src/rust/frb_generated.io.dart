@@ -74,7 +74,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AggExpr dco_decode_agg_expr(dynamic raw);
 
   @protected
+  AuditEntry dco_decode_audit_entry(dynamic raw);
+
+  @protected
+  AuditIntegrityReport dco_decode_audit_integrity_report(dynamic raw);
+
+  @protected
   bool dco_decode_bool(dynamic raw);
+
+  @protected
+  PlatformInt64 dco_decode_box_autoadd_i_64(dynamic raw);
 
   @protected
   QuerySpec dco_decode_box_autoadd_query_spec(dynamic raw);
@@ -122,6 +131,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<AggExpr> dco_decode_list_agg_expr(dynamic raw);
+
+  @protected
+  List<AuditEntry> dco_decode_list_audit_entry(dynamic raw);
 
   @protected
   List<Condition> dco_decode_list_condition(dynamic raw);
@@ -176,6 +188,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   String? dco_decode_opt_String(dynamic raw);
+
+  @protected
+  PlatformInt64? dco_decode_opt_box_autoadd_i_64(dynamic raw);
 
   @protected
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
@@ -282,7 +297,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AggExpr sse_decode_agg_expr(SseDeserializer deserializer);
 
   @protected
+  AuditEntry sse_decode_audit_entry(SseDeserializer deserializer);
+
+  @protected
+  AuditIntegrityReport sse_decode_audit_integrity_report(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   bool sse_decode_bool(SseDeserializer deserializer);
+
+  @protected
+  PlatformInt64 sse_decode_box_autoadd_i_64(SseDeserializer deserializer);
 
   @protected
   QuerySpec sse_decode_box_autoadd_query_spec(SseDeserializer deserializer);
@@ -330,6 +356,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<AggExpr> sse_decode_list_agg_expr(SseDeserializer deserializer);
+
+  @protected
+  List<AuditEntry> sse_decode_list_audit_entry(SseDeserializer deserializer);
 
   @protected
   List<Condition> sse_decode_list_condition(SseDeserializer deserializer);
@@ -394,6 +423,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   String? sse_decode_opt_String(SseDeserializer deserializer);
+
+  @protected
+  PlatformInt64? sse_decode_opt_box_autoadd_i_64(SseDeserializer deserializer);
 
   @protected
   int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
@@ -510,7 +542,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_agg_expr(AggExpr self, SseSerializer serializer);
 
   @protected
+  void sse_encode_audit_entry(AuditEntry self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_audit_integrity_report(
+    AuditIntegrityReport self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_bool(bool self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_i_64(
+    PlatformInt64 self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_box_autoadd_query_spec(
@@ -577,6 +624,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_list_agg_expr(List<AggExpr> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_audit_entry(
+    List<AuditEntry> self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_list_condition(
@@ -664,6 +717,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_i_64(
+    PlatformInt64? self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);

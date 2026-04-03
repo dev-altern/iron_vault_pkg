@@ -1,10 +1,10 @@
 use crate::api::types::*;
-use crate::engine::{connection, convert, crypto, migration, notifier, query_builder, transaction, write_ops};
+use crate::engine::{audit, connection, convert, crypto, migration, notifier, query_builder, transaction, write_ops};
 use anyhow::{anyhow, Context, Result};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use std::collections::HashMap;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use zeroize::Zeroizing;
 
 // ─── IronVaultDb ─────────────────────────────────────────────────────
@@ -33,6 +33,8 @@ pub struct IronVaultDb {
     encryption_key: Zeroizing<Vec<u8>>,
     /// Broadcast notifier for reactive streams.
     notifier: Arc<notifier::ChangeNotifier>,
+    /// Current actor ID for audit logging (default: "system").
+    actor_id: Mutex<String>,
 }
 
 impl std::fmt::Debug for IronVaultDb {
@@ -102,6 +104,7 @@ impl IronVaultDb {
             closed: false,
             encryption_key: Zeroizing::new(encryption_key),
             notifier: Arc::new(notifier::ChangeNotifier::new()),
+            actor_id: Mutex::new("system".to_string()),
         })
     }
 
@@ -889,6 +892,107 @@ impl IronVaultDb {
         self.ensure_open()?;
         let key = format!("{}:{}", table, self.tenant_id);
         Ok(self.notifier.version(&key))
+    }
+
+    // ── Audit Log ────────────────────────────────────────────────
+
+    /// Set the actor ID for audit logging.
+    ///
+    /// The actor is injected into every audit entry automatically.
+    /// Call after authentication. Default is "system".
+    pub fn set_actor(&self, actor_id: String) -> Result<()> {
+        self.ensure_open()?;
+        *self.actor_id.lock().unwrap() = actor_id;
+        Ok(())
+    }
+
+    /// Reset the actor ID to "system".
+    pub fn clear_actor(&self) -> Result<()> {
+        self.ensure_open()?;
+        *self.actor_id.lock().unwrap() = "system".to_string();
+        Ok(())
+    }
+
+    /// Get the current actor ID.
+    pub fn get_actor(&self) -> Result<String> {
+        self.ensure_open()?;
+        Ok(self.actor_id.lock().unwrap().clone())
+    }
+
+    /// Manually write an audit entry.
+    ///
+    /// For application-level events (login, export, etc.) that aren't
+    /// automatic database writes. HMAC-signed with the audit key.
+    pub fn write_audit(
+        &self,
+        table_name: String,
+        row_id: String,
+        operation: String,
+        before_json: Option<String>,
+        after_json: Option<String>,
+        changed_fields: Option<String>,
+    ) -> Result<String> {
+        self.ensure_open()?;
+        let conn = self.acquire_writer()?;
+        let actor = self.actor_id.lock().unwrap().clone();
+        let hmac_key = crypto::hkdf_derive(&self.encryption_key, "audit_hmac")?;
+        audit::record(
+            &conn, &table_name, &row_id, &operation, &actor,
+            &self.tenant_id, before_json.as_deref(), after_json.as_deref(),
+            changed_fields.as_deref(), &hmac_key,
+        )
+    }
+
+    /// Get audit history for a specific row.
+    pub fn get_history(
+        &self,
+        table_name: String,
+        row_id: String,
+        limit: u32,
+    ) -> Result<Vec<AuditEntry>> {
+        self.ensure_open()?;
+        let conn = self.acquire_reader()?;
+        audit::get_history(&conn, &table_name, &row_id, &self.tenant_id, limit)
+    }
+
+    /// Get audit history for a specific actor.
+    pub fn get_actor_history(
+        &self,
+        actor_id: String,
+        from: Option<i64>,
+        to: Option<i64>,
+        limit: u32,
+    ) -> Result<Vec<AuditEntry>> {
+        self.ensure_open()?;
+        let conn = self.acquire_reader()?;
+        audit::get_actor_history(&conn, &actor_id, &self.tenant_id, from, to, limit)
+    }
+
+    /// Get audit history for an entire table.
+    pub fn get_table_history(
+        &self,
+        table_name: String,
+        from: Option<i64>,
+        to: Option<i64>,
+        limit: u32,
+    ) -> Result<Vec<AuditEntry>> {
+        self.ensure_open()?;
+        let conn = self.acquire_reader()?;
+        audit::get_table_history(&conn, &table_name, &self.tenant_id, from, to, limit)
+    }
+
+    /// Verify integrity of audit log entries.
+    ///
+    /// Recomputes HMAC checksums and reports any tampered entries.
+    pub fn verify_audit_integrity(
+        &self,
+        from: Option<i64>,
+        to: Option<i64>,
+    ) -> Result<AuditIntegrityReport> {
+        self.ensure_open()?;
+        let conn = self.acquire_reader()?;
+        let hmac_key = crypto::hkdf_derive(&self.encryption_key, "audit_hmac")?;
+        audit::verify_integrity(&conn, &self.tenant_id, &hmac_key, from, to)
     }
 
     // ── Private Helpers ──────────────────────────────────────────

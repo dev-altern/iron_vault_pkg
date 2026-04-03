@@ -382,3 +382,43 @@ pub struct TransactionResult {
     /// Total number of rows affected across all operations.
     pub rows_affected: u64,
 }
+
+// ─── Phase 7: Audit Log Types ────────────────────────────────────────
+
+/// A single audit log entry.
+#[derive(Debug, Clone)]
+pub struct AuditEntry {
+    /// Unique entry ID.
+    pub id: String,
+    /// Table that was modified.
+    pub table_name: String,
+    /// ID of the row that was modified.
+    pub row_id: String,
+    /// Operation: INSERT, UPDATE, DELETE, HARD_DELETE.
+    pub operation: String,
+    /// Who performed the operation (set via `set_actor()`).
+    pub actor_id: String,
+    /// Tenant that owns this entry.
+    pub tenant_id: String,
+    /// JSON snapshot of the row before the change (None for INSERT).
+    pub before_json: Option<String>,
+    /// JSON snapshot of the row after the change (None for DELETE).
+    pub after_json: Option<String>,
+    /// JSON array of field names that changed (None for INSERT/DELETE).
+    pub changed_fields: Option<String>,
+    /// Epoch milliseconds when the entry was created.
+    pub timestamp: i64,
+    /// HMAC-SHA256 checksum for tamper detection.
+    pub checksum: String,
+}
+
+/// Result of audit log integrity verification.
+#[derive(Debug, Clone)]
+pub struct AuditIntegrityReport {
+    /// Total entries checked.
+    pub total_checked: u64,
+    /// True if all checksums match.
+    pub is_clean: bool,
+    /// IDs of entries with mismatched checksums.
+    pub tampered_ids: Vec<String>,
+}

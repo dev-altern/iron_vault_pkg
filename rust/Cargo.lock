@@ -595,6 +595,7 @@ dependencies = [
  "flutter_rust_bridge",
  "hex",
  "hkdf",
+ "hmac",
  "r2d2",
  "r2d2_sqlite",
  "rand",

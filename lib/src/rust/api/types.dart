@@ -8,7 +8,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'types.freezed.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 @freezed
 sealed class AggExpr with _$AggExpr {
@@ -33,6 +33,118 @@ sealed class AggExpr with _$AggExpr {
   /// `MAX(column) AS alias`
   const factory AggExpr.max({required String column, required String alias}) =
       AggExpr_Max;
+}
+
+/// A single audit log entry.
+class AuditEntry {
+  /// Unique entry ID.
+  final String id;
+
+  /// Table that was modified.
+  final String tableName;
+
+  /// ID of the row that was modified.
+  final String rowId;
+
+  /// Operation: INSERT, UPDATE, DELETE, HARD_DELETE.
+  final String operation;
+
+  /// Who performed the operation (set via `set_actor()`).
+  final String actorId;
+
+  /// Tenant that owns this entry.
+  final String tenantId;
+
+  /// JSON snapshot of the row before the change (None for INSERT).
+  final String? beforeJson;
+
+  /// JSON snapshot of the row after the change (None for DELETE).
+  final String? afterJson;
+
+  /// JSON array of field names that changed (None for INSERT/DELETE).
+  final String? changedFields;
+
+  /// Epoch milliseconds when the entry was created.
+  final PlatformInt64 timestamp;
+
+  /// HMAC-SHA256 checksum for tamper detection.
+  final String checksum;
+
+  const AuditEntry({
+    required this.id,
+    required this.tableName,
+    required this.rowId,
+    required this.operation,
+    required this.actorId,
+    required this.tenantId,
+    this.beforeJson,
+    this.afterJson,
+    this.changedFields,
+    required this.timestamp,
+    required this.checksum,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      tableName.hashCode ^
+      rowId.hashCode ^
+      operation.hashCode ^
+      actorId.hashCode ^
+      tenantId.hashCode ^
+      beforeJson.hashCode ^
+      afterJson.hashCode ^
+      changedFields.hashCode ^
+      timestamp.hashCode ^
+      checksum.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AuditEntry &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          tableName == other.tableName &&
+          rowId == other.rowId &&
+          operation == other.operation &&
+          actorId == other.actorId &&
+          tenantId == other.tenantId &&
+          beforeJson == other.beforeJson &&
+          afterJson == other.afterJson &&
+          changedFields == other.changedFields &&
+          timestamp == other.timestamp &&
+          checksum == other.checksum;
+}
+
+/// Result of audit log integrity verification.
+class AuditIntegrityReport {
+  /// Total entries checked.
+  final BigInt totalChecked;
+
+  /// True if all checksums match.
+  final bool isClean;
+
+  /// IDs of entries with mismatched checksums.
+  final List<String> tamperedIds;
+
+  const AuditIntegrityReport({
+    required this.totalChecked,
+    required this.isClean,
+    required this.tamperedIds,
+  });
+
+  @override
+  int get hashCode =>
+      totalChecked.hashCode ^ isClean.hashCode ^ tamperedIds.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AuditIntegrityReport &&
+          runtimeType == other.runtimeType &&
+          totalChecked == other.totalChecked &&
+          isClean == other.isClean &&
+          tamperedIds == other.tamperedIds;
 }
 
 /// WAL checkpoint mode.

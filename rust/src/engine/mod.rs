@@ -1,3 +1,4 @@
+pub(crate) mod audit;
 pub(crate) mod connection;
 pub(crate) mod convert;
 pub(crate) mod crypto;

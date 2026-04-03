@@ -19,6 +19,9 @@ abstract class IronVaultDb implements RustOpaqueInterface {
   /// background to keep the WAL file from growing unbounded.
   Future<CheckpointResult> checkpoint({required CheckpointMode mode});
 
+  /// Reset the actor ID to "system".
+  Future<void> clearActor();
+
   /// Checkpoint WAL and mark the database as closed.
   ///
   /// After this call, all methods will return an error.
@@ -54,11 +57,37 @@ abstract class IronVaultDb implements RustOpaqueInterface {
     required List<SqlValue> params,
   });
 
+  /// Get the current actor ID.
+  Future<String> getActor();
+
+  /// Get audit history for a specific actor.
+  Future<List<AuditEntry>> getActorHistory({
+    required String actorId,
+    PlatformInt64? from,
+    PlatformInt64? to,
+    required int limit,
+  });
+
+  /// Get audit history for a specific row.
+  Future<List<AuditEntry>> getHistory({
+    required String tableName,
+    required String rowId,
+    required int limit,
+  });
+
   /// Get all applied migration records.
   Future<List<MigrationRecord>> getMigrations();
 
   /// Get the filesystem path of the database file.
   Future<String> getPath();
+
+  /// Get audit history for an entire table.
+  Future<List<AuditEntry>> getTableHistory({
+    required String tableName,
+    PlatformInt64? from,
+    PlatformInt64? to,
+    required int limit,
+  });
 
   /// Get the tenant ID bound to this database instance.
   Future<String> getTenantId();
@@ -211,6 +240,12 @@ abstract class IronVaultDb implements RustOpaqueInterface {
     required List<VaultMigration> migrations,
   });
 
+  /// Set the actor ID for audit logging.
+  ///
+  /// The actor is injected into every audit entry automatically.
+  /// Call after authentication. Default is "system".
+  Future<void> setActor({required String actorId});
+
   /// Return a snapshot of database statistics.
   Future<VaultStats> stats();
 
@@ -244,6 +279,14 @@ abstract class IronVaultDb implements RustOpaqueInterface {
   /// databases — prefer `incremental_vacuum` when available (Phase 12).
   Future<void> vacuum();
 
+  /// Verify integrity of audit log entries.
+  ///
+  /// Recomputes HMAC checksums and reports any tampered entries.
+  Future<AuditIntegrityReport> verifyAuditIntegrity({
+    PlatformInt64? from,
+    PlatformInt64? to,
+  });
+
   /// Watch aggregate expressions — emits updated aggregates on table changes.
   Stream<Map<String, SqlValue>> watchAggregate({
     required QuerySpec spec,
@@ -264,5 +307,18 @@ abstract class IronVaultDb implements RustOpaqueInterface {
   Stream<Map<String, SqlValue>?> watchRow({
     required String table,
     required String id,
+  });
+
+  /// Manually write an audit entry.
+  ///
+  /// For application-level events (login, export, etc.) that aren't
+  /// automatic database writes. HMAC-signed with the audit key.
+  Future<String> writeAudit({
+    required String tableName,
+    required String rowId,
+    required String operation,
+    String? beforeJson,
+    String? afterJson,
+    String? changedFields,
   });
 }
