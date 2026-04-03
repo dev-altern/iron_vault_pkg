@@ -25,6 +25,25 @@ abstract class IronVaultDb implements RustOpaqueInterface {
   /// Connection cleanup happens when the Dart GC drops this object.
   Future<void> close();
 
+  /// Decrypt a ciphertext string produced by `encrypt_field`.
+  ///
+  /// Uses the same tenant-scoped key. Returns the original plaintext.
+  /// Fails if the key is wrong or data has been tampered with.
+  Future<String> decryptField({required String ciphertextJson});
+
+  /// Derive an HKDF key for a specific purpose.
+  ///
+  /// Available purposes: "sqlcipher", "audit_hmac", "backup",
+  /// or any custom string. Returns 32 bytes.
+  Future<Uint8List> derivePurposeKey({required String purpose});
+
+  /// Encrypt a plaintext string using AES-256-GCM.
+  ///
+  /// Uses a tenant-scoped key derived via HKDF from the master key.
+  /// Each call produces different ciphertext (random 12-byte nonce).
+  /// Returns JSON: `{"ct":"<base64>","nonce":"<base64>","kid":"v1"}`.
+  Future<String> encryptField({required String plaintext});
+
   /// Execute a write statement (INSERT, UPDATE, DELETE, DDL).
   ///
   /// Uses the **write** connection pool (serialized).

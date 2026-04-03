@@ -1,5 +1,6 @@
 library;
 
+export 'src/rust/api/crypto.dart';
 export 'src/rust/api/simple.dart';
 export 'src/rust/api/types.dart';
 export 'src/rust/api/vault.dart';

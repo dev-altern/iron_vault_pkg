@@ -1,5 +1,5 @@
 use crate::api::types::*;
-use crate::engine::{connection, convert, migration, query_builder, transaction, write_ops};
+use crate::engine::{connection, convert, crypto, migration, query_builder, transaction, write_ops};
 use anyhow::{anyhow, Context, Result};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
@@ -27,6 +27,9 @@ pub struct IronVaultDb {
     config: VaultConfig,
     path: String,
     closed: bool,
+    /// Master encryption key (Zeroizing — zeroed on drop).
+    /// Used to derive tenant-scoped field encryption keys via HKDF.
+    encryption_key: Zeroizing<Vec<u8>>,
 }
 
 impl std::fmt::Debug for IronVaultDb {
@@ -94,6 +97,7 @@ impl IronVaultDb {
             config,
             path,
             closed: false,
+            encryption_key: Zeroizing::new(encryption_key),
         })
     }
 
@@ -644,6 +648,38 @@ impl IronVaultDb {
             data,
             &self.tenant_id,
         )
+    }
+
+    // ── Encryption ───────────────────────────────────────────────
+
+    /// Encrypt a plaintext string using AES-256-GCM.
+    ///
+    /// Uses a tenant-scoped key derived via HKDF from the master key.
+    /// Each call produces different ciphertext (random 12-byte nonce).
+    /// Returns JSON: `{"ct":"<base64>","nonce":"<base64>","kid":"v1"}`.
+    pub fn encrypt_field(&self, plaintext: String) -> Result<String> {
+        self.ensure_open()?;
+        let field_key = crypto::tenant_field_key(&self.encryption_key, &self.tenant_id)?;
+        crypto::encrypt_field(&plaintext, &field_key)
+    }
+
+    /// Decrypt a ciphertext string produced by `encrypt_field`.
+    ///
+    /// Uses the same tenant-scoped key. Returns the original plaintext.
+    /// Fails if the key is wrong or data has been tampered with.
+    pub fn decrypt_field(&self, ciphertext_json: String) -> Result<String> {
+        self.ensure_open()?;
+        let field_key = crypto::tenant_field_key(&self.encryption_key, &self.tenant_id)?;
+        crypto::decrypt_field(&ciphertext_json, &field_key)
+    }
+
+    /// Derive an HKDF key for a specific purpose.
+    ///
+    /// Available purposes: "sqlcipher", "audit_hmac", "backup",
+    /// or any custom string. Returns 32 bytes.
+    pub fn derive_purpose_key(&self, purpose: String) -> Result<Vec<u8>> {
+        self.ensure_open()?;
+        crypto::hkdf_derive(&self.encryption_key, &purpose)
     }
 
     // ── Private Helpers ──────────────────────────────────────────
