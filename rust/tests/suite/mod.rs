@@ -13,6 +13,7 @@ pub mod cross_phase;
 pub mod edge_cases;
 pub mod encryption_crypto;
 pub mod memory_safety;
+pub mod performance;
 pub mod migrations;
 pub mod query_conditions;
 pub mod query_read;

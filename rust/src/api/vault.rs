@@ -104,14 +104,29 @@ impl IronVaultDb {
         let (write_pool, read_pool) = connection::build_pools(&path, key_hex, &config)
             .map_err(|e| anyhow!("VaultOpenException: {}", e))?;
 
-        // Eagerly verify the database is accessible (catches wrong-key early)
-        write_pool.get().map_err(|e| {
-            anyhow!(
-                "VaultOpenException: cannot open database \
-                 (wrong encryption key or corrupted file): {}",
-                e
-            )
-        })?;
+        // Eagerly warm up all pool connections — pays PRAGMA cost at open()
+        // rather than on first query. Also catches wrong-key errors immediately.
+        {
+            // Warm write pool
+            let _w = write_pool.get().map_err(|e| {
+                anyhow!(
+                    "VaultOpenException: cannot open database \
+                     (wrong encryption key or corrupted file): {}",
+                    e
+                )
+            })?;
+        }
+        {
+            // Warm all read pool connections
+            let mut readers = Vec::new();
+            for _ in 0..config.read_pool_size {
+                match read_pool.get() {
+                    Ok(conn) => readers.push(conn),
+                    Err(_) => break, // pool exhausted, that's fine
+                }
+            }
+            // Drop all — returns to pool, pre-warmed
+        }
 
         let search_engine = Arc::new(search::SearchEngine::new(&path));
         Ok(IronVaultDb {

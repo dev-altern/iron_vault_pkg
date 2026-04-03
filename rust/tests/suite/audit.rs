@@ -122,6 +122,7 @@ fn multiple_entries_for_same_row() {
         None,
     )
     .unwrap();
+    std::thread::sleep(std::time::Duration::from_millis(2));
     db.write_audit(
         "users".into(),
         "r1".into(),
@@ -131,6 +132,7 @@ fn multiple_entries_for_same_row() {
         None,
     )
     .unwrap();
+    std::thread::sleep(std::time::Duration::from_millis(2));
     db.write_audit(
         "users".into(),
         "r1".into(),
