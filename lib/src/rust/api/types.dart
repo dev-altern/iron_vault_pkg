@@ -8,7 +8,32 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'types.freezed.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+
+@freezed
+sealed class AggExpr with _$AggExpr {
+  const AggExpr._();
+
+  /// `COUNT(column) AS alias`
+  const factory AggExpr.count({required String column, required String alias}) =
+      AggExpr_Count;
+
+  /// `SUM(column) AS alias`
+  const factory AggExpr.sum({required String column, required String alias}) =
+      AggExpr_Sum;
+
+  /// `AVG(column) AS alias`
+  const factory AggExpr.avg({required String column, required String alias}) =
+      AggExpr_Avg;
+
+  /// `MIN(column) AS alias`
+  const factory AggExpr.min({required String column, required String alias}) =
+      AggExpr_Min;
+
+  /// `MAX(column) AS alias`
+  const factory AggExpr.max({required String column, required String alias}) =
+      AggExpr_Max;
+}
 
 /// WAL checkpoint mode.
 enum CheckpointMode {
@@ -50,6 +75,86 @@ class CheckpointResult {
           checkpointedPages == other.checkpointedPages;
 }
 
+@freezed
+sealed class Condition with _$Condition {
+  const Condition._();
+
+  /// `column = value`
+  const factory Condition.eq({
+    required String column,
+    required SqlValue value,
+  }) = Condition_Eq;
+
+  /// `column != value`
+  const factory Condition.notEq({
+    required String column,
+    required SqlValue value,
+  }) = Condition_NotEq;
+
+  /// `column > value`
+  const factory Condition.gt({
+    required String column,
+    required SqlValue value,
+  }) = Condition_Gt;
+
+  /// `column >= value`
+  const factory Condition.gte({
+    required String column,
+    required SqlValue value,
+  }) = Condition_Gte;
+
+  /// `column < value`
+  const factory Condition.lt({
+    required String column,
+    required SqlValue value,
+  }) = Condition_Lt;
+
+  /// `column <= value`
+  const factory Condition.lte({
+    required String column,
+    required SqlValue value,
+  }) = Condition_Lte;
+
+  /// `column LIKE pattern` (use % and _ wildcards)
+  const factory Condition.like({
+    required String column,
+    required String pattern,
+  }) = Condition_Like;
+
+  /// `column BETWEEN low AND high`
+  const factory Condition.between({
+    required String column,
+    required SqlValue low,
+    required SqlValue high,
+  }) = Condition_Between;
+
+  /// `column IN (v1, v2, ...)`
+  const factory Condition.in_({
+    required String column,
+    required List<SqlValue> values,
+  }) = Condition_In;
+
+  /// `column NOT IN (v1, v2, ...)`
+  const factory Condition.notIn({
+    required String column,
+    required List<SqlValue> values,
+  }) = Condition_NotIn;
+
+  /// `column IS NULL`
+  const factory Condition.isNull({required String column}) = Condition_IsNull;
+
+  /// `column IS NOT NULL`
+  const factory Condition.isNotNull({required String column}) =
+      Condition_IsNotNull;
+
+  /// Raw SQL fragment with parameterized values.
+  /// The SQL is inserted as-is — caller is responsible for safety.
+  const factory Condition.raw({
+    required String sql,
+    required List<SqlValue> params,
+  }) = Condition_Raw;
+}
+
 /// Result of a database integrity check.
 class IntegrityReport {
   /// True if no corruption detected.
@@ -73,6 +178,157 @@ class IntegrityReport {
 }
 
 @freezed
+sealed class JoinSpec with _$JoinSpec {
+  const JoinSpec._();
+
+  /// `INNER JOIN table ON condition`
+  const factory JoinSpec.inner({required String table, required String on_}) =
+      JoinSpec_Inner;
+
+  /// `LEFT JOIN table ON condition`
+  const factory JoinSpec.left({required String table, required String on_}) =
+      JoinSpec_Left;
+
+  /// Raw JOIN expression.
+  const factory JoinSpec.raw({required String expression}) = JoinSpec_Raw;
+}
+
+@freezed
+sealed class OrderBy with _$OrderBy {
+  const OrderBy._();
+
+  /// Order by column ascending.
+  const factory OrderBy.asc({required String column}) = OrderBy_Asc;
+
+  /// Order by column descending.
+  const factory OrderBy.desc({required String column}) = OrderBy_Desc;
+
+  /// Raw ORDER BY expression (e.g. `RANDOM()`).
+  const factory OrderBy.raw({required String expression}) = OrderBy_Raw;
+}
+
+/// Paginated query result.
+class Page {
+  /// Rows for this page.
+  final List<Map<String, SqlValue>> items;
+
+  /// Total matching rows across all pages.
+  final BigInt total;
+
+  /// Total number of pages.
+  final int totalPages;
+
+  /// Current page index (0-based).
+  final int page;
+
+  /// Items per page.
+  final int pageSize;
+
+  const Page({
+    required this.items,
+    required this.total,
+    required this.totalPages,
+    required this.page,
+    required this.pageSize,
+  });
+
+  @override
+  int get hashCode =>
+      items.hashCode ^
+      total.hashCode ^
+      totalPages.hashCode ^
+      page.hashCode ^
+      pageSize.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Page &&
+          runtimeType == other.runtimeType &&
+          items == other.items &&
+          total == other.total &&
+          totalPages == other.totalPages &&
+          page == other.page &&
+          pageSize == other.pageSize;
+}
+
+/// Full query specification — built by Dart, executed by Rust.
+///
+/// Rust auto-injects `tenant_id = ?` and `deleted_at IS NULL`
+/// outside any OR grouping, so tenant isolation cannot be bypassed.
+///
+/// - `conditions`: ANDed together (primary filter).
+/// - `or_conditions`: each inner Vec is ANDed, outer groups are ORed.
+///   If non-empty, generates: `(conditions) OR (group1) OR (group2)`.
+class QuerySpec {
+  final String table;
+
+  /// Primary AND conditions (from `.where()` calls).
+  final List<Condition> conditions;
+
+  /// OR alternative groups (from `.orWhere()` calls).
+  /// Each inner Vec is a group of AND conditions.
+  final List<List<Condition>> orConditions;
+
+  /// ORDER BY clauses, applied in order.
+  final List<OrderBy> orderBy;
+
+  /// Maximum rows to return.
+  final int? limit;
+
+  /// Rows to skip before returning.
+  final int? offset;
+
+  /// JOIN clauses.
+  final List<JoinSpec> joins;
+
+  /// Columns to select (empty = `*`).
+  final List<String> columns;
+
+  /// If true, include soft-deleted rows (skip `deleted_at IS NULL`).
+  final bool includeDeleted;
+
+  const QuerySpec({
+    required this.table,
+    required this.conditions,
+    required this.orConditions,
+    required this.orderBy,
+    this.limit,
+    this.offset,
+    required this.joins,
+    required this.columns,
+    required this.includeDeleted,
+  });
+
+  @override
+  int get hashCode =>
+      table.hashCode ^
+      conditions.hashCode ^
+      orConditions.hashCode ^
+      orderBy.hashCode ^
+      limit.hashCode ^
+      offset.hashCode ^
+      joins.hashCode ^
+      columns.hashCode ^
+      includeDeleted.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is QuerySpec &&
+          runtimeType == other.runtimeType &&
+          table == other.table &&
+          conditions == other.conditions &&
+          orConditions == other.orConditions &&
+          orderBy == other.orderBy &&
+          limit == other.limit &&
+          offset == other.offset &&
+          joins == other.joins &&
+          columns == other.columns &&
+          includeDeleted == other.includeDeleted;
+}
+
+@freezed
 sealed class SqlValue with _$SqlValue {
   const SqlValue._();
 
@@ -90,6 +346,28 @@ sealed class SqlValue with _$SqlValue {
 
   /// Binary blob.
   const factory SqlValue.blob(Uint8List field0) = SqlValue_Blob;
+}
+
+/// A single row update for batch operations.
+class UpdateEntry {
+  /// Row ID to update.
+  final String id;
+
+  /// Column → new value pairs.
+  final Map<String, SqlValue> data;
+
+  const UpdateEntry({required this.id, required this.data});
+
+  @override
+  int get hashCode => id.hashCode ^ data.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UpdateEntry &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          data == other.data;
 }
 
 /// Configuration for the IronVault database engine.

@@ -60,7 +60,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String dco_decode_String(dynamic raw);
 
   @protected
+  AggExpr dco_decode_agg_expr(dynamic raw);
+
+  @protected
   bool dco_decode_bool(dynamic raw);
+
+  @protected
+  QuerySpec dco_decode_box_autoadd_query_spec(dynamic raw);
+
+  @protected
+  SqlValue dco_decode_box_autoadd_sql_value(dynamic raw);
+
+  @protected
+  int dco_decode_box_autoadd_u_32(dynamic raw);
 
   @protected
   VaultConfig dco_decode_box_autoadd_vault_config(dynamic raw);
@@ -70,6 +82,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   CheckpointResult dco_decode_checkpoint_result(dynamic raw);
+
+  @protected
+  Condition dco_decode_condition(dynamic raw);
 
   @protected
   double dco_decode_f_64(dynamic raw);
@@ -84,12 +99,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   IntegrityReport dco_decode_integrity_report(dynamic raw);
 
   @protected
+  JoinSpec dco_decode_join_spec(dynamic raw);
+
+  @protected
   List<Map<String, SqlValue>> dco_decode_list_Map_String_sql_value_None(
     dynamic raw,
   );
 
   @protected
   List<String> dco_decode_list_String(dynamic raw);
+
+  @protected
+  List<AggExpr> dco_decode_list_agg_expr(dynamic raw);
+
+  @protected
+  List<Condition> dco_decode_list_condition(dynamic raw);
+
+  @protected
+  List<JoinSpec> dco_decode_list_join_spec(dynamic raw);
+
+  @protected
+  List<List<Condition>> dco_decode_list_list_condition(dynamic raw);
+
+  @protected
+  List<OrderBy> dco_decode_list_order_by(dynamic raw);
 
   @protected
   List<int> dco_decode_list_prim_u_8_loose(dynamic raw);
@@ -102,6 +135,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SqlValue> dco_decode_list_sql_value(dynamic raw);
+
+  @protected
+  List<UpdateEntry> dco_decode_list_update_entry(dynamic raw);
+
+  @protected
+  Map<String, SqlValue>? dco_decode_opt_Map_String_sql_value_None(dynamic raw);
+
+  @protected
+  int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
+
+  @protected
+  OrderBy dco_decode_order_by(dynamic raw);
+
+  @protected
+  Page dco_decode_page(dynamic raw);
+
+  @protected
+  QuerySpec dco_decode_query_spec(dynamic raw);
 
   @protected
   (String, SqlValue) dco_decode_record_string_sql_value(dynamic raw);
@@ -120,6 +171,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void dco_decode_unit(dynamic raw);
+
+  @protected
+  UpdateEntry dco_decode_update_entry(dynamic raw);
 
   @protected
   BigInt dco_decode_usize(dynamic raw);
@@ -166,7 +220,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
+  AggExpr sse_decode_agg_expr(SseDeserializer deserializer);
+
+  @protected
   bool sse_decode_bool(SseDeserializer deserializer);
+
+  @protected
+  QuerySpec sse_decode_box_autoadd_query_spec(SseDeserializer deserializer);
+
+  @protected
+  SqlValue sse_decode_box_autoadd_sql_value(SseDeserializer deserializer);
+
+  @protected
+  int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
   VaultConfig sse_decode_box_autoadd_vault_config(SseDeserializer deserializer);
@@ -176,6 +242,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   CheckpointResult sse_decode_checkpoint_result(SseDeserializer deserializer);
+
+  @protected
+  Condition sse_decode_condition(SseDeserializer deserializer);
 
   @protected
   double sse_decode_f_64(SseDeserializer deserializer);
@@ -190,12 +259,32 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   IntegrityReport sse_decode_integrity_report(SseDeserializer deserializer);
 
   @protected
+  JoinSpec sse_decode_join_spec(SseDeserializer deserializer);
+
+  @protected
   List<Map<String, SqlValue>> sse_decode_list_Map_String_sql_value_None(
     SseDeserializer deserializer,
   );
 
   @protected
   List<String> sse_decode_list_String(SseDeserializer deserializer);
+
+  @protected
+  List<AggExpr> sse_decode_list_agg_expr(SseDeserializer deserializer);
+
+  @protected
+  List<Condition> sse_decode_list_condition(SseDeserializer deserializer);
+
+  @protected
+  List<JoinSpec> sse_decode_list_join_spec(SseDeserializer deserializer);
+
+  @protected
+  List<List<Condition>> sse_decode_list_list_condition(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<OrderBy> sse_decode_list_order_by(SseDeserializer deserializer);
 
   @protected
   List<int> sse_decode_list_prim_u_8_loose(SseDeserializer deserializer);
@@ -210,6 +299,26 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SqlValue> sse_decode_list_sql_value(SseDeserializer deserializer);
+
+  @protected
+  List<UpdateEntry> sse_decode_list_update_entry(SseDeserializer deserializer);
+
+  @protected
+  Map<String, SqlValue>? sse_decode_opt_Map_String_sql_value_None(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
+
+  @protected
+  OrderBy sse_decode_order_by(SseDeserializer deserializer);
+
+  @protected
+  Page sse_decode_page(SseDeserializer deserializer);
+
+  @protected
+  QuerySpec sse_decode_query_spec(SseDeserializer deserializer);
 
   @protected
   (String, SqlValue) sse_decode_record_string_sql_value(
@@ -230,6 +339,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_decode_unit(SseDeserializer deserializer);
+
+  @protected
+  UpdateEntry sse_decode_update_entry(SseDeserializer deserializer);
 
   @protected
   BigInt sse_decode_usize(SseDeserializer deserializer);
@@ -284,7 +396,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
+  void sse_encode_agg_expr(AggExpr self, SseSerializer serializer);
+
+  @protected
   void sse_encode_bool(bool self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_query_spec(
+    QuerySpec self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_sql_value(
+    SqlValue self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_box_autoadd_vault_config(
@@ -305,6 +435,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_condition(Condition self, SseSerializer serializer);
+
+  @protected
   void sse_encode_f_64(double self, SseSerializer serializer);
 
   @protected
@@ -320,6 +453,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_join_spec(JoinSpec self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_Map_String_sql_value_None(
     List<Map<String, SqlValue>> self,
     SseSerializer serializer,
@@ -327,6 +463,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_list_String(List<String> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_agg_expr(List<AggExpr> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_condition(
+    List<Condition> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_join_spec(List<JoinSpec> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_list_condition(
+    List<List<Condition>> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_order_by(List<OrderBy> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_prim_u_8_loose(List<int> self, SseSerializer serializer);
@@ -345,6 +502,30 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_list_sql_value(List<SqlValue> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_update_entry(
+    List<UpdateEntry> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_Map_String_sql_value_None(
+    Map<String, SqlValue>? self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_order_by(OrderBy self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_page(Page self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_query_spec(QuerySpec self, SseSerializer serializer);
 
   @protected
   void sse_encode_record_string_sql_value(
@@ -366,6 +547,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_unit(void self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_update_entry(UpdateEntry self, SseSerializer serializer);
 
   @protected
   void sse_encode_usize(BigInt self, SseSerializer serializer);

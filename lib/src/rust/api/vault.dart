@@ -7,9 +7,8 @@ import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'types.dart';
 
-// These functions are ignored because they are not marked as `pub`: `checkpoint_internal`, `ensure_open`, `from_rusqlite_value`, `to_rusqlite_value`
-// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `PragmaCustomizer`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `fmt`, `fmt`, `on_acquire`
+// These functions are ignored because they are not marked as `pub`: `acquire_reader`, `acquire_writer`, `checkpoint_internal`, `ensure_open`, `execute_read_query`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `fmt`
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<IronVaultDb>>
 abstract class IronVaultDb implements RustOpaqueInterface {
@@ -69,6 +68,66 @@ abstract class IronVaultDb implements RustOpaqueInterface {
     config: config,
   );
 
+  /// Execute an aggregate query (COUNT, SUM, AVG, MIN, MAX).
+  Future<Map<String, SqlValue>> queryAggregate({
+    required QuerySpec spec,
+    required List<AggExpr> expressions,
+  });
+
+  /// Count matching rows.
+  Future<BigInt> queryCount({required QuerySpec spec});
+
+  /// Soft-delete a row (sets `deleted_at` to current timestamp).
+  ///
+  /// Returns rows affected (0 if not found or already deleted).
+  Future<BigInt> queryDelete({required String table, required String id});
+
+  /// Soft-delete multiple rows in a single transaction. Returns total rows affected.
+  Future<BigInt> queryDeleteBatch({
+    required String table,
+    required List<String> ids,
+  });
+
+  /// Check if any rows match.
+  Future<bool> queryExists({required QuerySpec spec});
+
+  /// Execute a query and return the first matching row (or None).
+  Future<Map<String, SqlValue>?> queryFirst({required QuerySpec spec});
+
+  /// Execute a query and return all matching rows.
+  ///
+  /// Tenant isolation and soft-delete guard are auto-injected.
+  Future<List<Map<String, SqlValue>>> queryGet({required QuerySpec spec});
+
+  /// Permanently delete a row (irreversible).
+  ///
+  /// Tenant isolation is enforced. Returns rows affected.
+  Future<BigInt> queryHardDelete({required String table, required String id});
+
+  /// Insert a row. Returns the generated or provided id.
+  ///
+  /// `tenant_id` is auto-injected. `id` is auto-generated (UUID) if not in data.
+  /// `created_at` and `updated_at` are auto-set if not provided.
+  Future<String> queryInsert({
+    required String table,
+    required Map<String, SqlValue> data,
+  });
+
+  /// Insert multiple rows in a single transaction. Returns list of ids.
+  Future<List<String>> queryInsertBatch({
+    required String table,
+    required List<Map<String, SqlValue>> rows,
+  });
+
+  /// Execute a paginated query.
+  ///
+  /// `page` is 0-based. Returns a `Page` with items, total, and metadata.
+  Future<Page> queryPaginate({
+    required QuerySpec spec,
+    required int page,
+    required int pageSize,
+  });
+
   /// Execute a read query (SELECT).
   ///
   /// Uses the **read** connection pool (concurrent via WAL).
@@ -77,6 +136,31 @@ abstract class IronVaultDb implements RustOpaqueInterface {
   Future<List<Map<String, SqlValue>>> queryRaw({
     required String sql,
     required List<SqlValue> params,
+  });
+
+  /// Update a row by id. Returns the number of rows affected (0 or 1).
+  ///
+  /// Tenant isolation and soft-delete guard are enforced.
+  /// `updated_at` is auto-set if not in data.
+  Future<BigInt> queryUpdate({
+    required String table,
+    required String id,
+    required Map<String, SqlValue> data,
+  });
+
+  /// Update multiple rows in a single transaction. Returns total rows affected.
+  Future<BigInt> queryUpdateBatch({
+    required String table,
+    required List<UpdateEntry> updates,
+  });
+
+  /// Upsert (insert or update on conflict).
+  ///
+  /// Returns the id of the inserted/updated row.
+  Future<String> queryUpsert({
+    required String table,
+    required Map<String, SqlValue> data,
+    required String conflictColumn,
   });
 
   /// Return a snapshot of database statistics.

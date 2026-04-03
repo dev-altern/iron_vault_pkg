@@ -1,5 +1,5 @@
 use crate::api::types::*;
-use crate::engine::{connection, convert};
+use crate::engine::{connection, convert, query_builder, write_ops};
 use anyhow::{anyhow, Context, Result};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
@@ -268,6 +268,291 @@ impl IronVaultDb {
         Ok(())
     }
 
+    // ── Query Builder: Read Operations ─────────────────────────
+
+    /// Execute a query and return all matching rows.
+    ///
+    /// Tenant isolation and soft-delete guard are auto-injected.
+    pub fn query_get(
+        &self,
+        spec: QuerySpec,
+    ) -> Result<Vec<HashMap<String, SqlValue>>> {
+        self.ensure_open()?;
+        let (sql, params) = query_builder::build_select(&spec, &self.tenant_id)?;
+        self.execute_read_query(&sql, params)
+    }
+
+    /// Execute a query and return the first matching row (or None).
+    pub fn query_first(
+        &self,
+        spec: QuerySpec,
+    ) -> Result<Option<HashMap<String, SqlValue>>> {
+        self.ensure_open()?;
+        let mut limited = spec;
+        limited.limit = Some(1);
+        let (sql, params) = query_builder::build_select(&limited, &self.tenant_id)?;
+        let rows = self.execute_read_query(&sql, params)?;
+        Ok(rows.into_iter().next())
+    }
+
+    /// Count matching rows.
+    pub fn query_count(&self, spec: QuerySpec) -> Result<u64> {
+        self.ensure_open()?;
+        let (sql, params) = query_builder::build_count(&spec, &self.tenant_id)?;
+        let conn = self.acquire_reader()?;
+        let values: Vec<rusqlite::types::Value> = params;
+        let count: i64 = conn
+            .query_row(&sql, rusqlite::params_from_iter(values), |row| row.get(0))
+            .context("Failed to count rows")?;
+        Ok(count as u64)
+    }
+
+    /// Check if any rows match.
+    pub fn query_exists(&self, spec: QuerySpec) -> Result<bool> {
+        Ok(self.query_count(spec)? > 0)
+    }
+
+    /// Execute a paginated query.
+    ///
+    /// `page` is 0-based. Returns a `Page` with items, total, and metadata.
+    pub fn query_paginate(
+        &self,
+        spec: QuerySpec,
+        page: u32,
+        page_size: u32,
+    ) -> Result<Page> {
+        self.ensure_open()?;
+        if page_size == 0 {
+            return Err(anyhow!("page_size must be > 0"));
+        }
+
+        // Get total count (without limit/offset)
+        let total = self.query_count(spec.clone())?;
+        let total_pages = if total == 0 {
+            0
+        } else {
+            ((total as u32) + page_size - 1) / page_size
+        };
+
+        // Get page items
+        let mut paged = spec;
+        paged.limit = Some(page_size);
+        paged.offset = Some(page * page_size);
+        let (sql, params) = query_builder::build_select(&paged, &self.tenant_id)?;
+        let items = self.execute_read_query(&sql, params)?;
+
+        Ok(Page {
+            items,
+            total,
+            total_pages,
+            page,
+            page_size,
+        })
+    }
+
+    /// Execute an aggregate query (COUNT, SUM, AVG, MIN, MAX).
+    pub fn query_aggregate(
+        &self,
+        spec: QuerySpec,
+        expressions: Vec<AggExpr>,
+    ) -> Result<HashMap<String, SqlValue>> {
+        self.ensure_open()?;
+        let (sql, params) =
+            query_builder::build_aggregate(&spec, &expressions, &self.tenant_id)?;
+        let rows = self.execute_read_query(&sql, params)?;
+        Ok(rows.into_iter().next().unwrap_or_default())
+    }
+
+    // ── Query Builder: Write Operations ──────────────────────────
+
+    /// Insert a row. Returns the generated or provided id.
+    ///
+    /// `tenant_id` is auto-injected. `id` is auto-generated (UUID) if not in data.
+    /// `created_at` and `updated_at` are auto-set if not provided.
+    pub fn query_insert(
+        &self,
+        table: String,
+        data: HashMap<String, SqlValue>,
+    ) -> Result<String> {
+        self.ensure_open()?;
+        let (sql, params, id) =
+            write_ops::build_insert(&table, data, &self.tenant_id)?;
+        let conn = self.acquire_writer()?;
+        conn.execute(&sql, rusqlite::params_from_iter(params))
+            .with_context(|| format!("InsertException: {}", table))?;
+        Ok(id)
+    }
+
+    /// Update a row by id. Returns the number of rows affected (0 or 1).
+    ///
+    /// Tenant isolation and soft-delete guard are enforced.
+    /// `updated_at` is auto-set if not in data.
+    pub fn query_update(
+        &self,
+        table: String,
+        id: String,
+        data: HashMap<String, SqlValue>,
+    ) -> Result<u64> {
+        self.ensure_open()?;
+        let (sql, params) =
+            write_ops::build_update(&table, &id, data, &self.tenant_id)?;
+        let conn = self.acquire_writer()?;
+        let affected = conn
+            .execute(&sql, rusqlite::params_from_iter(params))
+            .with_context(|| format!("UpdateException: {} id={}", table, id))?;
+        Ok(affected as u64)
+    }
+
+    /// Upsert (insert or update on conflict).
+    ///
+    /// Returns the id of the inserted/updated row.
+    pub fn query_upsert(
+        &self,
+        table: String,
+        data: HashMap<String, SqlValue>,
+        conflict_column: String,
+    ) -> Result<String> {
+        self.ensure_open()?;
+        let (sql, params, id) =
+            write_ops::build_upsert(&table, data, &conflict_column, &self.tenant_id)?;
+        let conn = self.acquire_writer()?;
+        conn.execute(&sql, rusqlite::params_from_iter(params))
+            .with_context(|| format!("UpsertException: {}", table))?;
+        Ok(id)
+    }
+
+    /// Soft-delete a row (sets `deleted_at` to current timestamp).
+    ///
+    /// Returns rows affected (0 if not found or already deleted).
+    pub fn query_delete(&self, table: String, id: String) -> Result<u64> {
+        self.ensure_open()?;
+        let (sql, params) =
+            write_ops::build_soft_delete(&table, &id, &self.tenant_id)?;
+        let conn = self.acquire_writer()?;
+        let affected = conn
+            .execute(&sql, rusqlite::params_from_iter(params))
+            .with_context(|| format!("DeleteException: {} id={}", table, id))?;
+        Ok(affected as u64)
+    }
+
+    /// Permanently delete a row (irreversible).
+    ///
+    /// Tenant isolation is enforced. Returns rows affected.
+    pub fn query_hard_delete(&self, table: String, id: String) -> Result<u64> {
+        self.ensure_open()?;
+        let (sql, params) =
+            write_ops::build_hard_delete(&table, &id, &self.tenant_id)?;
+        let conn = self.acquire_writer()?;
+        let affected = conn
+            .execute(&sql, rusqlite::params_from_iter(params))
+            .with_context(|| format!("HardDeleteException: {} id={}", table, id))?;
+        Ok(affected as u64)
+    }
+
+    /// Insert multiple rows in a single transaction. Returns list of ids.
+    pub fn query_insert_batch(
+        &self,
+        table: String,
+        rows: Vec<HashMap<String, SqlValue>>,
+    ) -> Result<Vec<String>> {
+        self.ensure_open()?;
+        let conn = self.acquire_writer()?;
+        let mut ids = Vec::with_capacity(rows.len());
+
+        conn.execute_batch("BEGIN IMMEDIATE")
+            .context("Failed to begin transaction")?;
+
+        for row_data in rows {
+            let (sql, params, id) =
+                write_ops::build_insert(&table, row_data, &self.tenant_id)?;
+            match conn.execute(&sql, rusqlite::params_from_iter(params)) {
+                Ok(_) => ids.push(id),
+                Err(e) => {
+                    let _ = conn.execute_batch("ROLLBACK");
+                    return Err(anyhow!(
+                        "BatchInsertException: {} — rolled back: {}",
+                        table,
+                        e
+                    ));
+                }
+            }
+        }
+
+        conn.execute_batch("COMMIT")
+            .context("Failed to commit batch insert")?;
+        Ok(ids)
+    }
+
+    /// Update multiple rows in a single transaction. Returns total rows affected.
+    pub fn query_update_batch(
+        &self,
+        table: String,
+        updates: Vec<UpdateEntry>,
+    ) -> Result<u64> {
+        self.ensure_open()?;
+        let conn = self.acquire_writer()?;
+        let mut total_affected = 0u64;
+
+        conn.execute_batch("BEGIN IMMEDIATE")
+            .context("Failed to begin transaction")?;
+
+        for entry in updates {
+            let (sql, params) =
+                write_ops::build_update(&table, &entry.id, entry.data, &self.tenant_id)?;
+            match conn.execute(&sql, rusqlite::params_from_iter(params)) {
+                Ok(n) => total_affected += n as u64,
+                Err(e) => {
+                    let _ = conn.execute_batch("ROLLBACK");
+                    return Err(anyhow!(
+                        "BatchUpdateException: {} id={} — rolled back: {}",
+                        table,
+                        entry.id,
+                        e
+                    ));
+                }
+            }
+        }
+
+        conn.execute_batch("COMMIT")
+            .context("Failed to commit batch update")?;
+        Ok(total_affected)
+    }
+
+    /// Soft-delete multiple rows in a single transaction. Returns total rows affected.
+    pub fn query_delete_batch(
+        &self,
+        table: String,
+        ids: Vec<String>,
+    ) -> Result<u64> {
+        self.ensure_open()?;
+        let conn = self.acquire_writer()?;
+        let mut total_affected = 0u64;
+
+        conn.execute_batch("BEGIN IMMEDIATE")
+            .context("Failed to begin transaction")?;
+
+        for id in &ids {
+            let (sql, params) =
+                write_ops::build_soft_delete(&table, id, &self.tenant_id)?;
+            match conn.execute(&sql, rusqlite::params_from_iter(params)) {
+                Ok(n) => total_affected += n as u64,
+                Err(e) => {
+                    let _ = conn.execute_batch("ROLLBACK");
+                    return Err(anyhow!(
+                        "BatchDeleteException: {} id={} — rolled back: {}",
+                        table,
+                        id,
+                        e
+                    ));
+                }
+            }
+        }
+
+        conn.execute_batch("COMMIT")
+            .context("Failed to commit batch delete")?;
+        Ok(total_affected)
+    }
+
     // ── Private Helpers ──────────────────────────────────────────
 
     fn ensure_open(&self) -> Result<()> {
@@ -292,6 +577,39 @@ impl IronVaultDb {
         self.read_pool
             .get()
             .map_err(|e| anyhow!("PoolExhaustedException: {}", e))
+    }
+
+    /// Execute a read query with pre-built SQL and params, returning rows.
+    fn execute_read_query(
+        &self,
+        sql: &str,
+        params: Vec<rusqlite::types::Value>,
+    ) -> Result<Vec<HashMap<String, SqlValue>>> {
+        let conn = self.acquire_reader()?;
+        let mut stmt = conn
+            .prepare(sql)
+            .with_context(|| format!("QueryException: failed to prepare: {}", sql))?;
+
+        let column_names: Vec<String> =
+            stmt.column_names().iter().map(|c| c.to_string()).collect();
+        let column_count = column_names.len();
+
+        let rows = stmt
+            .query_map(rusqlite::params_from_iter(params), |row| {
+                let mut map = HashMap::with_capacity(column_count);
+                for i in 0..column_count {
+                    let value: rusqlite::types::Value = row.get(i)?;
+                    map.insert(column_names[i].clone(), convert::from_rusqlite(value));
+                }
+                Ok(map)
+            })
+            .with_context(|| "QueryException: failed to execute query")?;
+
+        let mut result = Vec::new();
+        for row in rows {
+            result.push(row.with_context(|| "QueryException: failed to read row")?);
+        }
+        Ok(result)
     }
 
     fn checkpoint_internal(&self, mode: CheckpointMode) -> Result<CheckpointResult> {

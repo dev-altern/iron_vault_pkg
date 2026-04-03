@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 /// Configuration for the IronVault database engine.
 ///
 /// Controls connection pool sizes, cache settings, and SQLite PRAGMAs.
@@ -91,7 +93,7 @@ impl Default for VaultConfig {
 }
 
 /// A dynamic SQL value — represents any SQLite column type.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum SqlValue {
     /// SQL NULL.
     Null,
@@ -151,4 +153,136 @@ pub struct IntegrityReport {
     pub is_clean: bool,
     /// List of error messages (empty if clean).
     pub errors: Vec<String>,
+}
+
+// ─── Phase 2: Query Builder Types ────────────────────────────────────
+
+/// A single filter condition for WHERE clauses.
+///
+/// All user values are parameterized — never interpolated into SQL.
+/// Column names are validated against `[a-zA-Z0-9_.*]`.
+#[derive(Debug, Clone, PartialEq)]
+pub enum Condition {
+    /// `column = value`
+    Eq { column: String, value: SqlValue },
+    /// `column != value`
+    NotEq { column: String, value: SqlValue },
+    /// `column > value`
+    Gt { column: String, value: SqlValue },
+    /// `column >= value`
+    Gte { column: String, value: SqlValue },
+    /// `column < value`
+    Lt { column: String, value: SqlValue },
+    /// `column <= value`
+    Lte { column: String, value: SqlValue },
+    /// `column LIKE pattern` (use % and _ wildcards)
+    Like { column: String, pattern: String },
+    /// `column BETWEEN low AND high`
+    Between {
+        column: String,
+        low: SqlValue,
+        high: SqlValue,
+    },
+    /// `column IN (v1, v2, ...)`
+    In { column: String, values: Vec<SqlValue> },
+    /// `column NOT IN (v1, v2, ...)`
+    NotIn { column: String, values: Vec<SqlValue> },
+    /// `column IS NULL`
+    IsNull { column: String },
+    /// `column IS NOT NULL`
+    IsNotNull { column: String },
+    /// Raw SQL fragment with parameterized values.
+    /// The SQL is inserted as-is — caller is responsible for safety.
+    Raw { sql: String, params: Vec<SqlValue> },
+}
+
+/// ORDER BY clause entry.
+#[derive(Debug, Clone)]
+pub enum OrderBy {
+    /// Order by column ascending.
+    Asc { column: String },
+    /// Order by column descending.
+    Desc { column: String },
+    /// Raw ORDER BY expression (e.g. `RANDOM()`).
+    Raw { expression: String },
+}
+
+/// JOIN clause specification.
+#[derive(Debug, Clone)]
+pub enum JoinSpec {
+    /// `INNER JOIN table ON condition`
+    Inner { table: String, on: String },
+    /// `LEFT JOIN table ON condition`
+    Left { table: String, on: String },
+    /// Raw JOIN expression.
+    Raw { expression: String },
+}
+
+/// Full query specification — built by Dart, executed by Rust.
+///
+/// Rust auto-injects `tenant_id = ?` and `deleted_at IS NULL`
+/// outside any OR grouping, so tenant isolation cannot be bypassed.
+///
+/// - `conditions`: ANDed together (primary filter).
+/// - `or_conditions`: each inner Vec is ANDed, outer groups are ORed.
+///   If non-empty, generates: `(conditions) OR (group1) OR (group2)`.
+#[derive(Debug, Clone)]
+pub struct QuerySpec {
+    pub table: String,
+    /// Primary AND conditions (from `.where()` calls).
+    pub conditions: Vec<Condition>,
+    /// OR alternative groups (from `.orWhere()` calls).
+    /// Each inner Vec is a group of AND conditions.
+    pub or_conditions: Vec<Vec<Condition>>,
+    /// ORDER BY clauses, applied in order.
+    pub order_by: Vec<OrderBy>,
+    /// Maximum rows to return.
+    pub limit: Option<u32>,
+    /// Rows to skip before returning.
+    pub offset: Option<u32>,
+    /// JOIN clauses.
+    pub joins: Vec<JoinSpec>,
+    /// Columns to select (empty = `*`).
+    pub columns: Vec<String>,
+    /// If true, include soft-deleted rows (skip `deleted_at IS NULL`).
+    pub include_deleted: bool,
+}
+
+/// Aggregate expression for `.aggregate()` queries.
+#[derive(Debug, Clone)]
+pub enum AggExpr {
+    /// `COUNT(column) AS alias`
+    Count { column: String, alias: String },
+    /// `SUM(column) AS alias`
+    Sum { column: String, alias: String },
+    /// `AVG(column) AS alias`
+    Avg { column: String, alias: String },
+    /// `MIN(column) AS alias`
+    Min { column: String, alias: String },
+    /// `MAX(column) AS alias`
+    Max { column: String, alias: String },
+}
+
+/// Paginated query result.
+#[derive(Debug, Clone)]
+pub struct Page {
+    /// Rows for this page.
+    pub items: Vec<HashMap<String, SqlValue>>,
+    /// Total matching rows across all pages.
+    pub total: u64,
+    /// Total number of pages.
+    pub total_pages: u32,
+    /// Current page index (0-based).
+    pub page: u32,
+    /// Items per page.
+    pub page_size: u32,
+}
+
+/// A single row update for batch operations.
+#[derive(Debug, Clone)]
+pub struct UpdateEntry {
+    /// Row ID to update.
+    pub id: String,
+    /// Column → new value pairs.
+    pub data: HashMap<String, SqlValue>,
 }
