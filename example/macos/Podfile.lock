@@ -1,0 +1,22 @@
+PODS:
+  - FlutterMacOS (1.0.0)
+  - iron_vault_pkg (0.0.1):
+    - FlutterMacOS
+
+DEPENDENCIES:
+  - FlutterMacOS (from `Flutter/ephemeral`)
+  - iron_vault_pkg (from `Flutter/ephemeral/.symlinks/plugins/iron_vault_pkg/macos`)
+
+EXTERNAL SOURCES:
+  FlutterMacOS:
+    :path: Flutter/ephemeral
+  iron_vault_pkg:
+    :path: Flutter/ephemeral/.symlinks/plugins/iron_vault_pkg/macos
+
+SPEC CHECKSUMS:
+  FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
+  iron_vault_pkg: 91488591f3d03e66d727b3da876b38f4aa34e500
+
+PODFILE CHECKSUM: 54d867c82ac51cbd61b565781b9fada492027009
+
+COCOAPODS: 1.16.2
