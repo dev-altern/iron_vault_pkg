@@ -54,6 +54,17 @@ impl std::fmt::Debug for IronVaultDb {
     }
 }
 
+impl Drop for IronVaultDb {
+    fn drop(&mut self) {
+        if !self.closed {
+            // Best-effort cleanup: checkpoint WAL, shut down notifier
+            let _ = self.checkpoint_internal(CheckpointMode::Passive);
+            self.notifier.close();
+            self.closed = true;
+        }
+    }
+}
+
 impl IronVaultDb {
     // ── Factory ──────────────────────────────────────────────────
 
@@ -687,7 +698,8 @@ impl IronVaultDb {
     /// or any custom string. Returns 32 bytes.
     pub fn derive_purpose_key(&self, purpose: String) -> Result<Vec<u8>> {
         self.ensure_open()?;
-        crypto::hkdf_derive(&self.encryption_key, &purpose)
+        let key = crypto::hkdf_derive(&self.encryption_key, &purpose)?;
+        Ok(key.to_vec()) // Zeroizing → Vec for FRB (key zeroed when Zeroizing drops)
     }
 
     // ── Reactive Streams ──────────────────────────────────────────
@@ -995,7 +1007,7 @@ impl IronVaultDb {
         let backup_key = if encrypt {
             crypto::hkdf_derive(&self.encryption_key, "backup")?
         } else {
-            vec![0u8; 32]
+            Zeroizing::new(vec![0u8; 32])
         };
         backup::create_backup(&self.path, &output_path, compress, encrypt, &backup_key)
     }

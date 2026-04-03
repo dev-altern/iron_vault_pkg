@@ -54,7 +54,7 @@ pub(crate) fn generate_salt() -> Vec<u8> {
 ///
 /// The `info` parameter scopes the derived key to a specific purpose
 /// (e.g., "sqlcipher", "tenant:abc", "audit_hmac", "backup").
-pub(crate) fn hkdf_derive(master_key: &[u8], info: &str) -> Result<Vec<u8>> {
+pub(crate) fn hkdf_derive(master_key: &[u8], info: &str) -> Result<Zeroizing<Vec<u8>>> {
     if master_key.len() != 32 {
         return Err(anyhow!(
             "EncryptionException: master key must be 32 bytes, got {}",
@@ -67,23 +67,23 @@ pub(crate) fn hkdf_derive(master_key: &[u8], info: &str) -> Result<Vec<u8>> {
     hk.expand(info.as_bytes(), &mut derived)
         .map_err(|e| anyhow!("EncryptionException: HKDF expansion failed: {}", e))?;
 
-    Ok(derived.to_vec())
+    Ok(derived)
 }
 
 /// Derive the tenant-scoped field encryption key.
-pub(crate) fn tenant_field_key(master_key: &[u8], tenant_id: &str) -> Result<Vec<u8>> {
+pub(crate) fn tenant_field_key(master_key: &[u8], tenant_id: &str) -> Result<Zeroizing<Vec<u8>>> {
     hkdf_derive(master_key, &format!("tenant:{}", tenant_id))
 }
 
 /// Derive the audit HMAC signing key.
 #[allow(dead_code)]
-pub(crate) fn audit_hmac_key(master_key: &[u8]) -> Result<Vec<u8>> {
+pub(crate) fn audit_hmac_key(master_key: &[u8]) -> Result<Zeroizing<Vec<u8>>> {
     hkdf_derive(master_key, "audit_hmac")
 }
 
 /// Derive the backup encryption key.
 #[allow(dead_code)]
-pub(crate) fn backup_key(master_key: &[u8]) -> Result<Vec<u8>> {
+pub(crate) fn backup_key(master_key: &[u8]) -> Result<Zeroizing<Vec<u8>>> {
     hkdf_derive(master_key, "backup")
 }
 
