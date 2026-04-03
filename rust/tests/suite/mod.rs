@@ -12,6 +12,7 @@ pub mod query_read;
 pub mod query_write;
 pub mod tenant;
 pub mod audit;
+pub mod backup_export;
 pub mod cross_phase;
 pub mod edge_cases;
 pub mod encryption_crypto;

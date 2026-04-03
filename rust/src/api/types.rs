@@ -422,3 +422,51 @@ pub struct AuditIntegrityReport {
     /// IDs of entries with mismatched checksums.
     pub tampered_ids: Vec<String>,
 }
+
+// ─── Phase 8: Backup & Export Types ──────────────────────────────────
+
+/// Result of a backup operation.
+#[derive(Debug, Clone)]
+pub struct BackupResult {
+    /// Path to the backup file.
+    pub path: String,
+    /// Size of the backup file in bytes.
+    pub size_bytes: u64,
+    /// BLAKE3 checksum hex string (for verification on restore).
+    pub checksum: String,
+    /// Whether compression was applied.
+    pub compressed: bool,
+    /// Whether encryption was applied.
+    pub encrypted: bool,
+}
+
+/// Result of a restore operation.
+#[derive(Debug, Clone)]
+pub struct RestoreResult {
+    /// Number of pages restored.
+    pub pages_restored: u64,
+    /// Whether integrity check passed after restore.
+    pub integrity_ok: bool,
+}
+
+/// Result of backup verification (without restoring).
+#[derive(Debug, Clone)]
+pub struct BackupVerifyReport {
+    /// Whether the BLAKE3 checksum matches.
+    pub checksum_ok: bool,
+    /// Whether the backup can be decrypted.
+    pub decrypt_ok: bool,
+    /// Whether the decompressed data is valid.
+    pub decompress_ok: bool,
+}
+
+/// Export format for table data.
+#[derive(Debug, Clone)]
+pub enum ExportFormat {
+    /// RFC 4180 CSV with headers.
+    Csv,
+    /// JSON array of objects.
+    Json,
+    /// One JSON object per line.
+    Jsonl,
+}

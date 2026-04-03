@@ -1,5 +1,7 @@
 pub(crate) mod audit;
+pub(crate) mod backup;
 pub(crate) mod connection;
+pub(crate) mod export;
 pub(crate) mod convert;
 pub(crate) mod crypto;
 pub(crate) mod migration;

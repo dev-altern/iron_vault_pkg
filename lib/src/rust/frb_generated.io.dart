@@ -80,6 +80,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AuditIntegrityReport dco_decode_audit_integrity_report(dynamic raw);
 
   @protected
+  BackupResult dco_decode_backup_result(dynamic raw);
+
+  @protected
+  BackupVerifyReport dco_decode_backup_verify_report(dynamic raw);
+
+  @protected
   bool dco_decode_bool(dynamic raw);
 
   @protected
@@ -105,6 +111,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Condition dco_decode_condition(dynamic raw);
+
+  @protected
+  ExportFormat dco_decode_export_format(dynamic raw);
 
   @protected
   double dco_decode_f_64(dynamic raw);
@@ -196,6 +205,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
 
   @protected
+  List<String>? dco_decode_opt_list_String(dynamic raw);
+
+  @protected
   OrderBy dco_decode_order_by(dynamic raw);
 
   @protected
@@ -206,6 +218,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   (String, SqlValue) dco_decode_record_string_sql_value(dynamic raw);
+
+  @protected
+  RestoreResult dco_decode_restore_result(dynamic raw);
 
   @protected
   SqlValue dco_decode_sql_value(dynamic raw);
@@ -305,6 +320,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  BackupResult sse_decode_backup_result(SseDeserializer deserializer);
+
+  @protected
+  BackupVerifyReport sse_decode_backup_verify_report(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
@@ -330,6 +353,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Condition sse_decode_condition(SseDeserializer deserializer);
+
+  @protected
+  ExportFormat sse_decode_export_format(SseDeserializer deserializer);
 
   @protected
   double sse_decode_f_64(SseDeserializer deserializer);
@@ -431,6 +457,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
+  List<String>? sse_decode_opt_list_String(SseDeserializer deserializer);
+
+  @protected
   OrderBy sse_decode_order_by(SseDeserializer deserializer);
 
   @protected
@@ -443,6 +472,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   (String, SqlValue) sse_decode_record_string_sql_value(
     SseDeserializer deserializer,
   );
+
+  @protected
+  RestoreResult sse_decode_restore_result(SseDeserializer deserializer);
 
   @protected
   SqlValue sse_decode_sql_value(SseDeserializer deserializer);
@@ -551,6 +583,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_backup_result(BackupResult self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_backup_verify_report(
+    BackupVerifyReport self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
@@ -594,6 +635,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_condition(Condition self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_export_format(ExportFormat self, SseSerializer serializer);
 
   @protected
   void sse_encode_f_64(double self, SseSerializer serializer);
@@ -728,6 +772,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
 
   @protected
+  void sse_encode_opt_list_String(List<String>? self, SseSerializer serializer);
+
+  @protected
   void sse_encode_order_by(OrderBy self, SseSerializer serializer);
 
   @protected
@@ -741,6 +788,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     (String, SqlValue) self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_restore_result(RestoreResult self, SseSerializer serializer);
 
   @protected
   void sse_encode_sql_value(SqlValue self, SseSerializer serializer);

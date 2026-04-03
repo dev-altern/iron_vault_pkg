@@ -1,5 +1,5 @@
 use crate::api::types::*;
-use crate::engine::{audit, connection, convert, crypto, migration, notifier, query_builder, transaction, write_ops};
+use crate::engine::{audit, backup, connection, convert, crypto, export, migration, notifier, query_builder, transaction, write_ops};
 use anyhow::{anyhow, Context, Result};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
@@ -993,6 +993,71 @@ impl IronVaultDb {
         let conn = self.acquire_reader()?;
         let hmac_key = crypto::hkdf_derive(&self.encryption_key, "audit_hmac")?;
         audit::verify_integrity(&conn, &self.tenant_id, &hmac_key, from, to)
+    }
+
+    // ── Backup & Export ──────────────────────────────────────────
+
+    /// Create a backup of the database.
+    ///
+    /// Optionally compresses (zstd) and encrypts (AES-256-GCM with
+    /// HKDF-derived backup key). Returns the backup path, size, and
+    /// BLAKE3 checksum for verification on restore.
+    pub fn backup(
+        &self,
+        output_path: String,
+        compress: bool,
+        encrypt: bool,
+    ) -> Result<BackupResult> {
+        self.ensure_open()?;
+        // Checkpoint WAL first to flush all changes to the main DB file
+        let _ = self.checkpoint_internal(CheckpointMode::Passive);
+        let backup_key = if encrypt {
+            crypto::hkdf_derive(&self.encryption_key, "backup")?
+        } else {
+            vec![0u8; 32]
+        };
+        backup::create_backup(&self.path, &output_path, compress, encrypt, &backup_key)
+    }
+
+    /// Verify a backup file without restoring.
+    pub fn verify_backup(&self, backup_path: String) -> Result<BackupVerifyReport> {
+        self.ensure_open()?;
+        let backup_key = crypto::hkdf_derive(&self.encryption_key, "backup")?;
+        backup::verify_backup(&backup_path, &backup_key)
+    }
+
+    /// Restore a backup to a target path.
+    ///
+    /// Does NOT require an open database — operates on files directly.
+    /// Verifies checksum, decrypts, decompresses, runs integrity_check.
+    pub fn restore_backup(
+        &self,
+        backup_path: String,
+        target_path: String,
+        expected_checksum: Option<String>,
+    ) -> Result<RestoreResult> {
+        self.ensure_open()?;
+        let backup_key = crypto::hkdf_derive(&self.encryption_key, "backup")?;
+        backup::restore_backup(
+            &backup_path,
+            &target_path,
+            &backup_key,
+            expected_checksum.as_deref(),
+        )
+    }
+
+    /// Export a table's data to CSV, JSON, or JSONL.
+    ///
+    /// Respects tenant isolation and soft-delete guard.
+    pub fn export_table(
+        &self,
+        table: String,
+        format: ExportFormat,
+        columns: Option<Vec<String>>,
+    ) -> Result<Vec<u8>> {
+        self.ensure_open()?;
+        let conn = self.acquire_reader()?;
+        export::export_table(&conn, &table, &self.tenant_id, &format, &columns)
     }
 
     // ── Private Helpers ──────────────────────────────────────────

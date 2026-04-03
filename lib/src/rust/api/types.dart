@@ -8,7 +8,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'types.freezed.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 @freezed
 sealed class AggExpr with _$AggExpr {
@@ -147,6 +147,82 @@ class AuditIntegrityReport {
           tamperedIds == other.tamperedIds;
 }
 
+/// Result of a backup operation.
+class BackupResult {
+  /// Path to the backup file.
+  final String path;
+
+  /// Size of the backup file in bytes.
+  final BigInt sizeBytes;
+
+  /// BLAKE3 checksum hex string (for verification on restore).
+  final String checksum;
+
+  /// Whether compression was applied.
+  final bool compressed;
+
+  /// Whether encryption was applied.
+  final bool encrypted;
+
+  const BackupResult({
+    required this.path,
+    required this.sizeBytes,
+    required this.checksum,
+    required this.compressed,
+    required this.encrypted,
+  });
+
+  @override
+  int get hashCode =>
+      path.hashCode ^
+      sizeBytes.hashCode ^
+      checksum.hashCode ^
+      compressed.hashCode ^
+      encrypted.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BackupResult &&
+          runtimeType == other.runtimeType &&
+          path == other.path &&
+          sizeBytes == other.sizeBytes &&
+          checksum == other.checksum &&
+          compressed == other.compressed &&
+          encrypted == other.encrypted;
+}
+
+/// Result of backup verification (without restoring).
+class BackupVerifyReport {
+  /// Whether the BLAKE3 checksum matches.
+  final bool checksumOk;
+
+  /// Whether the backup can be decrypted.
+  final bool decryptOk;
+
+  /// Whether the decompressed data is valid.
+  final bool decompressOk;
+
+  const BackupVerifyReport({
+    required this.checksumOk,
+    required this.decryptOk,
+    required this.decompressOk,
+  });
+
+  @override
+  int get hashCode =>
+      checksumOk.hashCode ^ decryptOk.hashCode ^ decompressOk.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BackupVerifyReport &&
+          runtimeType == other.runtimeType &&
+          checksumOk == other.checksumOk &&
+          decryptOk == other.decryptOk &&
+          decompressOk == other.decompressOk;
+}
+
 /// WAL checkpoint mode.
 enum CheckpointMode {
   /// Checkpoint as many WAL pages as possible without waiting.
@@ -265,6 +341,18 @@ sealed class Condition with _$Condition {
     required String sql,
     required List<SqlValue> params,
   }) = Condition_Raw;
+}
+
+/// Export format for table data.
+enum ExportFormat {
+  /// RFC 4180 CSV with headers.
+  csv,
+
+  /// JSON array of objects.
+  json,
+
+  /// One JSON object per line.
+  jsonl,
 }
 
 /// Result of a database integrity check.
@@ -562,6 +650,28 @@ class QuerySpec {
           joins == other.joins &&
           columns == other.columns &&
           includeDeleted == other.includeDeleted;
+}
+
+/// Result of a restore operation.
+class RestoreResult {
+  /// Number of pages restored.
+  final BigInt pagesRestored;
+
+  /// Whether integrity check passed after restore.
+  final bool integrityOk;
+
+  const RestoreResult({required this.pagesRestored, required this.integrityOk});
+
+  @override
+  int get hashCode => pagesRestored.hashCode ^ integrityOk.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RestoreResult &&
+          runtimeType == other.runtimeType &&
+          pagesRestored == other.pagesRestored &&
+          integrityOk == other.integrityOk;
 }
 
 @freezed

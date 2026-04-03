@@ -12,6 +12,17 @@ import 'types.dart';
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<IronVaultDb>>
 abstract class IronVaultDb implements RustOpaqueInterface {
+  /// Create a backup of the database.
+  ///
+  /// Optionally compresses (zstd) and encrypts (AES-256-GCM with
+  /// HKDF-derived backup key). Returns the backup path, size, and
+  /// BLAKE3 checksum for verification on restore.
+  Future<BackupResult> backup({
+    required String outputPath,
+    required bool compress,
+    required bool encrypt,
+  });
+
   /// Trigger a WAL checkpoint.
   ///
   /// Returns the number of WAL pages and how many were successfully
@@ -55,6 +66,15 @@ abstract class IronVaultDb implements RustOpaqueInterface {
   Future<BigInt> executeRaw({
     required String sql,
     required List<SqlValue> params,
+  });
+
+  /// Export a table's data to CSV, JSON, or JSONL.
+  ///
+  /// Respects tenant isolation and soft-delete guard.
+  Future<Uint8List> exportTable({
+    required String table,
+    required ExportFormat format,
+    List<String>? columns,
   });
 
   /// Get the current actor ID.
@@ -228,6 +248,16 @@ abstract class IronVaultDb implements RustOpaqueInterface {
     required String conflictColumn,
   });
 
+  /// Restore a backup to a target path.
+  ///
+  /// Does NOT require an open database — operates on files directly.
+  /// Verifies checksum, decrypts, decompresses, runs integrity_check.
+  Future<RestoreResult> restoreBackup({
+    required String backupPath,
+    required String targetPath,
+    String? expectedChecksum,
+  });
+
   /// Rollback to a target version.
   ///
   /// Rolls back all applied migrations with version > `target_version`,
@@ -286,6 +316,9 @@ abstract class IronVaultDb implements RustOpaqueInterface {
     PlatformInt64? from,
     PlatformInt64? to,
   });
+
+  /// Verify a backup file without restoring.
+  Future<BackupVerifyReport> verifyBackup({required String backupPath});
 
   /// Watch aggregate expressions — emits updated aggregates on table changes.
   Stream<Map<String, SqlValue>> watchAggregate({
