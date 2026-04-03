@@ -19,5 +19,6 @@ pub mod encryption_crypto;
 pub mod migrations;
 pub mod reactive;
 pub mod search;
+pub mod semantic;
 pub mod sync_engine;
 pub mod transactions;

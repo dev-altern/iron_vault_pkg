@@ -573,3 +573,31 @@ pub enum ConflictResolution {
     /// Remote data always applied.
     RemoteWins,
 }
+
+// ─── Phase 11: Semantic Search Types ─────────────────────────────────
+
+/// A semantic search result with cosine similarity score.
+#[derive(Debug, Clone)]
+pub struct SemanticHit {
+    /// Row ID.
+    pub id: String,
+    /// Cosine similarity score (0.0 to 1.0).
+    pub score: f64,
+}
+
+/// A hybrid search result combining FTS and semantic scores.
+#[derive(Debug, Clone)]
+pub struct HybridHit {
+    /// Row ID.
+    pub id: String,
+    /// Table name.
+    pub table: String,
+    /// Combined score.
+    pub score: f64,
+    /// FTS component score (normalized 0–1).
+    pub fts_score: f64,
+    /// Semantic component score (cosine 0–1).
+    pub semantic_score: f64,
+    /// Snippet from FTS (if available).
+    pub snippet: String,
+}

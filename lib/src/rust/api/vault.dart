@@ -60,6 +60,15 @@ abstract class IronVaultDb implements RustOpaqueInterface {
   /// or any custom string. Returns 32 bytes.
   Future<Uint8List> derivePurposeKey({required String purpose});
 
+  /// Deserialize bytes back to Vec<f32>.
+  static Float32List deserializeVector({required List<int> bytes}) => RustLib
+      .instance
+      .api
+      .crateApiVaultIronVaultDbDeserializeVector(bytes: bytes);
+
+  /// Stub when onnx feature is not enabled.
+  Future<Float32List> embedText({required String text});
+
   /// Encrypt a plaintext string using AES-256-GCM.
   ///
   /// Uses a tenant-scoped key derived via HKDF from the master key.
@@ -97,6 +106,9 @@ abstract class IronVaultDb implements RustOpaqueInterface {
     required int limit,
   });
 
+  /// Retrieve an embedding vector for a row.
+  Future<Float32List> getEmbedding({required String table, required String id});
+
   /// Get audit history for a specific row.
   Future<List<AuditEntry>> getHistory({
     required String tableName,
@@ -126,6 +138,15 @@ abstract class IronVaultDb implements RustOpaqueInterface {
   /// Scans the entire database for corruption. Returns clean=true if
   /// no issues found. Can be slow on large databases — run sparingly.
   Future<IntegrityReport> integrityCheck();
+
+  /// Load an ONNX embedding model for on-device inference.
+  ///
+  /// Requires the `onnx` feature flag. Without it, returns an error.
+  /// `dimension` is the expected output embedding size (e.g., 384).
+  Future<void> loadEmbeddingModel({
+    required String modelPath,
+    required int dimension,
+  });
 
   /// Run forward migrations.
   ///
@@ -291,6 +312,20 @@ abstract class IronVaultDb implements RustOpaqueInterface {
     required bool highlight,
   });
 
+  /// Hybrid search combining FTS (Tantivy) and semantic (cosine) scores.
+  ///
+  /// 1. FTS returns candidates with BM25 scores
+  /// 2. Cosine similarity computed for each candidate
+  /// 3. Combined: score = fts_weight * bm25_norm + semantic_weight * cosine
+  Future<List<HybridHit>> searchHybrid({
+    required String table,
+    required String query,
+    required List<double> queryEmbedding,
+    required double ftsWeight,
+    required double semanticWeight,
+    required int limit,
+  });
+
   /// Index a single row in the search engine.
   ///
   /// `fields` maps column names to their text values.
@@ -309,6 +344,23 @@ abstract class IronVaultDb implements RustOpaqueInterface {
   /// Call after soft-delete or hard-delete.
   Future<void> searchRemoveRow({required String table, required String id});
 
+  /// Search for rows with similar embeddings using cosine similarity.
+  ///
+  /// Brute-force scan — efficient for <100k rows.
+  /// Returns top-K results above the threshold, sorted by score.
+  Future<List<SemanticHit>> searchSemantic({
+    required String table,
+    required List<double> queryEmbedding,
+    required int topK,
+    required double threshold,
+  });
+
+  /// Serialize a Vec<f32> to bytes for storage.
+  static Uint8List serializeVector({required List<double> embedding}) => RustLib
+      .instance
+      .api
+      .crateApiVaultIronVaultDbSerializeVector(embedding: embedding);
+
   /// Set the actor ID for audit logging.
   ///
   /// The actor is injected into every audit entry automatically.
@@ -317,6 +369,16 @@ abstract class IronVaultDb implements RustOpaqueInterface {
 
   /// Return a snapshot of database statistics.
   Future<VaultStats> stats();
+
+  /// Store an embedding vector for a row.
+  ///
+  /// The table must have an `embedding BLOB` column.
+  /// The vector is serialized as little-endian f32 bytes.
+  Future<void> storeEmbedding({
+    required String table,
+    required String id,
+    required List<double> embedding,
+  });
 
   /// Add a record to the sync outbox.
   Future<String> syncAddToOutbox({

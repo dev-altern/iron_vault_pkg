@@ -28,6 +28,12 @@ hmac = "0.12"
 zstd = "0.13"
 blake3 = "1"
 tantivy = "0.22"
+ort = { version = "2.0.0-rc.12", optional = true }
+ndarray = { version = "0.16", optional = true }
+
+[features]
+default = []
+onnx = ["ort", "ndarray"]
 
 [dev-dependencies]
 tempfile = "3"

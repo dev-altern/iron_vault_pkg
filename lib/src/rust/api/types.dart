@@ -8,7 +8,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'types.freezed.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 @freezed
 sealed class AggExpr with _$AggExpr {
@@ -365,6 +365,57 @@ enum ExportFormat {
 
   /// One JSON object per line.
   jsonl,
+}
+
+/// A hybrid search result combining FTS and semantic scores.
+class HybridHit {
+  /// Row ID.
+  final String id;
+
+  /// Table name.
+  final String table;
+
+  /// Combined score.
+  final double score;
+
+  /// FTS component score (normalized 0–1).
+  final double ftsScore;
+
+  /// Semantic component score (cosine 0–1).
+  final double semanticScore;
+
+  /// Snippet from FTS (if available).
+  final String snippet;
+
+  const HybridHit({
+    required this.id,
+    required this.table,
+    required this.score,
+    required this.ftsScore,
+    required this.semanticScore,
+    required this.snippet,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      table.hashCode ^
+      score.hashCode ^
+      ftsScore.hashCode ^
+      semanticScore.hashCode ^
+      snippet.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is HybridHit &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          table == other.table &&
+          score == other.score &&
+          ftsScore == other.ftsScore &&
+          semanticScore == other.semanticScore &&
+          snippet == other.snippet;
 }
 
 /// Statistics about a search index.
@@ -781,6 +832,28 @@ class SearchHit {
           table == other.table &&
           score == other.score &&
           snippet == other.snippet;
+}
+
+/// A semantic search result with cosine similarity score.
+class SemanticHit {
+  /// Row ID.
+  final String id;
+
+  /// Cosine similarity score (0.0 to 1.0).
+  final double score;
+
+  const SemanticHit({required this.id, required this.score});
+
+  @override
+  int get hashCode => id.hashCode ^ score.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SemanticHit &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          score == other.score;
 }
 
 @freezed

@@ -1,5 +1,5 @@
 use crate::api::types::*;
-use crate::engine::{audit, backup, connection, convert, crypto, export, migration, notifier, query_builder, search, sync, transaction, write_ops};
+use crate::engine::{audit, backup, connection, convert, crypto, export, migration, notifier, onnx_embed, query_builder, search, semantic, sync, transaction, write_ops};
 use anyhow::{anyhow, Context, Result};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
@@ -37,6 +37,8 @@ pub struct IronVaultDb {
     actor_id: Mutex<String>,
     /// Full-text search engine (Tantivy).
     search_engine: Arc<search::SearchEngine>,
+    /// ONNX embedding model (optional, behind `onnx` feature).
+    embedder: Mutex<Option<onnx_embed::OnnxEmbedder>>,
 }
 
 impl std::fmt::Debug for IronVaultDb {
@@ -109,6 +111,7 @@ impl IronVaultDb {
             notifier: Arc::new(notifier::ChangeNotifier::new()),
             actor_id: Mutex::new("system".to_string()),
             search_engine,
+            embedder: Mutex::new(None),
         })
     }
 
@@ -1193,6 +1196,123 @@ impl IronVaultDb {
         self.ensure_open()?;
         let conn = self.acquire_writer()?;
         sync::increment_retry(&conn, &record_id, max_attempts, &error_message)
+    }
+
+    // ── Semantic Search ──────────────────────────────────────────
+
+    /// Store an embedding vector for a row.
+    ///
+    /// The table must have an `embedding BLOB` column.
+    /// The vector is serialized as little-endian f32 bytes.
+    pub fn store_embedding(
+        &self,
+        table: String,
+        id: String,
+        embedding: Vec<f32>,
+    ) -> Result<()> {
+        self.ensure_open()?;
+        let conn = self.acquire_writer()?;
+        semantic::store_embedding(&conn, &table, &id, &embedding, &self.tenant_id)
+    }
+
+    /// Retrieve an embedding vector for a row.
+    pub fn get_embedding(
+        &self,
+        table: String,
+        id: String,
+    ) -> Result<Vec<f32>> {
+        self.ensure_open()?;
+        let conn = self.acquire_reader()?;
+        semantic::get_embedding(&conn, &table, &id, &self.tenant_id)
+    }
+
+    /// Serialize a Vec<f32> to bytes for storage.
+    #[flutter_rust_bridge::frb(sync)]
+    pub fn serialize_vector(embedding: Vec<f32>) -> Vec<u8> {
+        semantic::serialize_vector(&embedding)
+    }
+
+    /// Deserialize bytes back to Vec<f32>.
+    #[flutter_rust_bridge::frb(sync)]
+    pub fn deserialize_vector(bytes: Vec<u8>) -> Result<Vec<f32>> {
+        semantic::deserialize_vector(&bytes)
+    }
+
+    /// Search for rows with similar embeddings using cosine similarity.
+    ///
+    /// Brute-force scan — efficient for <100k rows.
+    /// Returns top-K results above the threshold, sorted by score.
+    pub fn search_semantic(
+        &self,
+        table: String,
+        query_embedding: Vec<f32>,
+        top_k: u32,
+        threshold: f64,
+    ) -> Result<Vec<SemanticHit>> {
+        self.ensure_open()?;
+        let conn = self.acquire_reader()?;
+        semantic::search_semantic(&conn, &table, &query_embedding, &self.tenant_id, top_k, threshold)
+    }
+
+    /// Hybrid search combining FTS (Tantivy) and semantic (cosine) scores.
+    ///
+    /// 1. FTS returns candidates with BM25 scores
+    /// 2. Cosine similarity computed for each candidate
+    /// 3. Combined: score = fts_weight * bm25_norm + semantic_weight * cosine
+    pub fn search_hybrid(
+        &self,
+        table: String,
+        query: String,
+        query_embedding: Vec<f32>,
+        fts_weight: f64,
+        semantic_weight: f64,
+        limit: u32,
+    ) -> Result<Vec<HybridHit>> {
+        self.ensure_open()?;
+        // Get FTS hits first
+        let fts_hits = self.search(table.clone(), query, limit * 2, false)?;
+        let conn = self.acquire_reader()?;
+        semantic::search_hybrid(
+            &conn, &table, &query_embedding, &fts_hits,
+            fts_weight, semantic_weight, &self.tenant_id, limit,
+        )
+    }
+
+    /// Load an ONNX embedding model for on-device inference.
+    ///
+    /// Requires the `onnx` feature flag. Without it, returns an error.
+    /// `dimension` is the expected output embedding size (e.g., 384).
+    pub fn load_embedding_model(
+        &self,
+        model_path: String,
+        dimension: u32,
+    ) -> Result<()> {
+        self.ensure_open()?;
+        let embedder = onnx_embed::OnnxEmbedder::load(&model_path, dimension as usize)?;
+        *self.embedder.lock().unwrap() = Some(embedder);
+        Ok(())
+    }
+
+    /// Embed text using the loaded ONNX model.
+    ///
+    /// Returns a normalized vector of `dimension` floats.
+    /// Requires `load_embedding_model()` to have been called first.
+    #[cfg(feature = "onnx")]
+    pub fn embed_text(&self, text: String) -> Result<Vec<f32>> {
+        self.ensure_open()?;
+        let guard = self.embedder.lock().unwrap();
+        let embedder = guard
+            .as_ref()
+            .ok_or_else(|| anyhow!("OnnxException: no model loaded — call load_embedding_model first"))?;
+        embedder.embed(&text)
+    }
+
+    /// Stub when onnx feature is not enabled.
+    #[cfg(not(feature = "onnx"))]
+    pub fn embed_text(&self, _text: String) -> Result<Vec<f32>> {
+        Err(anyhow!(
+            "OnnxException: ONNX support not enabled. Rebuild with features = [\"onnx\"]"
+        ))
     }
 
     // ── Private Helpers ──────────────────────────────────────────

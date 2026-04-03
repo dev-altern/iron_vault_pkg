@@ -133,7 +133,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ExportFormat dco_decode_export_format(dynamic raw);
 
   @protected
+  double dco_decode_f_32(dynamic raw);
+
+  @protected
   double dco_decode_f_64(dynamic raw);
+
+  @protected
+  HybridHit dco_decode_hybrid_hit(dynamic raw);
 
   @protected
   int dco_decode_i_32(dynamic raw);
@@ -168,6 +174,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<Condition> dco_decode_list_condition(dynamic raw);
 
   @protected
+  List<HybridHit> dco_decode_list_hybrid_hit(dynamic raw);
+
+  @protected
   List<JoinSpec> dco_decode_list_join_spec(dynamic raw);
 
   @protected
@@ -181,6 +190,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<OrderBy> dco_decode_list_order_by(dynamic raw);
+
+  @protected
+  List<double> dco_decode_list_prim_f_32_loose(dynamic raw);
+
+  @protected
+  Float32List dco_decode_list_prim_f_32_strict(dynamic raw);
 
   @protected
   Uint32List dco_decode_list_prim_u_32_strict(dynamic raw);
@@ -205,6 +220,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SearchHit> dco_decode_list_search_hit(dynamic raw);
+
+  @protected
+  List<SemanticHit> dco_decode_list_semantic_hit(dynamic raw);
 
   @protected
   List<SqlValue> dco_decode_list_sql_value(dynamic raw);
@@ -271,6 +289,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SearchHit dco_decode_search_hit(dynamic raw);
+
+  @protected
+  SemanticHit dco_decode_semantic_hit(dynamic raw);
 
   @protected
   SqlValue dco_decode_sql_value(dynamic raw);
@@ -444,7 +465,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ExportFormat sse_decode_export_format(SseDeserializer deserializer);
 
   @protected
+  double sse_decode_f_32(SseDeserializer deserializer);
+
+  @protected
   double sse_decode_f_64(SseDeserializer deserializer);
+
+  @protected
+  HybridHit sse_decode_hybrid_hit(SseDeserializer deserializer);
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
@@ -479,6 +506,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<Condition> sse_decode_list_condition(SseDeserializer deserializer);
 
   @protected
+  List<HybridHit> sse_decode_list_hybrid_hit(SseDeserializer deserializer);
+
+  @protected
   List<JoinSpec> sse_decode_list_join_spec(SseDeserializer deserializer);
 
   @protected
@@ -496,6 +526,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<OrderBy> sse_decode_list_order_by(SseDeserializer deserializer);
+
+  @protected
+  List<double> sse_decode_list_prim_f_32_loose(SseDeserializer deserializer);
+
+  @protected
+  Float32List sse_decode_list_prim_f_32_strict(SseDeserializer deserializer);
 
   @protected
   Uint32List sse_decode_list_prim_u_32_strict(SseDeserializer deserializer);
@@ -526,6 +562,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<SearchHit> sse_decode_list_search_hit(SseDeserializer deserializer);
+
+  @protected
+  List<SemanticHit> sse_decode_list_semantic_hit(SseDeserializer deserializer);
 
   @protected
   List<SqlValue> sse_decode_list_sql_value(SseDeserializer deserializer);
@@ -602,6 +641,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SearchHit sse_decode_search_hit(SseDeserializer deserializer);
+
+  @protected
+  SemanticHit sse_decode_semantic_hit(SseDeserializer deserializer);
 
   @protected
   SqlValue sse_decode_sql_value(SseDeserializer deserializer);
@@ -812,7 +854,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_export_format(ExportFormat self, SseSerializer serializer);
 
   @protected
+  void sse_encode_f_32(double self, SseSerializer serializer);
+
+  @protected
   void sse_encode_f_64(double self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_hybrid_hit(HybridHit self, SseSerializer serializer);
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
@@ -857,6 +905,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_hybrid_hit(
+    List<HybridHit> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_join_spec(List<JoinSpec> self, SseSerializer serializer);
 
   @protected
@@ -876,6 +930,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_list_order_by(List<OrderBy> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_prim_f_32_loose(
+    List<double> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_prim_f_32_strict(
+    Float32List self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_list_prim_u_32_strict(
@@ -919,6 +985,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_list_search_hit(
     List<SearchHit> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_semantic_hit(
+    List<SemanticHit> self,
     SseSerializer serializer,
   );
 
@@ -1020,6 +1092,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_search_hit(SearchHit self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_semantic_hit(SemanticHit self, SseSerializer serializer);
 
   @protected
   void sse_encode_sql_value(SqlValue self, SseSerializer serializer);
