@@ -35,6 +35,9 @@ abstract class IronVaultDb implements RustOpaqueInterface {
     required List<SqlValue> params,
   });
 
+  /// Get all applied migration records.
+  Future<List<MigrationRecord>> getMigrations();
+
   /// Get the filesystem path of the database file.
   Future<String> getPath();
 
@@ -46,6 +49,17 @@ abstract class IronVaultDb implements RustOpaqueInterface {
   /// Scans the entire database for corruption. Returns clean=true if
   /// no issues found. Can be slow on large databases — run sparingly.
   Future<IntegrityReport> integrityCheck();
+
+  /// Run forward migrations.
+  ///
+  /// Applies all pending migrations (version > current) in version order.
+  /// Each migration runs in its own transaction. If a migration fails,
+  /// it is rolled back and an error is returned (previously-applied
+  /// migrations remain intact).
+  ///
+  /// **Checksum protection:** if a previously-applied migration's SQL
+  /// has been modified, returns `MigrationChecksumException`.
+  Future<MigrationReport> migrate({required List<VaultMigration> migrations});
 
   /// Open or create an encrypted database.
   ///
@@ -161,6 +175,18 @@ abstract class IronVaultDb implements RustOpaqueInterface {
     required String table,
     required Map<String, SqlValue> data,
     required String conflictColumn,
+  });
+
+  /// Rollback to a target version.
+  ///
+  /// Rolls back all applied migrations with version > `target_version`,
+  /// in reverse order. Each rollback executes the `down` SQL.
+  ///
+  /// Returns `MigrationNoRollbackException` if any migration lacks `down` SQL.
+  /// The `migrations` list must include definitions for all versions to roll back.
+  Future<MigrationReport> rollbackTo({
+    required int targetVersion,
+    required List<VaultMigration> migrations,
   });
 
   /// Return a snapshot of database statistics.

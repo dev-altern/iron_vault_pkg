@@ -1,5 +1,5 @@
 use crate::api::types::*;
-use crate::engine::{connection, convert, query_builder, write_ops};
+use crate::engine::{connection, convert, migration, query_builder, write_ops};
 use anyhow::{anyhow, Context, Result};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
@@ -213,7 +213,16 @@ impl IronVaultDb {
         let total_tables: i32 = conn
             .query_row(
                 "SELECT count(*) FROM sqlite_master \
-                 WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
+                 WHERE type = 'table' AND name NOT LIKE 'sqlite_%' \
+                 AND name NOT LIKE '\\_%' ESCAPE '\\'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap_or(0);
+
+        let migration_version: i32 = conn
+            .query_row(
+                "SELECT MAX(version) FROM _migrations",
                 [],
                 |row| row.get(0),
             )
@@ -223,7 +232,7 @@ impl IronVaultDb {
             db_size_bytes,
             wal_size_bytes,
             total_tables,
-            migration_version: 0, // Populated in Phase 3
+            migration_version,
             page_count,
             page_size,
         })
@@ -551,6 +560,48 @@ impl IronVaultDb {
         conn.execute_batch("COMMIT")
             .context("Failed to commit batch delete")?;
         Ok(total_affected)
+    }
+
+    // ── Migrations ────────────────────────────────────────────────
+
+    /// Run forward migrations.
+    ///
+    /// Applies all pending migrations (version > current) in version order.
+    /// Each migration runs in its own transaction. If a migration fails,
+    /// it is rolled back and an error is returned (previously-applied
+    /// migrations remain intact).
+    ///
+    /// **Checksum protection:** if a previously-applied migration's SQL
+    /// has been modified, returns `MigrationChecksumException`.
+    pub fn migrate(&self, migrations: Vec<VaultMigration>) -> Result<MigrationReport> {
+        self.ensure_open()?;
+        let conn = self.acquire_writer()?;
+        migration::migrate(&conn, &migrations)
+    }
+
+    /// Rollback to a target version.
+    ///
+    /// Rolls back all applied migrations with version > `target_version`,
+    /// in reverse order. Each rollback executes the `down` SQL.
+    ///
+    /// Returns `MigrationNoRollbackException` if any migration lacks `down` SQL.
+    /// The `migrations` list must include definitions for all versions to roll back.
+    pub fn rollback_to(
+        &self,
+        target_version: u32,
+        migrations: Vec<VaultMigration>,
+    ) -> Result<MigrationReport> {
+        self.ensure_open()?;
+        let conn = self.acquire_writer()?;
+        migration::rollback_to(&conn, target_version, &migrations)
+    }
+
+    /// Get all applied migration records.
+    pub fn get_migrations(&self) -> Result<Vec<MigrationRecord>> {
+        self.ensure_open()?;
+        let conn = self.acquire_reader()?;
+        migration::ensure_table(&conn)?;
+        migration::get_applied(&conn)
     }
 
     // ── Private Helpers ──────────────────────────────────────────

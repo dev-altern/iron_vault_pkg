@@ -12,3 +12,4 @@ pub mod query_read;
 pub mod query_write;
 pub mod tenant;
 pub mod edge_cases;
+pub mod migrations;

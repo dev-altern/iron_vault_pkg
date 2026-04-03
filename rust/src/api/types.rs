@@ -286,3 +286,49 @@ pub struct UpdateEntry {
     /// Column → new value pairs.
     pub data: HashMap<String, SqlValue>,
 }
+
+// ─── Phase 3: Migration Types ────────────────────────────────────────
+
+/// A single versioned schema migration.
+///
+/// Migrations are applied in version order. Each migration's `up` SQL
+/// is checksummed (SHA-256) and the checksum is stored in the database.
+/// If a previously-applied migration's SQL has been altered, IronVault
+/// detects the tampering and refuses to proceed.
+#[derive(Debug, Clone)]
+pub struct VaultMigration {
+    /// Unique version number (must be > 0, applied in ascending order).
+    pub version: u32,
+    /// Human-readable name for logging.
+    pub name: String,
+    /// SQL to apply this migration (executed in a transaction).
+    pub up: String,
+    /// SQL to reverse this migration (None = irreversible).
+    pub down: Option<String>,
+}
+
+/// Report returned after running migrations.
+#[derive(Debug, Clone)]
+pub struct MigrationReport {
+    /// Versions that were applied in this run.
+    pub applied: Vec<u32>,
+    /// Versions that were already applied (skipped).
+    pub skipped: Vec<u32>,
+    /// Current schema version after this run (0 if no migrations exist).
+    pub current_version: u32,
+}
+
+/// A record from the _migrations tracking table.
+#[derive(Debug, Clone)]
+pub struct MigrationRecord {
+    /// Migration version.
+    pub version: u32,
+    /// Migration name.
+    pub name: String,
+    /// SHA-256 checksum of the `up` SQL.
+    pub checksum: String,
+    /// Epoch milliseconds when applied.
+    pub applied_at: i64,
+    /// Duration in milliseconds to apply.
+    pub duration_ms: i64,
+}

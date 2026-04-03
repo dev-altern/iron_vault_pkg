@@ -122,7 +122,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<List<Condition>> dco_decode_list_list_condition(dynamic raw);
 
   @protected
+  List<MigrationRecord> dco_decode_list_migration_record(dynamic raw);
+
+  @protected
   List<OrderBy> dco_decode_list_order_by(dynamic raw);
+
+  @protected
+  Uint32List dco_decode_list_prim_u_32_strict(dynamic raw);
 
   @protected
   List<int> dco_decode_list_prim_u_8_loose(dynamic raw);
@@ -140,7 +146,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<UpdateEntry> dco_decode_list_update_entry(dynamic raw);
 
   @protected
+  List<VaultMigration> dco_decode_list_vault_migration(dynamic raw);
+
+  @protected
+  MigrationRecord dco_decode_migration_record(dynamic raw);
+
+  @protected
+  MigrationReport dco_decode_migration_report(dynamic raw);
+
+  @protected
   Map<String, SqlValue>? dco_decode_opt_Map_String_sql_value_None(dynamic raw);
+
+  @protected
+  String? dco_decode_opt_String(dynamic raw);
 
   @protected
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
@@ -180,6 +198,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   VaultConfig dco_decode_vault_config(dynamic raw);
+
+  @protected
+  VaultMigration dco_decode_vault_migration(dynamic raw);
 
   @protected
   VaultStats dco_decode_vault_stats(dynamic raw);
@@ -284,7 +305,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<MigrationRecord> sse_decode_list_migration_record(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   List<OrderBy> sse_decode_list_order_by(SseDeserializer deserializer);
+
+  @protected
+  Uint32List sse_decode_list_prim_u_32_strict(SseDeserializer deserializer);
 
   @protected
   List<int> sse_decode_list_prim_u_8_loose(SseDeserializer deserializer);
@@ -304,9 +333,23 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<UpdateEntry> sse_decode_list_update_entry(SseDeserializer deserializer);
 
   @protected
+  List<VaultMigration> sse_decode_list_vault_migration(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  MigrationRecord sse_decode_migration_record(SseDeserializer deserializer);
+
+  @protected
+  MigrationReport sse_decode_migration_report(SseDeserializer deserializer);
+
+  @protected
   Map<String, SqlValue>? sse_decode_opt_Map_String_sql_value_None(
     SseDeserializer deserializer,
   );
+
+  @protected
+  String? sse_decode_opt_String(SseDeserializer deserializer);
 
   @protected
   int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
@@ -348,6 +391,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   VaultConfig sse_decode_vault_config(SseDeserializer deserializer);
+
+  @protected
+  VaultMigration sse_decode_vault_migration(SseDeserializer deserializer);
 
   @protected
   VaultStats sse_decode_vault_stats(SseDeserializer deserializer);
@@ -483,7 +529,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_migration_record(
+    List<MigrationRecord> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_order_by(List<OrderBy> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_prim_u_32_strict(
+    Uint32List self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_list_prim_u_8_loose(List<int> self, SseSerializer serializer);
@@ -510,10 +568,31 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_vault_migration(
+    List<VaultMigration> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_migration_record(
+    MigrationRecord self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_migration_report(
+    MigrationReport self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_opt_Map_String_sql_value_None(
     Map<String, SqlValue>? self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_opt_String(String? self, SseSerializer serializer);
 
   @protected
   void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
@@ -556,6 +635,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_vault_config(VaultConfig self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_vault_migration(
+    VaultMigration self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_vault_stats(VaultStats self, SseSerializer serializer);

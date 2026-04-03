@@ -8,7 +8,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'types.freezed.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 @freezed
 sealed class AggExpr with _$AggExpr {
@@ -191,6 +191,82 @@ sealed class JoinSpec with _$JoinSpec {
 
   /// Raw JOIN expression.
   const factory JoinSpec.raw({required String expression}) = JoinSpec_Raw;
+}
+
+/// A record from the _migrations tracking table.
+class MigrationRecord {
+  /// Migration version.
+  final int version;
+
+  /// Migration name.
+  final String name;
+
+  /// SHA-256 checksum of the `up` SQL.
+  final String checksum;
+
+  /// Epoch milliseconds when applied.
+  final PlatformInt64 appliedAt;
+
+  /// Duration in milliseconds to apply.
+  final PlatformInt64 durationMs;
+
+  const MigrationRecord({
+    required this.version,
+    required this.name,
+    required this.checksum,
+    required this.appliedAt,
+    required this.durationMs,
+  });
+
+  @override
+  int get hashCode =>
+      version.hashCode ^
+      name.hashCode ^
+      checksum.hashCode ^
+      appliedAt.hashCode ^
+      durationMs.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is MigrationRecord &&
+          runtimeType == other.runtimeType &&
+          version == other.version &&
+          name == other.name &&
+          checksum == other.checksum &&
+          appliedAt == other.appliedAt &&
+          durationMs == other.durationMs;
+}
+
+/// Report returned after running migrations.
+class MigrationReport {
+  /// Versions that were applied in this run.
+  final Uint32List applied;
+
+  /// Versions that were already applied (skipped).
+  final Uint32List skipped;
+
+  /// Current schema version after this run (0 if no migrations exist).
+  final int currentVersion;
+
+  const MigrationReport({
+    required this.applied,
+    required this.skipped,
+    required this.currentVersion,
+  });
+
+  @override
+  int get hashCode =>
+      applied.hashCode ^ skipped.hashCode ^ currentVersion.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is MigrationReport &&
+          runtimeType == other.runtimeType &&
+          applied == other.applied &&
+          skipped == other.skipped &&
+          currentVersion == other.currentVersion;
 }
 
 @freezed
@@ -453,6 +529,47 @@ class VaultConfig {
           journalSizeLimitBytes == other.journalSizeLimitBytes &&
           foreignKeys == other.foreignKeys &&
           walMode == other.walMode;
+}
+
+/// A single versioned schema migration.
+///
+/// Migrations are applied in version order. Each migration's `up` SQL
+/// is checksummed (SHA-256) and the checksum is stored in the database.
+/// If a previously-applied migration's SQL has been altered, IronVault
+/// detects the tampering and refuses to proceed.
+class VaultMigration {
+  /// Unique version number (must be > 0, applied in ascending order).
+  final int version;
+
+  /// Human-readable name for logging.
+  final String name;
+
+  /// SQL to apply this migration (executed in a transaction).
+  final String up;
+
+  /// SQL to reverse this migration (None = irreversible).
+  final String? down;
+
+  const VaultMigration({
+    required this.version,
+    required this.name,
+    required this.up,
+    this.down,
+  });
+
+  @override
+  int get hashCode =>
+      version.hashCode ^ name.hashCode ^ up.hashCode ^ down.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is VaultMigration &&
+          runtimeType == other.runtimeType &&
+          version == other.version &&
+          name == other.name &&
+          up == other.up &&
+          down == other.down;
 }
 
 /// Database statistics snapshot.
