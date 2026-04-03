@@ -24,6 +24,7 @@ pub mod query_write;
 pub mod reactive;
 pub mod search;
 pub mod semantic;
+pub mod stress_fuzz;
 pub mod sync_engine;
 pub mod tenant;
 pub mod transactions;
