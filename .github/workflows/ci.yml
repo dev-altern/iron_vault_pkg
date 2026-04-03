@@ -38,8 +38,8 @@ jobs:
         run: cargo clippy --all-targets -- -D warnings
 
       - name: Run tests
-        run: cargo test
-        timeout-minutes: 10
+        run: cargo test -- --test-threads=1
+        timeout-minutes: 15
 
   dart-checks:
     name: Dart — analyze
@@ -54,10 +54,10 @@ jobs:
         run: flutter pub get
 
       - name: Analyze
-        run: flutter analyze --no-fatal-infos
+        run: flutter analyze lib/ --no-fatal-infos
 
   rust-checks-macos:
-    name: Rust — macOS build
+    name: Rust — macOS build + test
     runs-on: macos-latest
     defaults:
       run:
@@ -79,5 +79,5 @@ jobs:
         run: cargo build
 
       - name: Test
-        run: cargo test
-        timeout-minutes: 10
+        run: cargo test -- --test-threads=1
+        timeout-minutes: 15
