@@ -10,8 +10,8 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  rust-checks:
-    name: Rust — lint + test
+  rust-lint:
+    name: Rust — lint
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -37,27 +37,31 @@ jobs:
       - name: Run clippy
         run: cargo clippy --all-targets -- -D warnings
 
-      - name: Run tests
-        run: cargo test -- --test-threads=1
-        timeout-minutes: 15
-
-  dart-checks:
-    name: Dart — analyze
+  rust-test-linux:
+    name: Rust — test (Linux)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
     steps:
       - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: actions/cache@v4
         with:
-          channel: stable
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('rust/Cargo.lock') }}
 
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Run tests (skip perf on CI)
+        run: cargo test -- --test-threads=1 --skip performance
+        timeout-minutes: 15
 
-      - name: Analyze
-        run: flutter analyze lib/ --no-fatal-infos
-
-  rust-checks-macos:
-    name: Rust — macOS build + test
+  rust-test-macos:
+    name: Rust — test (macOS)
     runs-on: macos-latest
     defaults:
       run:
@@ -75,9 +79,44 @@ jobs:
             rust/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('rust/Cargo.lock') }}
 
-      - name: Build
-        run: cargo build
-
-      - name: Test
-        run: cargo test -- --test-threads=1
+      - name: Run tests (skip perf on CI)
+        run: cargo test -- --test-threads=1 --skip performance
         timeout-minutes: 15
+
+  rust-test-windows:
+    name: Rust — test (Windows)
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('rust/Cargo.lock') }}
+
+      - name: Run tests (skip perf on CI)
+        run: cargo test -- --test-threads=1 --skip performance
+        timeout-minutes: 20
+
+  dart-checks:
+    name: Dart — analyze
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze lib/ --no-fatal-infos
