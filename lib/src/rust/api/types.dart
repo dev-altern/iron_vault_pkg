@@ -8,7 +8,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'types.freezed.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 @freezed
 sealed class AggExpr with _$AggExpr {
@@ -355,6 +355,37 @@ enum ExportFormat {
   jsonl,
 }
 
+/// Statistics about a search index.
+class IndexStats {
+  /// Number of indexed documents.
+  final BigInt numDocs;
+
+  /// Number of segments in the index.
+  final BigInt numSegments;
+
+  /// Total size of the index directory in bytes.
+  final BigInt sizeBytes;
+
+  const IndexStats({
+    required this.numDocs,
+    required this.numSegments,
+    required this.sizeBytes,
+  });
+
+  @override
+  int get hashCode =>
+      numDocs.hashCode ^ numSegments.hashCode ^ sizeBytes.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is IndexStats &&
+          runtimeType == other.runtimeType &&
+          numDocs == other.numDocs &&
+          numSegments == other.numSegments &&
+          sizeBytes == other.sizeBytes;
+}
+
 /// Result of a database integrity check.
 class IntegrityReport {
   /// True if no corruption detected.
@@ -672,6 +703,72 @@ class RestoreResult {
           runtimeType == other.runtimeType &&
           pagesRestored == other.pagesRestored &&
           integrityOk == other.integrityOk;
+}
+
+/// A field definition for building a search index.
+class SearchField {
+  /// Column name in the database.
+  final String name;
+
+  /// Relevance weight (default 1.0, higher = more important).
+  final double weight;
+
+  /// Whether this field is stored in the index (returned in results).
+  final bool stored;
+
+  const SearchField({
+    required this.name,
+    required this.weight,
+    required this.stored,
+  });
+
+  @override
+  int get hashCode => name.hashCode ^ weight.hashCode ^ stored.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SearchField &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          weight == other.weight &&
+          stored == other.stored;
+}
+
+/// A single search result.
+class SearchHit {
+  /// Row ID from the database.
+  final String id;
+
+  /// Table the result came from.
+  final String table;
+
+  /// Relevance score (higher = more relevant).
+  final double score;
+
+  /// Highlighted snippet (HTML with `<b>` tags).
+  final String snippet;
+
+  const SearchHit({
+    required this.id,
+    required this.table,
+    required this.score,
+    required this.snippet,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^ table.hashCode ^ score.hashCode ^ snippet.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SearchHit &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          table == other.table &&
+          score == other.score &&
+          snippet == other.snippet;
 }
 
 @freezed

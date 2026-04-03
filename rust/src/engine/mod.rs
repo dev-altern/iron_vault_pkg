@@ -7,6 +7,7 @@ pub(crate) mod crypto;
 pub(crate) mod migration;
 pub(crate) mod notifier;
 pub(crate) mod query_builder;
+pub(crate) mod search;
 pub(crate) mod transaction;
 pub(crate) mod validate;
 pub(crate) mod write_ops;

@@ -1,5 +1,5 @@
 use crate::api::types::*;
-use crate::engine::{audit, backup, connection, convert, crypto, export, migration, notifier, query_builder, transaction, write_ops};
+use crate::engine::{audit, backup, connection, convert, crypto, export, migration, notifier, query_builder, search, transaction, write_ops};
 use anyhow::{anyhow, Context, Result};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
@@ -35,6 +35,8 @@ pub struct IronVaultDb {
     notifier: Arc<notifier::ChangeNotifier>,
     /// Current actor ID for audit logging (default: "system").
     actor_id: Mutex<String>,
+    /// Full-text search engine (Tantivy).
+    search_engine: Arc<search::SearchEngine>,
 }
 
 impl std::fmt::Debug for IronVaultDb {
@@ -95,6 +97,7 @@ impl IronVaultDb {
             )
         })?;
 
+        let search_engine = Arc::new(search::SearchEngine::new(&path));
         Ok(IronVaultDb {
             write_pool,
             read_pool,
@@ -105,6 +108,7 @@ impl IronVaultDb {
             encryption_key: Zeroizing::new(encryption_key),
             notifier: Arc::new(notifier::ChangeNotifier::new()),
             actor_id: Mutex::new("system".to_string()),
+            search_engine,
         })
     }
 
@@ -1058,6 +1062,65 @@ impl IronVaultDb {
         self.ensure_open()?;
         let conn = self.acquire_reader()?;
         export::export_table(&conn, &table, &self.tenant_id, &format, &columns)
+    }
+
+    // ── Full-Text Search ─────────────────────────────────────────
+
+    /// Build or open a Tantivy search index for a table.
+    ///
+    /// Call after creating the table (via migration or raw SQL).
+    /// Fields define which columns are indexed and their weights.
+    pub fn build_search_index(
+        &self,
+        table: String,
+        fields: Vec<SearchField>,
+    ) -> Result<()> {
+        self.ensure_open()?;
+        self.search_engine.build_index(&table, &fields)
+    }
+
+    /// Index a single row in the search engine.
+    ///
+    /// `fields` maps column names to their text values.
+    /// Call after insert/update to keep the index current.
+    pub fn search_index_row(
+        &self,
+        table: String,
+        id: String,
+        fields: HashMap<String, String>,
+    ) -> Result<()> {
+        self.ensure_open()?;
+        self.search_engine.index_row(&table, &id, &fields)
+    }
+
+    /// Remove a row from the search index.
+    ///
+    /// Call after soft-delete or hard-delete.
+    pub fn search_remove_row(&self, table: String, id: String) -> Result<()> {
+        self.ensure_open()?;
+        self.search_engine.remove_from_index(&table, &id)
+    }
+
+    /// Search the index using Tantivy query syntax.
+    ///
+    /// Supports: simple words, "phrase search", field:value,
+    /// boolean (AND OR NOT), fuzzy~N, wildcards, boost^N.
+    /// Returns results ranked by relevance score.
+    pub fn search(
+        &self,
+        table: String,
+        query: String,
+        limit: u32,
+        highlight: bool,
+    ) -> Result<Vec<SearchHit>> {
+        self.ensure_open()?;
+        self.search_engine.search(&table, &query, limit, highlight)
+    }
+
+    /// Get statistics about a search index.
+    pub fn search_index_stats(&self, table: String) -> Result<IndexStats> {
+        self.ensure_open()?;
+        self.search_engine.index_stats(&table)
     }
 
     // ── Private Helpers ──────────────────────────────────────────

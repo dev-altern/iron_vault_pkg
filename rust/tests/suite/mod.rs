@@ -18,4 +18,5 @@ pub mod edge_cases;
 pub mod encryption_crypto;
 pub mod migrations;
 pub mod reactive;
+pub mod search;
 pub mod transactions;

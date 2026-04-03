@@ -23,6 +23,15 @@ abstract class IronVaultDb implements RustOpaqueInterface {
     required bool encrypt,
   });
 
+  /// Build or open a Tantivy search index for a table.
+  ///
+  /// Call after creating the table (via migration or raw SQL).
+  /// Fields define which columns are indexed and their weights.
+  Future<void> buildSearchIndex({
+    required String table,
+    required List<SearchField> fields,
+  });
+
   /// Trigger a WAL checkpoint.
   ///
   /// Returns the number of WAL pages and how many were successfully
@@ -269,6 +278,36 @@ abstract class IronVaultDb implements RustOpaqueInterface {
     required int targetVersion,
     required List<VaultMigration> migrations,
   });
+
+  /// Search the index using Tantivy query syntax.
+  ///
+  /// Supports: simple words, "phrase search", field:value,
+  /// boolean (AND OR NOT), fuzzy~N, wildcards, boost^N.
+  /// Returns results ranked by relevance score.
+  Future<List<SearchHit>> search({
+    required String table,
+    required String query,
+    required int limit,
+    required bool highlight,
+  });
+
+  /// Index a single row in the search engine.
+  ///
+  /// `fields` maps column names to their text values.
+  /// Call after insert/update to keep the index current.
+  Future<void> searchIndexRow({
+    required String table,
+    required String id,
+    required Map<String, String> fields,
+  });
+
+  /// Get statistics about a search index.
+  Future<IndexStats> searchIndexStats({required String table});
+
+  /// Remove a row from the search index.
+  ///
+  /// Call after soft-delete or hard-delete.
+  Future<void> searchRemoveRow({required String table, required String id});
 
   /// Set the actor ID for audit logging.
   ///

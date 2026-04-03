@@ -47,6 +47,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  Map<String, String> dco_decode_Map_String_String_None(dynamic raw);
+
+  @protected
   Map<String, SqlValue> dco_decode_Map_String_sql_value_None(dynamic raw);
 
   @protected
@@ -125,6 +128,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 dco_decode_i_64(dynamic raw);
 
   @protected
+  IndexStats dco_decode_index_stats(dynamic raw);
+
+  @protected
   IntegrityReport dco_decode_integrity_report(dynamic raw);
 
   @protected
@@ -175,6 +181,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<(String, SqlValue)> dco_decode_list_record_string_sql_value(dynamic raw);
 
   @protected
+  List<(String, String)> dco_decode_list_record_string_string(dynamic raw);
+
+  @protected
+  List<SearchField> dco_decode_list_search_field(dynamic raw);
+
+  @protected
+  List<SearchHit> dco_decode_list_search_hit(dynamic raw);
+
+  @protected
   List<SqlValue> dco_decode_list_sql_value(dynamic raw);
 
   @protected
@@ -220,7 +235,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   (String, SqlValue) dco_decode_record_string_sql_value(dynamic raw);
 
   @protected
+  (String, String) dco_decode_record_string_string(dynamic raw);
+
+  @protected
   RestoreResult dco_decode_restore_result(dynamic raw);
+
+  @protected
+  SearchField dco_decode_search_field(dynamic raw);
+
+  @protected
+  SearchHit dco_decode_search_hit(dynamic raw);
 
   @protected
   SqlValue dco_decode_sql_value(dynamic raw);
@@ -273,6 +297,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   IronVaultDb
   sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  Map<String, String> sse_decode_Map_String_String_None(
     SseDeserializer deserializer,
   );
 
@@ -367,6 +396,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
 
   @protected
+  IndexStats sse_decode_index_stats(SseDeserializer deserializer);
+
+  @protected
   IntegrityReport sse_decode_integrity_report(SseDeserializer deserializer);
 
   @protected
@@ -423,6 +455,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<(String, String)> sse_decode_list_record_string_string(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  List<SearchField> sse_decode_list_search_field(SseDeserializer deserializer);
+
+  @protected
+  List<SearchHit> sse_decode_list_search_hit(SseDeserializer deserializer);
+
+  @protected
   List<SqlValue> sse_decode_list_sql_value(SseDeserializer deserializer);
 
   @protected
@@ -474,7 +517,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  (String, String) sse_decode_record_string_string(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   RestoreResult sse_decode_restore_result(SseDeserializer deserializer);
+
+  @protected
+  SearchField sse_decode_search_field(SseDeserializer deserializer);
+
+  @protected
+  SearchHit sse_decode_search_hit(SseDeserializer deserializer);
 
   @protected
   SqlValue sse_decode_sql_value(SseDeserializer deserializer);
@@ -533,6 +587,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void
   sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
     IronVaultDb self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_Map_String_String_None(
+    Map<String, String> self,
     SseSerializer serializer,
   );
 
@@ -649,6 +709,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
 
   @protected
+  void sse_encode_index_stats(IndexStats self, SseSerializer serializer);
+
+  @protected
   void sse_encode_integrity_report(
     IntegrityReport self,
     SseSerializer serializer,
@@ -724,6 +787,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_record_string_string(
+    List<(String, String)> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_search_field(
+    List<SearchField> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_list_search_hit(
+    List<SearchHit> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_list_sql_value(List<SqlValue> self, SseSerializer serializer);
 
   @protected
@@ -790,7 +871,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_record_string_string(
+    (String, String) self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_restore_result(RestoreResult self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_search_field(SearchField self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_search_hit(SearchHit self, SseSerializer serializer);
 
   @protected
   void sse_encode_sql_value(SqlValue self, SseSerializer serializer);

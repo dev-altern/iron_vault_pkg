@@ -27,6 +27,7 @@ dashmap = "5"
 hmac = "0.12"
 zstd = "0.13"
 blake3 = "1"
+tantivy = "0.22"
 
 [dev-dependencies]
 tempfile = "3"

@@ -470,3 +470,40 @@ pub enum ExportFormat {
     /// One JSON object per line.
     Jsonl,
 }
+
+// ─── Phase 9: Search Types ──────────────────────────────────────────
+
+/// A single search result.
+#[derive(Debug, Clone)]
+pub struct SearchHit {
+    /// Row ID from the database.
+    pub id: String,
+    /// Table the result came from.
+    pub table: String,
+    /// Relevance score (higher = more relevant).
+    pub score: f64,
+    /// Highlighted snippet (HTML with `<b>` tags).
+    pub snippet: String,
+}
+
+/// A field definition for building a search index.
+#[derive(Debug, Clone)]
+pub struct SearchField {
+    /// Column name in the database.
+    pub name: String,
+    /// Relevance weight (default 1.0, higher = more important).
+    pub weight: f64,
+    /// Whether this field is stored in the index (returned in results).
+    pub stored: bool,
+}
+
+/// Statistics about a search index.
+#[derive(Debug, Clone)]
+pub struct IndexStats {
+    /// Number of indexed documents.
+    pub num_docs: u64,
+    /// Number of segments in the index.
+    pub num_segments: u64,
+    /// Total size of the index directory in bytes.
+    pub size_bytes: u64,
+}
