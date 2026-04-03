@@ -4,6 +4,8 @@
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
 import 'api/simple.dart';
+import 'api/types.dart';
+import 'api/vault.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'frb_generated.dart';
@@ -66,7 +68,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.12.0';
 
   @override
-  int get rustContentHash => -1918914929;
+  int get rustContentHash => -1911840762;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -78,9 +80,67 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
+  Future<CheckpointResult> crateApiVaultIronVaultDbCheckpoint({
+    required IronVaultDb that,
+    required CheckpointMode mode,
+  });
+
+  Future<void> crateApiVaultIronVaultDbClose({required IronVaultDb that});
+
+  Future<BigInt> crateApiVaultIronVaultDbExecuteRaw({
+    required IronVaultDb that,
+    required String sql,
+    required List<SqlValue> params,
+  });
+
+  Future<String> crateApiVaultIronVaultDbGetPath({required IronVaultDb that});
+
+  Future<String> crateApiVaultIronVaultDbGetTenantId({
+    required IronVaultDb that,
+  });
+
+  Future<IntegrityReport> crateApiVaultIronVaultDbIntegrityCheck({
+    required IronVaultDb that,
+  });
+
+  Future<IronVaultDb> crateApiVaultIronVaultDbOpen({
+    required String path,
+    required List<int> encryptionKey,
+    required String tenantId,
+    required VaultConfig config,
+  });
+
+  Future<List<Map<String, SqlValue>>> crateApiVaultIronVaultDbQueryRaw({
+    required IronVaultDb that,
+    required String sql,
+    required List<SqlValue> params,
+  });
+
+  Future<VaultStats> crateApiVaultIronVaultDbStats({required IronVaultDb that});
+
+  Future<void> crateApiVaultIronVaultDbVacuum({required IronVaultDb that});
+
   String crateApiSimpleGreet({required String name});
 
   Future<void> crateApiSimpleInitApp();
+
+  Future<VaultConfig> crateApiTypesVaultConfigDefault();
+
+  VaultConfig crateApiTypesVaultConfigDevelopment();
+
+  VaultConfig crateApiTypesVaultConfigLowMemory();
+
+  VaultConfig crateApiTypesVaultConfigProduction();
+
+  VaultConfig crateApiTypesVaultConfigTestConfig();
+
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_IronVaultDb;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_IronVaultDb;
+
+  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_IronVaultDbPtr;
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -92,13 +152,372 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
+  Future<CheckpointResult> crateApiVaultIronVaultDbCheckpoint({
+    required IronVaultDb that,
+    required CheckpointMode mode,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+            that,
+            serializer,
+          );
+          sse_encode_checkpoint_mode(mode, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 1,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_checkpoint_result,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbCheckpointConstMeta,
+        argValues: [that, mode],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbCheckpointConstMeta =>
+      const TaskConstMeta(
+        debugName: "IronVaultDb_checkpoint",
+        argNames: ["that", "mode"],
+      );
+
+  @override
+  Future<void> crateApiVaultIronVaultDbClose({required IronVaultDb that}) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 2,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbCloseConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbCloseConstMeta =>
+      const TaskConstMeta(debugName: "IronVaultDb_close", argNames: ["that"]);
+
+  @override
+  Future<BigInt> crateApiVaultIronVaultDbExecuteRaw({
+    required IronVaultDb that,
+    required String sql,
+    required List<SqlValue> params,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+            that,
+            serializer,
+          );
+          sse_encode_String(sql, serializer);
+          sse_encode_list_sql_value(params, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 3,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_u_64,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbExecuteRawConstMeta,
+        argValues: [that, sql, params],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbExecuteRawConstMeta =>
+      const TaskConstMeta(
+        debugName: "IronVaultDb_execute_raw",
+        argNames: ["that", "sql", "params"],
+      );
+
+  @override
+  Future<String> crateApiVaultIronVaultDbGetPath({required IronVaultDb that}) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 4,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_String,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbGetPathConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbGetPathConstMeta =>
+      const TaskConstMeta(
+        debugName: "IronVaultDb_get_path",
+        argNames: ["that"],
+      );
+
+  @override
+  Future<String> crateApiVaultIronVaultDbGetTenantId({
+    required IronVaultDb that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 5,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_String,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbGetTenantIdConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbGetTenantIdConstMeta =>
+      const TaskConstMeta(
+        debugName: "IronVaultDb_get_tenant_id",
+        argNames: ["that"],
+      );
+
+  @override
+  Future<IntegrityReport> crateApiVaultIronVaultDbIntegrityCheck({
+    required IronVaultDb that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 6,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_integrity_report,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbIntegrityCheckConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbIntegrityCheckConstMeta =>
+      const TaskConstMeta(
+        debugName: "IronVaultDb_integrity_check",
+        argNames: ["that"],
+      );
+
+  @override
+  Future<IronVaultDb> crateApiVaultIronVaultDbOpen({
+    required String path,
+    required List<int> encryptionKey,
+    required String tenantId,
+    required VaultConfig config,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(path, serializer);
+          sse_encode_list_prim_u_8_loose(encryptionKey, serializer);
+          sse_encode_String(tenantId, serializer);
+          sse_encode_box_autoadd_vault_config(config, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 7,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData:
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbOpenConstMeta,
+        argValues: [path, encryptionKey, tenantId, config],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbOpenConstMeta =>
+      const TaskConstMeta(
+        debugName: "IronVaultDb_open",
+        argNames: ["path", "encryptionKey", "tenantId", "config"],
+      );
+
+  @override
+  Future<List<Map<String, SqlValue>>> crateApiVaultIronVaultDbQueryRaw({
+    required IronVaultDb that,
+    required String sql,
+    required List<SqlValue> params,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+            that,
+            serializer,
+          );
+          sse_encode_String(sql, serializer);
+          sse_encode_list_sql_value(params, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 8,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_Map_String_sql_value_None,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbQueryRawConstMeta,
+        argValues: [that, sql, params],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbQueryRawConstMeta =>
+      const TaskConstMeta(
+        debugName: "IronVaultDb_query_raw",
+        argNames: ["that", "sql", "params"],
+      );
+
+  @override
+  Future<VaultStats> crateApiVaultIronVaultDbStats({
+    required IronVaultDb that,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 9,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_vault_stats,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbStatsConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbStatsConstMeta =>
+      const TaskConstMeta(debugName: "IronVaultDb_stats", argNames: ["that"]);
+
+  @override
+  Future<void> crateApiVaultIronVaultDbVacuum({required IronVaultDb that}) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 10,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbVacuumConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbVacuumConstMeta =>
+      const TaskConstMeta(debugName: "IronVaultDb_vacuum", argNames: ["that"]);
+
+  @override
   String crateApiSimpleGreet({required String name}) {
     return handler.executeSync(
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(name, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 11)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -123,7 +542,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 2,
+            funcId: 12,
             port: port_,
           );
         },
@@ -141,6 +560,181 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiSimpleInitAppConstMeta =>
       const TaskConstMeta(debugName: "init_app", argNames: []);
 
+  @override
+  Future<VaultConfig> crateApiTypesVaultConfigDefault() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 13,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_vault_config,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiTypesVaultConfigDefaultConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiTypesVaultConfigDefaultConstMeta =>
+      const TaskConstMeta(debugName: "vault_config_default", argNames: []);
+
+  @override
+  VaultConfig crateApiTypesVaultConfigDevelopment() {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 14)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_vault_config,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiTypesVaultConfigDevelopmentConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiTypesVaultConfigDevelopmentConstMeta =>
+      const TaskConstMeta(debugName: "vault_config_development", argNames: []);
+
+  @override
+  VaultConfig crateApiTypesVaultConfigLowMemory() {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 15)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_vault_config,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiTypesVaultConfigLowMemoryConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiTypesVaultConfigLowMemoryConstMeta =>
+      const TaskConstMeta(debugName: "vault_config_low_memory", argNames: []);
+
+  @override
+  VaultConfig crateApiTypesVaultConfigProduction() {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 16)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_vault_config,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiTypesVaultConfigProductionConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiTypesVaultConfigProductionConstMeta =>
+      const TaskConstMeta(debugName: "vault_config_production", argNames: []);
+
+  @override
+  VaultConfig crateApiTypesVaultConfigTestConfig() {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 17)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_vault_config,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiTypesVaultConfigTestConfigConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiTypesVaultConfigTestConfigConstMeta =>
+      const TaskConstMeta(debugName: "vault_config_test_config", argNames: []);
+
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_IronVaultDb => wire
+      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_IronVaultDb => wire
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb;
+
+  @protected
+  AnyhowException dco_decode_AnyhowException(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return AnyhowException(raw as String);
+  }
+
+  @protected
+  IronVaultDb
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return IronVaultDbImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  IronVaultDb
+  dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return IronVaultDbImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  IronVaultDb
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return IronVaultDbImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  Map<String, SqlValue> dco_decode_Map_String_sql_value_None(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return Map.fromEntries(
+      dco_decode_list_record_string_sql_value(
+        raw,
+      ).map((e) => MapEntry(e.$1, e.$2)),
+    );
+  }
+
+  @protected
+  IronVaultDb
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return IronVaultDbImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
   @protected
   String dco_decode_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
@@ -148,9 +742,148 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  bool dco_decode_bool(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as bool;
+  }
+
+  @protected
+  VaultConfig dco_decode_box_autoadd_vault_config(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_vault_config(raw);
+  }
+
+  @protected
+  CheckpointMode dco_decode_checkpoint_mode(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return CheckpointMode.values[raw as int];
+  }
+
+  @protected
+  CheckpointResult dco_decode_checkpoint_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return CheckpointResult(
+      walPages: dco_decode_i_32(arr[0]),
+      checkpointedPages: dco_decode_i_32(arr[1]),
+    );
+  }
+
+  @protected
+  double dco_decode_f_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as double;
+  }
+
+  @protected
+  int dco_decode_i_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
+
+  @protected
+  PlatformInt64 dco_decode_i_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeI64(raw);
+  }
+
+  @protected
+  IntegrityReport dco_decode_integrity_report(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return IntegrityReport(
+      isClean: dco_decode_bool(arr[0]),
+      errors: dco_decode_list_String(arr[1]),
+    );
+  }
+
+  @protected
+  List<Map<String, SqlValue>> dco_decode_list_Map_String_sql_value_None(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>)
+        .map(dco_decode_Map_String_sql_value_None)
+        .toList();
+  }
+
+  @protected
+  List<String> dco_decode_list_String(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_String).toList();
+  }
+
+  @protected
+  List<int> dco_decode_list_prim_u_8_loose(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as List<int>;
+  }
+
+  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as Uint8List;
+  }
+
+  @protected
+  List<(String, SqlValue)> dco_decode_list_record_string_sql_value(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>)
+        .map(dco_decode_record_string_sql_value)
+        .toList();
+  }
+
+  @protected
+  List<SqlValue> dco_decode_list_sql_value(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_sql_value).toList();
+  }
+
+  @protected
+  (String, SqlValue) dco_decode_record_string_sql_value(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2) {
+      throw Exception('Expected 2 elements, got ${arr.length}');
+    }
+    return (dco_decode_String(arr[0]), dco_decode_sql_value(arr[1]));
+  }
+
+  @protected
+  SqlValue dco_decode_sql_value(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return SqlValue_Null();
+      case 1:
+        return SqlValue_Integer(dco_decode_i_64(raw[1]));
+      case 2:
+        return SqlValue_Real(dco_decode_f_64(raw[1]));
+      case 3:
+        return SqlValue_Text(dco_decode_String(raw[1]));
+      case 4:
+        return SqlValue_Blob(dco_decode_list_prim_u_8_strict(raw[1]));
+      default:
+        throw Exception("unreachable");
+    }
+  }
+
+  @protected
+  int dco_decode_u_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
+
+  @protected
+  BigInt dco_decode_u_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeU64(raw);
   }
 
   @protected
@@ -166,6 +899,110 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  BigInt dco_decode_usize(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeU64(raw);
+  }
+
+  @protected
+  VaultConfig dco_decode_vault_config(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
+    return VaultConfig(
+      readPoolSize: dco_decode_u_32(arr[0]),
+      writePoolSize: dco_decode_u_32(arr[1]),
+      busyTimeoutMs: dco_decode_u_32(arr[2]),
+      cacheSizeKb: dco_decode_u_32(arr[3]),
+      mmapSizeBytes: dco_decode_u_64(arr[4]),
+      journalSizeLimitBytes: dco_decode_u_64(arr[5]),
+      foreignKeys: dco_decode_bool(arr[6]),
+      walMode: dco_decode_bool(arr[7]),
+    );
+  }
+
+  @protected
+  VaultStats dco_decode_vault_stats(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return VaultStats(
+      dbSizeBytes: dco_decode_i_64(arr[0]),
+      walSizeBytes: dco_decode_i_64(arr[1]),
+      totalTables: dco_decode_i_32(arr[2]),
+      migrationVersion: dco_decode_i_32(arr[3]),
+      pageCount: dco_decode_i_64(arr[4]),
+      pageSize: dco_decode_i_64(arr[5]),
+    );
+  }
+
+  @protected
+  AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_String(deserializer);
+    return AnyhowException(inner);
+  }
+
+  @protected
+  IronVaultDb
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return IronVaultDbImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  IronVaultDb
+  sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return IronVaultDbImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  IronVaultDb
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return IronVaultDbImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  Map<String, SqlValue> sse_decode_Map_String_sql_value_None(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_list_record_string_sql_value(deserializer);
+    return Map.fromEntries(inner.map((e) => MapEntry(e.$1, e.$2)));
+  }
+
+  @protected
+  IronVaultDb
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return IronVaultDbImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
   String sse_decode_String(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_list_prim_u_8_strict(deserializer);
@@ -173,10 +1010,174 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  bool sse_decode_bool(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getUint8() != 0;
+  }
+
+  @protected
+  VaultConfig sse_decode_box_autoadd_vault_config(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_vault_config(deserializer));
+  }
+
+  @protected
+  CheckpointMode sse_decode_checkpoint_mode(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return CheckpointMode.values[inner];
+  }
+
+  @protected
+  CheckpointResult sse_decode_checkpoint_result(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_walPages = sse_decode_i_32(deserializer);
+    var var_checkpointedPages = sse_decode_i_32(deserializer);
+    return CheckpointResult(
+      walPages: var_walPages,
+      checkpointedPages: var_checkpointedPages,
+    );
+  }
+
+  @protected
+  double sse_decode_f_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getFloat64();
+  }
+
+  @protected
+  int sse_decode_i_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getInt32();
+  }
+
+  @protected
+  PlatformInt64 sse_decode_i_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getPlatformInt64();
+  }
+
+  @protected
+  IntegrityReport sse_decode_integrity_report(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_isClean = sse_decode_bool(deserializer);
+    var var_errors = sse_decode_list_String(deserializer);
+    return IntegrityReport(isClean: var_isClean, errors: var_errors);
+  }
+
+  @protected
+  List<Map<String, SqlValue>> sse_decode_list_Map_String_sql_value_None(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <Map<String, SqlValue>>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_Map_String_sql_value_None(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<String> sse_decode_list_String(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <String>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_String(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<int> sse_decode_list_prim_u_8_loose(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var len_ = sse_decode_i_32(deserializer);
+    return deserializer.buffer.getUint8List(len_);
+  }
+
+  @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var len_ = sse_decode_i_32(deserializer);
     return deserializer.buffer.getUint8List(len_);
+  }
+
+  @protected
+  List<(String, SqlValue)> sse_decode_list_record_string_sql_value(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <(String, SqlValue)>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_record_string_sql_value(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SqlValue> sse_decode_list_sql_value(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SqlValue>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_sql_value(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  (String, SqlValue) sse_decode_record_string_sql_value(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_field0 = sse_decode_String(deserializer);
+    var var_field1 = sse_decode_sql_value(deserializer);
+    return (var_field0, var_field1);
+  }
+
+  @protected
+  SqlValue sse_decode_sql_value(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        return SqlValue_Null();
+      case 1:
+        var var_field0 = sse_decode_i_64(deserializer);
+        return SqlValue_Integer(var_field0);
+      case 2:
+        var var_field0 = sse_decode_f_64(deserializer);
+        return SqlValue_Real(var_field0);
+      case 3:
+        var var_field0 = sse_decode_String(deserializer);
+        return SqlValue_Text(var_field0);
+      case 4:
+        var var_field0 = sse_decode_list_prim_u_8_strict(deserializer);
+        return SqlValue_Blob(var_field0);
+      default:
+        throw UnimplementedError('');
+    }
+  }
+
+  @protected
+  int sse_decode_u_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getUint32();
+  }
+
+  @protected
+  BigInt sse_decode_u_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getBigUint64();
   }
 
   @protected
@@ -191,21 +1192,225 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  int sse_decode_i_32(SseDeserializer deserializer) {
+  BigInt sse_decode_usize(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getInt32();
+    return deserializer.buffer.getBigUint64();
   }
 
   @protected
-  bool sse_decode_bool(SseDeserializer deserializer) {
+  VaultConfig sse_decode_vault_config(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getUint8() != 0;
+    var var_readPoolSize = sse_decode_u_32(deserializer);
+    var var_writePoolSize = sse_decode_u_32(deserializer);
+    var var_busyTimeoutMs = sse_decode_u_32(deserializer);
+    var var_cacheSizeKb = sse_decode_u_32(deserializer);
+    var var_mmapSizeBytes = sse_decode_u_64(deserializer);
+    var var_journalSizeLimitBytes = sse_decode_u_64(deserializer);
+    var var_foreignKeys = sse_decode_bool(deserializer);
+    var var_walMode = sse_decode_bool(deserializer);
+    return VaultConfig(
+      readPoolSize: var_readPoolSize,
+      writePoolSize: var_writePoolSize,
+      busyTimeoutMs: var_busyTimeoutMs,
+      cacheSizeKb: var_cacheSizeKb,
+      mmapSizeBytes: var_mmapSizeBytes,
+      journalSizeLimitBytes: var_journalSizeLimitBytes,
+      foreignKeys: var_foreignKeys,
+      walMode: var_walMode,
+    );
+  }
+
+  @protected
+  VaultStats sse_decode_vault_stats(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_dbSizeBytes = sse_decode_i_64(deserializer);
+    var var_walSizeBytes = sse_decode_i_64(deserializer);
+    var var_totalTables = sse_decode_i_32(deserializer);
+    var var_migrationVersion = sse_decode_i_32(deserializer);
+    var var_pageCount = sse_decode_i_64(deserializer);
+    var var_pageSize = sse_decode_i_64(deserializer);
+    return VaultStats(
+      dbSizeBytes: var_dbSizeBytes,
+      walSizeBytes: var_walSizeBytes,
+      totalTables: var_totalTables,
+      migrationVersion: var_migrationVersion,
+      pageCount: var_pageCount,
+      pageSize: var_pageSize,
+    );
+  }
+
+  @protected
+  void sse_encode_AnyhowException(
+    AnyhowException self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.message, serializer);
+  }
+
+  @protected
+  void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+    IronVaultDb self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as IronVaultDbImpl).frbInternalSseEncode(move: true),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+    IronVaultDb self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as IronVaultDbImpl).frbInternalSseEncode(move: false),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+    IronVaultDb self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as IronVaultDbImpl).frbInternalSseEncode(move: false),
+      serializer,
+    );
+  }
+
+  @protected
+  void sse_encode_Map_String_sql_value_None(
+    Map<String, SqlValue> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_record_string_sql_value(
+      self.entries.map((e) => (e.key, e.value)).toList(),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+    IronVaultDb self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as IronVaultDbImpl).frbInternalSseEncode(move: null),
+      serializer,
+    );
   }
 
   @protected
   void sse_encode_String(String self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_list_prim_u_8_strict(utf8.encoder.convert(self), serializer);
+  }
+
+  @protected
+  void sse_encode_bool(bool self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putUint8(self ? 1 : 0);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_vault_config(
+    VaultConfig self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_vault_config(self, serializer);
+  }
+
+  @protected
+  void sse_encode_checkpoint_mode(
+    CheckpointMode self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_checkpoint_result(
+    CheckpointResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.walPages, serializer);
+    sse_encode_i_32(self.checkpointedPages, serializer);
+  }
+
+  @protected
+  void sse_encode_f_64(double self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putFloat64(self);
+  }
+
+  @protected
+  void sse_encode_i_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putInt32(self);
+  }
+
+  @protected
+  void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putPlatformInt64(self);
+  }
+
+  @protected
+  void sse_encode_integrity_report(
+    IntegrityReport self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_bool(self.isClean, serializer);
+    sse_encode_list_String(self.errors, serializer);
+  }
+
+  @protected
+  void sse_encode_list_Map_String_sql_value_None(
+    List<Map<String, SqlValue>> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_Map_String_sql_value_None(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_String(List<String> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_String(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_prim_u_8_loose(
+    List<int> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    serializer.buffer.putUint8List(
+      self is Uint8List ? self : Uint8List.fromList(self),
+    );
   }
 
   @protected
@@ -216,6 +1421,73 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     serializer.buffer.putUint8List(self);
+  }
+
+  @protected
+  void sse_encode_list_record_string_sql_value(
+    List<(String, SqlValue)> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_record_string_sql_value(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_sql_value(
+    List<SqlValue> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_sql_value(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_record_string_sql_value(
+    (String, SqlValue) self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.$1, serializer);
+    sse_encode_sql_value(self.$2, serializer);
+  }
+
+  @protected
+  void sse_encode_sql_value(SqlValue self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case SqlValue_Null():
+        sse_encode_i_32(0, serializer);
+      case SqlValue_Integer(field0: final field0):
+        sse_encode_i_32(1, serializer);
+        sse_encode_i_64(field0, serializer);
+      case SqlValue_Real(field0: final field0):
+        sse_encode_i_32(2, serializer);
+        sse_encode_f_64(field0, serializer);
+      case SqlValue_Text(field0: final field0):
+        sse_encode_i_32(3, serializer);
+        sse_encode_String(field0, serializer);
+      case SqlValue_Blob(field0: final field0):
+        sse_encode_i_32(4, serializer);
+        sse_encode_list_prim_u_8_strict(field0, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_u_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putUint32(self);
+  }
+
+  @protected
+  void sse_encode_u_64(BigInt self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putBigUint64(self);
   }
 
   @protected
@@ -230,14 +1502,123 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_i_32(int self, SseSerializer serializer) {
+  void sse_encode_usize(BigInt self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putInt32(self);
+    serializer.buffer.putBigUint64(self);
   }
 
   @protected
-  void sse_encode_bool(bool self, SseSerializer serializer) {
+  void sse_encode_vault_config(VaultConfig self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putUint8(self ? 1 : 0);
+    sse_encode_u_32(self.readPoolSize, serializer);
+    sse_encode_u_32(self.writePoolSize, serializer);
+    sse_encode_u_32(self.busyTimeoutMs, serializer);
+    sse_encode_u_32(self.cacheSizeKb, serializer);
+    sse_encode_u_64(self.mmapSizeBytes, serializer);
+    sse_encode_u_64(self.journalSizeLimitBytes, serializer);
+    sse_encode_bool(self.foreignKeys, serializer);
+    sse_encode_bool(self.walMode, serializer);
   }
+
+  @protected
+  void sse_encode_vault_stats(VaultStats self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_64(self.dbSizeBytes, serializer);
+    sse_encode_i_64(self.walSizeBytes, serializer);
+    sse_encode_i_32(self.totalTables, serializer);
+    sse_encode_i_32(self.migrationVersion, serializer);
+    sse_encode_i_64(self.pageCount, serializer);
+    sse_encode_i_64(self.pageSize, serializer);
+  }
+}
+
+@sealed
+class IronVaultDbImpl extends RustOpaque implements IronVaultDb {
+  // Not to be used by end users
+  IronVaultDbImpl.frbInternalDcoDecode(List<dynamic> wire)
+    : super.frbInternalDcoDecode(wire, _kStaticData);
+
+  // Not to be used by end users
+  IronVaultDbImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
+    : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
+
+  static final _kStaticData = RustArcStaticData(
+    rustArcIncrementStrongCount:
+        RustLib.instance.api.rust_arc_increment_strong_count_IronVaultDb,
+    rustArcDecrementStrongCount:
+        RustLib.instance.api.rust_arc_decrement_strong_count_IronVaultDb,
+    rustArcDecrementStrongCountPtr:
+        RustLib.instance.api.rust_arc_decrement_strong_count_IronVaultDbPtr,
+  );
+
+  /// Trigger a WAL checkpoint.
+  ///
+  /// Returns the number of WAL pages and how many were successfully
+  /// checkpointed. Call periodically (every ~15 min) and on app
+  /// background to keep the WAL file from growing unbounded.
+  Future<CheckpointResult> checkpoint({required CheckpointMode mode}) => RustLib
+      .instance
+      .api
+      .crateApiVaultIronVaultDbCheckpoint(that: this, mode: mode);
+
+  /// Checkpoint WAL and mark the database as closed.
+  ///
+  /// After this call, all methods will return an error.
+  /// Connection cleanup happens when the Dart GC drops this object.
+  Future<void> close() =>
+      RustLib.instance.api.crateApiVaultIronVaultDbClose(that: this);
+
+  /// Execute a write statement (INSERT, UPDATE, DELETE, DDL).
+  ///
+  /// Uses the **write** connection pool (serialized).
+  /// Returns the number of rows affected.
+  /// Parameters are bound positionally (`?1`, `?2`, ...).
+  Future<BigInt> executeRaw({
+    required String sql,
+    required List<SqlValue> params,
+  }) => RustLib.instance.api.crateApiVaultIronVaultDbExecuteRaw(
+    that: this,
+    sql: sql,
+    params: params,
+  );
+
+  /// Get the filesystem path of the database file.
+  Future<String> getPath() =>
+      RustLib.instance.api.crateApiVaultIronVaultDbGetPath(that: this);
+
+  /// Get the tenant ID bound to this database instance.
+  Future<String> getTenantId() =>
+      RustLib.instance.api.crateApiVaultIronVaultDbGetTenantId(that: this);
+
+  /// Run SQLite integrity check.
+  ///
+  /// Scans the entire database for corruption. Returns clean=true if
+  /// no issues found. Can be slow on large databases — run sparingly.
+  Future<IntegrityReport> integrityCheck() =>
+      RustLib.instance.api.crateApiVaultIronVaultDbIntegrityCheck(that: this);
+
+  /// Execute a read query (SELECT).
+  ///
+  /// Uses the **read** connection pool (concurrent via WAL).
+  /// Returns rows as a list of column-name → value maps.
+  /// Parameters are bound positionally (`?1`, `?2`, ...).
+  Future<List<Map<String, SqlValue>>> queryRaw({
+    required String sql,
+    required List<SqlValue> params,
+  }) => RustLib.instance.api.crateApiVaultIronVaultDbQueryRaw(
+    that: this,
+    sql: sql,
+    params: params,
+  );
+
+  /// Return a snapshot of database statistics.
+  Future<VaultStats> stats() =>
+      RustLib.instance.api.crateApiVaultIronVaultDbStats(that: this);
+
+  /// Reclaim disk space from deleted rows.
+  ///
+  /// Rewrites the entire database file. Can be very slow on large
+  /// databases — prefer `incremental_vacuum` when available (Phase 12).
+  Future<void> vacuum() =>
+      RustLib.instance.api.crateApiVaultIronVaultDbVacuum(that: this);
 }
