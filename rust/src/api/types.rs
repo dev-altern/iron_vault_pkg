@@ -332,3 +332,53 @@ pub struct MigrationRecord {
     /// Duration in milliseconds to apply.
     pub duration_ms: i64,
 }
+
+// ─── Phase 4: Transaction Types ──────────────────────────────────────
+
+/// A single operation within a transaction.
+///
+/// All operations respect tenant isolation — `tenant_id` is auto-injected
+/// by Rust on inserts, and enforced in WHERE clauses on updates/deletes.
+#[derive(Debug, Clone)]
+pub enum Op {
+    /// Insert a row (auto UUID, auto timestamps, auto tenant_id).
+    Insert {
+        table: String,
+        data: HashMap<String, SqlValue>,
+    },
+    /// Update a row by id (enforces tenant_id + soft-delete guard).
+    Update {
+        table: String,
+        id: String,
+        data: HashMap<String, SqlValue>,
+    },
+    /// Upsert (insert or update on conflict).
+    Upsert {
+        table: String,
+        data: HashMap<String, SqlValue>,
+        conflict_column: String,
+    },
+    /// Soft-delete a row (sets deleted_at).
+    Delete { table: String, id: String },
+    /// Permanently delete a row.
+    HardDelete { table: String, id: String },
+    /// Raw SQL with parameterized values (escape hatch).
+    Raw { sql: String, params: Vec<SqlValue> },
+    /// Create a savepoint (nested transaction marker).
+    Savepoint { name: String },
+    /// Release (commit) a savepoint.
+    ReleaseSavepoint { name: String },
+    /// Rollback to a savepoint (partial undo).
+    RollbackToSavepoint { name: String },
+}
+
+/// Result of a multi-operation transaction.
+#[derive(Debug, Clone)]
+pub struct TransactionResult {
+    /// IDs of all inserted rows (in op order).
+    pub inserted_ids: Vec<String>,
+    /// Names of all tables affected by the transaction.
+    pub affected_tables: Vec<String>,
+    /// Total number of rows affected across all operations.
+    pub rows_affected: u64,
+}

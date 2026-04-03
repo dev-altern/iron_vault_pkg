@@ -1,5 +1,5 @@
 use crate::api::types::*;
-use crate::engine::{connection, convert, migration, query_builder, write_ops};
+use crate::engine::{connection, convert, migration, query_builder, transaction, write_ops};
 use anyhow::{anyhow, Context, Result};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
@@ -602,6 +602,48 @@ impl IronVaultDb {
         let conn = self.acquire_reader()?;
         migration::ensure_table(&conn)?;
         migration::get_applied(&conn)
+    }
+
+    // ── Transactions ─────────────────────────────────────────────
+
+    /// Execute multiple operations in a single ACID transaction.
+    ///
+    /// All operations run inside `BEGIN IMMEDIATE ... COMMIT`.
+    /// If any operation fails, the entire transaction is rolled back.
+    /// Savepoints provide partial rollback within the transaction.
+    ///
+    /// Tenant isolation is enforced on all operations automatically.
+    pub fn transaction(&self, ops: Vec<Op>) -> Result<TransactionResult> {
+        self.ensure_open()?;
+        let conn = self.acquire_writer()?;
+        transaction::execute_transaction(&conn, &ops, &self.tenant_id)
+    }
+
+    /// Update a row with optimistic locking.
+    ///
+    /// Succeeds only if the row's `version` column matches `expected_version`.
+    /// On success, `version` is incremented by 1 atomically.
+    /// On mismatch (another writer updated first), returns
+    /// `OptimisticLockException`.
+    ///
+    /// The table must have a `version INTEGER NOT NULL DEFAULT 1` column.
+    pub fn update_with_version(
+        &self,
+        table: String,
+        id: String,
+        expected_version: i64,
+        data: HashMap<String, SqlValue>,
+    ) -> Result<()> {
+        self.ensure_open()?;
+        let conn = self.acquire_writer()?;
+        transaction::update_with_version(
+            &conn,
+            &table,
+            &id,
+            expected_version,
+            data,
+            &self.tenant_id,
+        )
     }
 
     // ── Private Helpers ──────────────────────────────────────────

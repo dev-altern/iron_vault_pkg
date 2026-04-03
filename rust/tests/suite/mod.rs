@@ -13,3 +13,4 @@ pub mod query_write;
 pub mod tenant;
 pub mod edge_cases;
 pub mod migrations;
+pub mod transactions;

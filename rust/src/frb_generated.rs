@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.12.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1997336728;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1102846812;
 
 // Section: executor
 
@@ -1487,6 +1487,123 @@ fn wire__crate__api__vault__IronVaultDb_stats_impl(
         },
     )
 }
+fn wire__crate__api__vault__IronVaultDb_transaction_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "IronVaultDb_transaction",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<IronVaultDb>,
+            >>::sse_decode(&mut deserializer);
+            let api_ops = <Vec<crate::api::types::Op>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok =
+                            crate::api::vault::IronVaultDb::transaction(&*api_that_guard, api_ops)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vault__IronVaultDb_update_with_version_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "IronVaultDb_update_with_version",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<IronVaultDb>,
+            >>::sse_decode(&mut deserializer);
+            let api_table = <String>::sse_decode(&mut deserializer);
+            let api_id = <String>::sse_decode(&mut deserializer);
+            let api_expected_version = <i64>::sse_decode(&mut deserializer);
+            let api_data =
+                <std::collections::HashMap<String, crate::api::types::SqlValue>>::sse_decode(
+                    &mut deserializer,
+                );
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = crate::api::vault::IronVaultDb::update_with_version(
+                            &*api_that_guard,
+                            api_table,
+                            api_id,
+                            api_expected_version,
+                            api_data,
+                        )?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__vault__IronVaultDb_vacuum_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -2156,6 +2273,18 @@ impl SseDecode for Vec<crate::api::types::MigrationRecord> {
     }
 }
 
+impl SseDecode for Vec<crate::api::types::Op> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::types::Op>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::api::types::OrderBy> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2273,6 +2402,91 @@ impl SseDecode for crate::api::types::MigrationReport {
             skipped: var_skipped,
             current_version: var_currentVersion,
         };
+    }
+}
+
+impl SseDecode for crate::api::types::Op {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut tag_ = <i32>::sse_decode(deserializer);
+        match tag_ {
+            0 => {
+                let mut var_table = <String>::sse_decode(deserializer);
+                let mut var_data =
+                    <std::collections::HashMap<String, crate::api::types::SqlValue>>::sse_decode(
+                        deserializer,
+                    );
+                return crate::api::types::Op::Insert {
+                    table: var_table,
+                    data: var_data,
+                };
+            }
+            1 => {
+                let mut var_table = <String>::sse_decode(deserializer);
+                let mut var_id = <String>::sse_decode(deserializer);
+                let mut var_data =
+                    <std::collections::HashMap<String, crate::api::types::SqlValue>>::sse_decode(
+                        deserializer,
+                    );
+                return crate::api::types::Op::Update {
+                    table: var_table,
+                    id: var_id,
+                    data: var_data,
+                };
+            }
+            2 => {
+                let mut var_table = <String>::sse_decode(deserializer);
+                let mut var_data =
+                    <std::collections::HashMap<String, crate::api::types::SqlValue>>::sse_decode(
+                        deserializer,
+                    );
+                let mut var_conflictColumn = <String>::sse_decode(deserializer);
+                return crate::api::types::Op::Upsert {
+                    table: var_table,
+                    data: var_data,
+                    conflict_column: var_conflictColumn,
+                };
+            }
+            3 => {
+                let mut var_table = <String>::sse_decode(deserializer);
+                let mut var_id = <String>::sse_decode(deserializer);
+                return crate::api::types::Op::Delete {
+                    table: var_table,
+                    id: var_id,
+                };
+            }
+            4 => {
+                let mut var_table = <String>::sse_decode(deserializer);
+                let mut var_id = <String>::sse_decode(deserializer);
+                return crate::api::types::Op::HardDelete {
+                    table: var_table,
+                    id: var_id,
+                };
+            }
+            5 => {
+                let mut var_sql = <String>::sse_decode(deserializer);
+                let mut var_params = <Vec<crate::api::types::SqlValue>>::sse_decode(deserializer);
+                return crate::api::types::Op::Raw {
+                    sql: var_sql,
+                    params: var_params,
+                };
+            }
+            6 => {
+                let mut var_name = <String>::sse_decode(deserializer);
+                return crate::api::types::Op::Savepoint { name: var_name };
+            }
+            7 => {
+                let mut var_name = <String>::sse_decode(deserializer);
+                return crate::api::types::Op::ReleaseSavepoint { name: var_name };
+            }
+            8 => {
+                let mut var_name = <String>::sse_decode(deserializer);
+                return crate::api::types::Op::RollbackToSavepoint { name: var_name };
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
     }
 }
 
@@ -2423,6 +2637,20 @@ impl SseDecode for crate::api::types::SqlValue {
                 unimplemented!("");
             }
         }
+    }
+}
+
+impl SseDecode for crate::api::types::TransactionResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_insertedIds = <Vec<String>>::sse_decode(deserializer);
+        let mut var_affectedTables = <Vec<String>>::sse_decode(deserializer);
+        let mut var_rowsAffected = <u64>::sse_decode(deserializer);
+        return crate::api::types::TransactionResult {
+            inserted_ids: var_insertedIds,
+            affected_tables: var_affectedTables,
+            rows_affected: var_rowsAffected,
+        };
     }
 }
 
@@ -2653,9 +2881,18 @@ fn pde_ffi_dispatcher_primary_impl(
             wire__crate__api__vault__IronVaultDb_rollback_to_impl(port, ptr, rust_vec_len, data_len)
         }
         26 => wire__crate__api__vault__IronVaultDb_stats_impl(port, ptr, rust_vec_len, data_len),
-        27 => wire__crate__api__vault__IronVaultDb_vacuum_impl(port, ptr, rust_vec_len, data_len),
-        29 => wire__crate__api__simple__init_app_impl(port, ptr, rust_vec_len, data_len),
-        30 => wire__crate__api__types__vault_config_default_impl(port, ptr, rust_vec_len, data_len),
+        27 => {
+            wire__crate__api__vault__IronVaultDb_transaction_impl(port, ptr, rust_vec_len, data_len)
+        }
+        28 => wire__crate__api__vault__IronVaultDb_update_with_version_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        29 => wire__crate__api__vault__IronVaultDb_vacuum_impl(port, ptr, rust_vec_len, data_len),
+        31 => wire__crate__api__simple__init_app_impl(port, ptr, rust_vec_len, data_len),
+        32 => wire__crate__api__types__vault_config_default_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -2668,11 +2905,11 @@ fn pde_ffi_dispatcher_sync_impl(
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        28 => wire__crate__api__simple__greet_impl(ptr, rust_vec_len, data_len),
-        31 => wire__crate__api__types__vault_config_development_impl(ptr, rust_vec_len, data_len),
-        32 => wire__crate__api__types__vault_config_low_memory_impl(ptr, rust_vec_len, data_len),
-        33 => wire__crate__api__types__vault_config_production_impl(ptr, rust_vec_len, data_len),
-        34 => wire__crate__api__types__vault_config_test_config_impl(ptr, rust_vec_len, data_len),
+        30 => wire__crate__api__simple__greet_impl(ptr, rust_vec_len, data_len),
+        33 => wire__crate__api__types__vault_config_development_impl(ptr, rust_vec_len, data_len),
+        34 => wire__crate__api__types__vault_config_low_memory_impl(ptr, rust_vec_len, data_len),
+        35 => wire__crate__api__types__vault_config_production_impl(ptr, rust_vec_len, data_len),
+        36 => wire__crate__api__types__vault_config_test_config_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -2976,6 +3213,73 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::types::MigrationReport>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::types::Op {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            crate::api::types::Op::Insert { table, data } => [
+                0.into_dart(),
+                table.into_into_dart().into_dart(),
+                data.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            crate::api::types::Op::Update { table, id, data } => [
+                1.into_dart(),
+                table.into_into_dart().into_dart(),
+                id.into_into_dart().into_dart(),
+                data.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            crate::api::types::Op::Upsert {
+                table,
+                data,
+                conflict_column,
+            } => [
+                2.into_dart(),
+                table.into_into_dart().into_dart(),
+                data.into_into_dart().into_dart(),
+                conflict_column.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            crate::api::types::Op::Delete { table, id } => [
+                3.into_dart(),
+                table.into_into_dart().into_dart(),
+                id.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            crate::api::types::Op::HardDelete { table, id } => [
+                4.into_dart(),
+                table.into_into_dart().into_dart(),
+                id.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            crate::api::types::Op::Raw { sql, params } => [
+                5.into_dart(),
+                sql.into_into_dart().into_dart(),
+                params.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            crate::api::types::Op::Savepoint { name } => {
+                [6.into_dart(), name.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::types::Op::ReleaseSavepoint { name } => {
+                [7.into_dart(), name.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::types::Op::RollbackToSavepoint { name } => {
+                [8.into_dart(), name.into_into_dart().into_dart()].into_dart()
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::types::Op {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::types::Op> for crate::api::types::Op {
+    fn into_into_dart(self) -> crate::api::types::Op {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::types::OrderBy {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
@@ -3072,6 +3376,28 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::types::SqlValue>
     for crate::api::types::SqlValue
 {
     fn into_into_dart(self) -> crate::api::types::SqlValue {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::types::TransactionResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.inserted_ids.into_into_dart().into_dart(),
+            self.affected_tables.into_into_dart().into_dart(),
+            self.rows_affected.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::types::TransactionResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::types::TransactionResult>
+    for crate::api::types::TransactionResult
+{
+    fn into_into_dart(self) -> crate::api::types::TransactionResult {
         self
     }
 }
@@ -3481,6 +3807,16 @@ impl SseEncode for Vec<crate::api::types::MigrationRecord> {
     }
 }
 
+impl SseEncode for Vec<crate::api::types::Op> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::types::Op>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::api::types::OrderBy> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -3568,6 +3904,71 @@ impl SseEncode for crate::api::types::MigrationReport {
         <Vec<u32>>::sse_encode(self.applied, serializer);
         <Vec<u32>>::sse_encode(self.skipped, serializer);
         <u32>::sse_encode(self.current_version, serializer);
+    }
+}
+
+impl SseEncode for crate::api::types::Op {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        match self {
+            crate::api::types::Op::Insert { table, data } => {
+                <i32>::sse_encode(0, serializer);
+                <String>::sse_encode(table, serializer);
+                <std::collections::HashMap<String, crate::api::types::SqlValue>>::sse_encode(
+                    data, serializer,
+                );
+            }
+            crate::api::types::Op::Update { table, id, data } => {
+                <i32>::sse_encode(1, serializer);
+                <String>::sse_encode(table, serializer);
+                <String>::sse_encode(id, serializer);
+                <std::collections::HashMap<String, crate::api::types::SqlValue>>::sse_encode(
+                    data, serializer,
+                );
+            }
+            crate::api::types::Op::Upsert {
+                table,
+                data,
+                conflict_column,
+            } => {
+                <i32>::sse_encode(2, serializer);
+                <String>::sse_encode(table, serializer);
+                <std::collections::HashMap<String, crate::api::types::SqlValue>>::sse_encode(
+                    data, serializer,
+                );
+                <String>::sse_encode(conflict_column, serializer);
+            }
+            crate::api::types::Op::Delete { table, id } => {
+                <i32>::sse_encode(3, serializer);
+                <String>::sse_encode(table, serializer);
+                <String>::sse_encode(id, serializer);
+            }
+            crate::api::types::Op::HardDelete { table, id } => {
+                <i32>::sse_encode(4, serializer);
+                <String>::sse_encode(table, serializer);
+                <String>::sse_encode(id, serializer);
+            }
+            crate::api::types::Op::Raw { sql, params } => {
+                <i32>::sse_encode(5, serializer);
+                <String>::sse_encode(sql, serializer);
+                <Vec<crate::api::types::SqlValue>>::sse_encode(params, serializer);
+            }
+            crate::api::types::Op::Savepoint { name } => {
+                <i32>::sse_encode(6, serializer);
+                <String>::sse_encode(name, serializer);
+            }
+            crate::api::types::Op::ReleaseSavepoint { name } => {
+                <i32>::sse_encode(7, serializer);
+                <String>::sse_encode(name, serializer);
+            }
+            crate::api::types::Op::RollbackToSavepoint { name } => {
+                <i32>::sse_encode(8, serializer);
+                <String>::sse_encode(name, serializer);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
     }
 }
 
@@ -3689,6 +4090,15 @@ impl SseEncode for crate::api::types::SqlValue {
                 unimplemented!("");
             }
         }
+    }
+}
+
+impl SseEncode for crate::api::types::TransactionResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<String>>::sse_encode(self.inserted_ids, serializer);
+        <Vec<String>>::sse_encode(self.affected_tables, serializer);
+        <u64>::sse_encode(self.rows_affected, serializer);
     }
 }
 

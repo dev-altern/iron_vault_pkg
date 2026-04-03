@@ -8,7 +8,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'types.freezed.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 @freezed
 sealed class AggExpr with _$AggExpr {
@@ -270,6 +270,54 @@ class MigrationReport {
 }
 
 @freezed
+sealed class Op with _$Op {
+  const Op._();
+
+  /// Insert a row (auto UUID, auto timestamps, auto tenant_id).
+  const factory Op.insert({
+    required String table,
+    required Map<String, SqlValue> data,
+  }) = Op_Insert;
+
+  /// Update a row by id (enforces tenant_id + soft-delete guard).
+  const factory Op.update({
+    required String table,
+    required String id,
+    required Map<String, SqlValue> data,
+  }) = Op_Update;
+
+  /// Upsert (insert or update on conflict).
+  const factory Op.upsert({
+    required String table,
+    required Map<String, SqlValue> data,
+    required String conflictColumn,
+  }) = Op_Upsert;
+
+  /// Soft-delete a row (sets deleted_at).
+  const factory Op.delete({required String table, required String id}) =
+      Op_Delete;
+
+  /// Permanently delete a row.
+  const factory Op.hardDelete({required String table, required String id}) =
+      Op_HardDelete;
+
+  /// Raw SQL with parameterized values (escape hatch).
+  const factory Op.raw({required String sql, required List<SqlValue> params}) =
+      Op_Raw;
+
+  /// Create a savepoint (nested transaction marker).
+  const factory Op.savepoint({required String name}) = Op_Savepoint;
+
+  /// Release (commit) a savepoint.
+  const factory Op.releaseSavepoint({required String name}) =
+      Op_ReleaseSavepoint;
+
+  /// Rollback to a savepoint (partial undo).
+  const factory Op.rollbackToSavepoint({required String name}) =
+      Op_RollbackToSavepoint;
+}
+
+@freezed
 sealed class OrderBy with _$OrderBy {
   const OrderBy._();
 
@@ -422,6 +470,37 @@ sealed class SqlValue with _$SqlValue {
 
   /// Binary blob.
   const factory SqlValue.blob(Uint8List field0) = SqlValue_Blob;
+}
+
+/// Result of a multi-operation transaction.
+class TransactionResult {
+  /// IDs of all inserted rows (in op order).
+  final List<String> insertedIds;
+
+  /// Names of all tables affected by the transaction.
+  final List<String> affectedTables;
+
+  /// Total number of rows affected across all operations.
+  final BigInt rowsAffected;
+
+  const TransactionResult({
+    required this.insertedIds,
+    required this.affectedTables,
+    required this.rowsAffected,
+  });
+
+  @override
+  int get hashCode =>
+      insertedIds.hashCode ^ affectedTables.hashCode ^ rowsAffected.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TransactionResult &&
+          runtimeType == other.runtimeType &&
+          insertedIds == other.insertedIds &&
+          affectedTables == other.affectedTables &&
+          rowsAffected == other.rowsAffected;
 }
 
 /// A single row update for batch operations.

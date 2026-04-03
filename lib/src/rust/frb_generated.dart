@@ -68,7 +68,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.12.0';
 
   @override
-  int get rustContentHash => 1997336728;
+  int get rustContentHash => 1102846812;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -215,6 +215,19 @@ abstract class RustLibApi extends BaseApi {
   });
 
   Future<VaultStats> crateApiVaultIronVaultDbStats({required IronVaultDb that});
+
+  Future<TransactionResult> crateApiVaultIronVaultDbTransaction({
+    required IronVaultDb that,
+    required List<Op> ops,
+  });
+
+  Future<void> crateApiVaultIronVaultDbUpdateWithVersion({
+    required IronVaultDb that,
+    required String table,
+    required String id,
+    required PlatformInt64 expectedVersion,
+    required Map<String, SqlValue> data,
+  });
 
   Future<void> crateApiVaultIronVaultDbVacuum({required IronVaultDb that});
 
@@ -1250,6 +1263,88 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "IronVaultDb_stats", argNames: ["that"]);
 
   @override
+  Future<TransactionResult> crateApiVaultIronVaultDbTransaction({
+    required IronVaultDb that,
+    required List<Op> ops,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+            that,
+            serializer,
+          );
+          sse_encode_list_op(ops, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 27,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_transaction_result,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbTransactionConstMeta,
+        argValues: [that, ops],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbTransactionConstMeta =>
+      const TaskConstMeta(
+        debugName: "IronVaultDb_transaction",
+        argNames: ["that", "ops"],
+      );
+
+  @override
+  Future<void> crateApiVaultIronVaultDbUpdateWithVersion({
+    required IronVaultDb that,
+    required String table,
+    required String id,
+    required PlatformInt64 expectedVersion,
+    required Map<String, SqlValue> data,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+            that,
+            serializer,
+          );
+          sse_encode_String(table, serializer);
+          sse_encode_String(id, serializer);
+          sse_encode_i_64(expectedVersion, serializer);
+          sse_encode_Map_String_sql_value_None(data, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 28,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiVaultIronVaultDbUpdateWithVersionConstMeta,
+        argValues: [that, table, id, expectedVersion, data],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiVaultIronVaultDbUpdateWithVersionConstMeta =>
+      const TaskConstMeta(
+        debugName: "IronVaultDb_update_with_version",
+        argNames: ["that", "table", "id", "expectedVersion", "data"],
+      );
+
+  @override
   Future<void> crateApiVaultIronVaultDbVacuum({required IronVaultDb that}) {
     return handler.executeNormal(
       NormalTask(
@@ -1262,7 +1357,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 27,
+            funcId: 29,
             port: port_,
           );
         },
@@ -1287,7 +1382,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(name, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 28)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 30)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -1312,7 +1407,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 29,
+            funcId: 31,
             port: port_,
           );
         },
@@ -1339,7 +1434,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 30,
+            funcId: 32,
             port: port_,
           );
         },
@@ -1363,7 +1458,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 31)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 33)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_vault_config,
@@ -1385,7 +1480,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 32)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 34)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_vault_config,
@@ -1407,7 +1502,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 33)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 35)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_vault_config,
@@ -1429,7 +1524,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 34)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 36)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_vault_config,
@@ -1760,6 +1855,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<Op> dco_decode_list_op(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_op).toList();
+  }
+
+  @protected
   List<OrderBy> dco_decode_list_order_by(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_order_by).toList();
@@ -1837,6 +1938,53 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       skipped: dco_decode_list_prim_u_32_strict(arr[1]),
       currentVersion: dco_decode_u_32(arr[2]),
     );
+  }
+
+  @protected
+  Op dco_decode_op(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return Op_Insert(
+          table: dco_decode_String(raw[1]),
+          data: dco_decode_Map_String_sql_value_None(raw[2]),
+        );
+      case 1:
+        return Op_Update(
+          table: dco_decode_String(raw[1]),
+          id: dco_decode_String(raw[2]),
+          data: dco_decode_Map_String_sql_value_None(raw[3]),
+        );
+      case 2:
+        return Op_Upsert(
+          table: dco_decode_String(raw[1]),
+          data: dco_decode_Map_String_sql_value_None(raw[2]),
+          conflictColumn: dco_decode_String(raw[3]),
+        );
+      case 3:
+        return Op_Delete(
+          table: dco_decode_String(raw[1]),
+          id: dco_decode_String(raw[2]),
+        );
+      case 4:
+        return Op_HardDelete(
+          table: dco_decode_String(raw[1]),
+          id: dco_decode_String(raw[2]),
+        );
+      case 5:
+        return Op_Raw(
+          sql: dco_decode_String(raw[1]),
+          params: dco_decode_list_sql_value(raw[2]),
+        );
+      case 6:
+        return Op_Savepoint(name: dco_decode_String(raw[1]));
+      case 7:
+        return Op_ReleaseSavepoint(name: dco_decode_String(raw[1]));
+      case 8:
+        return Op_RollbackToSavepoint(name: dco_decode_String(raw[1]));
+      default:
+        throw Exception("unreachable");
+    }
   }
 
   @protected
@@ -1933,6 +2081,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       default:
         throw Exception("unreachable");
     }
+  }
+
+  @protected
+  TransactionResult dco_decode_transaction_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return TransactionResult(
+      insertedIds: dco_decode_list_String(arr[0]),
+      affectedTables: dco_decode_list_String(arr[1]),
+      rowsAffected: dco_decode_u_64(arr[2]),
+    );
   }
 
   @protected
@@ -2382,6 +2543,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<Op> sse_decode_list_op(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <Op>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_op(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<OrderBy> sse_decode_list_order_by(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -2494,6 +2667,56 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       skipped: var_skipped,
       currentVersion: var_currentVersion,
     );
+  }
+
+  @protected
+  Op sse_decode_op(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        var var_table = sse_decode_String(deserializer);
+        var var_data = sse_decode_Map_String_sql_value_None(deserializer);
+        return Op_Insert(table: var_table, data: var_data);
+      case 1:
+        var var_table = sse_decode_String(deserializer);
+        var var_id = sse_decode_String(deserializer);
+        var var_data = sse_decode_Map_String_sql_value_None(deserializer);
+        return Op_Update(table: var_table, id: var_id, data: var_data);
+      case 2:
+        var var_table = sse_decode_String(deserializer);
+        var var_data = sse_decode_Map_String_sql_value_None(deserializer);
+        var var_conflictColumn = sse_decode_String(deserializer);
+        return Op_Upsert(
+          table: var_table,
+          data: var_data,
+          conflictColumn: var_conflictColumn,
+        );
+      case 3:
+        var var_table = sse_decode_String(deserializer);
+        var var_id = sse_decode_String(deserializer);
+        return Op_Delete(table: var_table, id: var_id);
+      case 4:
+        var var_table = sse_decode_String(deserializer);
+        var var_id = sse_decode_String(deserializer);
+        return Op_HardDelete(table: var_table, id: var_id);
+      case 5:
+        var var_sql = sse_decode_String(deserializer);
+        var var_params = sse_decode_list_sql_value(deserializer);
+        return Op_Raw(sql: var_sql, params: var_params);
+      case 6:
+        var var_name = sse_decode_String(deserializer);
+        return Op_Savepoint(name: var_name);
+      case 7:
+        var var_name = sse_decode_String(deserializer);
+        return Op_ReleaseSavepoint(name: var_name);
+      case 8:
+        var var_name = sse_decode_String(deserializer);
+        return Op_RollbackToSavepoint(name: var_name);
+      default:
+        throw UnimplementedError('');
+    }
   }
 
   @protected
@@ -2626,6 +2849,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       default:
         throw UnimplementedError('');
     }
+  }
+
+  @protected
+  TransactionResult sse_decode_transaction_result(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_insertedIds = sse_decode_list_String(deserializer);
+    var var_affectedTables = sse_decode_list_String(deserializer);
+    var var_rowsAffected = sse_decode_u_64(deserializer);
+    return TransactionResult(
+      insertedIds: var_insertedIds,
+      affectedTables: var_affectedTables,
+      rowsAffected: var_rowsAffected,
+    );
   }
 
   @protected
@@ -3073,6 +3311,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_op(List<Op> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_op(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_order_by(List<OrderBy> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
@@ -3186,6 +3433,52 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_op(Op self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case Op_Insert(table: final table, data: final data):
+        sse_encode_i_32(0, serializer);
+        sse_encode_String(table, serializer);
+        sse_encode_Map_String_sql_value_None(data, serializer);
+      case Op_Update(table: final table, id: final id, data: final data):
+        sse_encode_i_32(1, serializer);
+        sse_encode_String(table, serializer);
+        sse_encode_String(id, serializer);
+        sse_encode_Map_String_sql_value_None(data, serializer);
+      case Op_Upsert(
+        table: final table,
+        data: final data,
+        conflictColumn: final conflictColumn,
+      ):
+        sse_encode_i_32(2, serializer);
+        sse_encode_String(table, serializer);
+        sse_encode_Map_String_sql_value_None(data, serializer);
+        sse_encode_String(conflictColumn, serializer);
+      case Op_Delete(table: final table, id: final id):
+        sse_encode_i_32(3, serializer);
+        sse_encode_String(table, serializer);
+        sse_encode_String(id, serializer);
+      case Op_HardDelete(table: final table, id: final id):
+        sse_encode_i_32(4, serializer);
+        sse_encode_String(table, serializer);
+        sse_encode_String(id, serializer);
+      case Op_Raw(sql: final sql, params: final params):
+        sse_encode_i_32(5, serializer);
+        sse_encode_String(sql, serializer);
+        sse_encode_list_sql_value(params, serializer);
+      case Op_Savepoint(name: final name):
+        sse_encode_i_32(6, serializer);
+        sse_encode_String(name, serializer);
+      case Op_ReleaseSavepoint(name: final name):
+        sse_encode_i_32(7, serializer);
+        sse_encode_String(name, serializer);
+      case Op_RollbackToSavepoint(name: final name):
+        sse_encode_i_32(8, serializer);
+        sse_encode_String(name, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_Map_String_sql_value_None(
     Map<String, SqlValue>? self,
     SseSerializer serializer,
@@ -3287,6 +3580,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_i_32(4, serializer);
         sse_encode_list_prim_u_8_strict(field0, serializer);
     }
+  }
+
+  @protected
+  void sse_encode_transaction_result(
+    TransactionResult self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_String(self.insertedIds, serializer);
+    sse_encode_list_String(self.affectedTables, serializer);
+    sse_encode_u_64(self.rowsAffected, serializer);
   }
 
   @protected
@@ -3619,6 +3923,39 @@ class IronVaultDbImpl extends RustOpaque implements IronVaultDb {
   /// Return a snapshot of database statistics.
   Future<VaultStats> stats() =>
       RustLib.instance.api.crateApiVaultIronVaultDbStats(that: this);
+
+  /// Execute multiple operations in a single ACID transaction.
+  ///
+  /// All operations run inside `BEGIN IMMEDIATE ... COMMIT`.
+  /// If any operation fails, the entire transaction is rolled back.
+  /// Savepoints provide partial rollback within the transaction.
+  ///
+  /// Tenant isolation is enforced on all operations automatically.
+  Future<TransactionResult> transaction({required List<Op> ops}) => RustLib
+      .instance
+      .api
+      .crateApiVaultIronVaultDbTransaction(that: this, ops: ops);
+
+  /// Update a row with optimistic locking.
+  ///
+  /// Succeeds only if the row's `version` column matches `expected_version`.
+  /// On success, `version` is incremented by 1 atomically.
+  /// On mismatch (another writer updated first), returns
+  /// `OptimisticLockException`.
+  ///
+  /// The table must have a `version INTEGER NOT NULL DEFAULT 1` column.
+  Future<void> updateWithVersion({
+    required String table,
+    required String id,
+    required PlatformInt64 expectedVersion,
+    required Map<String, SqlValue> data,
+  }) => RustLib.instance.api.crateApiVaultIronVaultDbUpdateWithVersion(
+    that: this,
+    table: table,
+    id: id,
+    expectedVersion: expectedVersion,
+    data: data,
+  );
 
   /// Reclaim disk space from deleted rows.
   ///

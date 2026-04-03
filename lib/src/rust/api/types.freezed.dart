@@ -4692,6 +4692,2142 @@ abstract class JoinSpec_Raw extends JoinSpec {
 }
 
 /// @nodoc
+mixin _$Op {
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String table, Map<String, SqlValue> data) insert,
+    required TResult Function(
+      String table,
+      String id,
+      Map<String, SqlValue> data,
+    )
+    update,
+    required TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )
+    upsert,
+    required TResult Function(String table, String id) delete,
+    required TResult Function(String table, String id) hardDelete,
+    required TResult Function(String sql, List<SqlValue> params) raw,
+    required TResult Function(String name) savepoint,
+    required TResult Function(String name) releaseSavepoint,
+    required TResult Function(String name) rollbackToSavepoint,
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String table, Map<String, SqlValue> data)? insert,
+    TResult? Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult? Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult? Function(String table, String id)? delete,
+    TResult? Function(String table, String id)? hardDelete,
+    TResult? Function(String sql, List<SqlValue> params)? raw,
+    TResult? Function(String name)? savepoint,
+    TResult? Function(String name)? releaseSavepoint,
+    TResult? Function(String name)? rollbackToSavepoint,
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String table, Map<String, SqlValue> data)? insert,
+    TResult Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult Function(String table, String id)? delete,
+    TResult Function(String table, String id)? hardDelete,
+    TResult Function(String sql, List<SqlValue> params)? raw,
+    TResult Function(String name)? savepoint,
+    TResult Function(String name)? releaseSavepoint,
+    TResult Function(String name)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(Op_Insert value) insert,
+    required TResult Function(Op_Update value) update,
+    required TResult Function(Op_Upsert value) upsert,
+    required TResult Function(Op_Delete value) delete,
+    required TResult Function(Op_HardDelete value) hardDelete,
+    required TResult Function(Op_Raw value) raw,
+    required TResult Function(Op_Savepoint value) savepoint,
+    required TResult Function(Op_ReleaseSavepoint value) releaseSavepoint,
+    required TResult Function(Op_RollbackToSavepoint value) rollbackToSavepoint,
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(Op_Insert value)? insert,
+    TResult? Function(Op_Update value)? update,
+    TResult? Function(Op_Upsert value)? upsert,
+    TResult? Function(Op_Delete value)? delete,
+    TResult? Function(Op_HardDelete value)? hardDelete,
+    TResult? Function(Op_Raw value)? raw,
+    TResult? Function(Op_Savepoint value)? savepoint,
+    TResult? Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult? Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+  }) => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(Op_Insert value)? insert,
+    TResult Function(Op_Update value)? update,
+    TResult Function(Op_Upsert value)? upsert,
+    TResult Function(Op_Delete value)? delete,
+    TResult Function(Op_HardDelete value)? hardDelete,
+    TResult Function(Op_Raw value)? raw,
+    TResult Function(Op_Savepoint value)? savepoint,
+    TResult Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $OpCopyWith<$Res> {
+  factory $OpCopyWith(Op value, $Res Function(Op) then) =
+      _$OpCopyWithImpl<$Res, Op>;
+}
+
+/// @nodoc
+class _$OpCopyWithImpl<$Res, $Val extends Op> implements $OpCopyWith<$Res> {
+  _$OpCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+abstract class _$$Op_InsertImplCopyWith<$Res> {
+  factory _$$Op_InsertImplCopyWith(
+    _$Op_InsertImpl value,
+    $Res Function(_$Op_InsertImpl) then,
+  ) = __$$Op_InsertImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String table, Map<String, SqlValue> data});
+}
+
+/// @nodoc
+class __$$Op_InsertImplCopyWithImpl<$Res>
+    extends _$OpCopyWithImpl<$Res, _$Op_InsertImpl>
+    implements _$$Op_InsertImplCopyWith<$Res> {
+  __$$Op_InsertImplCopyWithImpl(
+    _$Op_InsertImpl _value,
+    $Res Function(_$Op_InsertImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? table = null, Object? data = null}) {
+    return _then(
+      _$Op_InsertImpl(
+        table: null == table
+            ? _value.table
+            : table // ignore: cast_nullable_to_non_nullable
+                  as String,
+        data: null == data
+            ? _value._data
+            : data // ignore: cast_nullable_to_non_nullable
+                  as Map<String, SqlValue>,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$Op_InsertImpl extends Op_Insert {
+  const _$Op_InsertImpl({
+    required this.table,
+    required final Map<String, SqlValue> data,
+  }) : _data = data,
+       super._();
+
+  @override
+  final String table;
+  final Map<String, SqlValue> _data;
+  @override
+  Map<String, SqlValue> get data {
+    if (_data is EqualUnmodifiableMapView) return _data;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(_data);
+  }
+
+  @override
+  String toString() {
+    return 'Op.insert(table: $table, data: $data)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$Op_InsertImpl &&
+            (identical(other.table, table) || other.table == table) &&
+            const DeepCollectionEquality().equals(other._data, _data));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    table,
+    const DeepCollectionEquality().hash(_data),
+  );
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$Op_InsertImplCopyWith<_$Op_InsertImpl> get copyWith =>
+      __$$Op_InsertImplCopyWithImpl<_$Op_InsertImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String table, Map<String, SqlValue> data) insert,
+    required TResult Function(
+      String table,
+      String id,
+      Map<String, SqlValue> data,
+    )
+    update,
+    required TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )
+    upsert,
+    required TResult Function(String table, String id) delete,
+    required TResult Function(String table, String id) hardDelete,
+    required TResult Function(String sql, List<SqlValue> params) raw,
+    required TResult Function(String name) savepoint,
+    required TResult Function(String name) releaseSavepoint,
+    required TResult Function(String name) rollbackToSavepoint,
+  }) {
+    return insert(table, data);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String table, Map<String, SqlValue> data)? insert,
+    TResult? Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult? Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult? Function(String table, String id)? delete,
+    TResult? Function(String table, String id)? hardDelete,
+    TResult? Function(String sql, List<SqlValue> params)? raw,
+    TResult? Function(String name)? savepoint,
+    TResult? Function(String name)? releaseSavepoint,
+    TResult? Function(String name)? rollbackToSavepoint,
+  }) {
+    return insert?.call(table, data);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String table, Map<String, SqlValue> data)? insert,
+    TResult Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult Function(String table, String id)? delete,
+    TResult Function(String table, String id)? hardDelete,
+    TResult Function(String sql, List<SqlValue> params)? raw,
+    TResult Function(String name)? savepoint,
+    TResult Function(String name)? releaseSavepoint,
+    TResult Function(String name)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) {
+    if (insert != null) {
+      return insert(table, data);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(Op_Insert value) insert,
+    required TResult Function(Op_Update value) update,
+    required TResult Function(Op_Upsert value) upsert,
+    required TResult Function(Op_Delete value) delete,
+    required TResult Function(Op_HardDelete value) hardDelete,
+    required TResult Function(Op_Raw value) raw,
+    required TResult Function(Op_Savepoint value) savepoint,
+    required TResult Function(Op_ReleaseSavepoint value) releaseSavepoint,
+    required TResult Function(Op_RollbackToSavepoint value) rollbackToSavepoint,
+  }) {
+    return insert(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(Op_Insert value)? insert,
+    TResult? Function(Op_Update value)? update,
+    TResult? Function(Op_Upsert value)? upsert,
+    TResult? Function(Op_Delete value)? delete,
+    TResult? Function(Op_HardDelete value)? hardDelete,
+    TResult? Function(Op_Raw value)? raw,
+    TResult? Function(Op_Savepoint value)? savepoint,
+    TResult? Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult? Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+  }) {
+    return insert?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(Op_Insert value)? insert,
+    TResult Function(Op_Update value)? update,
+    TResult Function(Op_Upsert value)? upsert,
+    TResult Function(Op_Delete value)? delete,
+    TResult Function(Op_HardDelete value)? hardDelete,
+    TResult Function(Op_Raw value)? raw,
+    TResult Function(Op_Savepoint value)? savepoint,
+    TResult Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) {
+    if (insert != null) {
+      return insert(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class Op_Insert extends Op {
+  const factory Op_Insert({
+    required final String table,
+    required final Map<String, SqlValue> data,
+  }) = _$Op_InsertImpl;
+  const Op_Insert._() : super._();
+
+  String get table;
+  Map<String, SqlValue> get data;
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$Op_InsertImplCopyWith<_$Op_InsertImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$Op_UpdateImplCopyWith<$Res> {
+  factory _$$Op_UpdateImplCopyWith(
+    _$Op_UpdateImpl value,
+    $Res Function(_$Op_UpdateImpl) then,
+  ) = __$$Op_UpdateImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String table, String id, Map<String, SqlValue> data});
+}
+
+/// @nodoc
+class __$$Op_UpdateImplCopyWithImpl<$Res>
+    extends _$OpCopyWithImpl<$Res, _$Op_UpdateImpl>
+    implements _$$Op_UpdateImplCopyWith<$Res> {
+  __$$Op_UpdateImplCopyWithImpl(
+    _$Op_UpdateImpl _value,
+    $Res Function(_$Op_UpdateImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? table = null, Object? id = null, Object? data = null}) {
+    return _then(
+      _$Op_UpdateImpl(
+        table: null == table
+            ? _value.table
+            : table // ignore: cast_nullable_to_non_nullable
+                  as String,
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        data: null == data
+            ? _value._data
+            : data // ignore: cast_nullable_to_non_nullable
+                  as Map<String, SqlValue>,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$Op_UpdateImpl extends Op_Update {
+  const _$Op_UpdateImpl({
+    required this.table,
+    required this.id,
+    required final Map<String, SqlValue> data,
+  }) : _data = data,
+       super._();
+
+  @override
+  final String table;
+  @override
+  final String id;
+  final Map<String, SqlValue> _data;
+  @override
+  Map<String, SqlValue> get data {
+    if (_data is EqualUnmodifiableMapView) return _data;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(_data);
+  }
+
+  @override
+  String toString() {
+    return 'Op.update(table: $table, id: $id, data: $data)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$Op_UpdateImpl &&
+            (identical(other.table, table) || other.table == table) &&
+            (identical(other.id, id) || other.id == id) &&
+            const DeepCollectionEquality().equals(other._data, _data));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    table,
+    id,
+    const DeepCollectionEquality().hash(_data),
+  );
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$Op_UpdateImplCopyWith<_$Op_UpdateImpl> get copyWith =>
+      __$$Op_UpdateImplCopyWithImpl<_$Op_UpdateImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String table, Map<String, SqlValue> data) insert,
+    required TResult Function(
+      String table,
+      String id,
+      Map<String, SqlValue> data,
+    )
+    update,
+    required TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )
+    upsert,
+    required TResult Function(String table, String id) delete,
+    required TResult Function(String table, String id) hardDelete,
+    required TResult Function(String sql, List<SqlValue> params) raw,
+    required TResult Function(String name) savepoint,
+    required TResult Function(String name) releaseSavepoint,
+    required TResult Function(String name) rollbackToSavepoint,
+  }) {
+    return update(table, id, data);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String table, Map<String, SqlValue> data)? insert,
+    TResult? Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult? Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult? Function(String table, String id)? delete,
+    TResult? Function(String table, String id)? hardDelete,
+    TResult? Function(String sql, List<SqlValue> params)? raw,
+    TResult? Function(String name)? savepoint,
+    TResult? Function(String name)? releaseSavepoint,
+    TResult? Function(String name)? rollbackToSavepoint,
+  }) {
+    return update?.call(table, id, data);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String table, Map<String, SqlValue> data)? insert,
+    TResult Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult Function(String table, String id)? delete,
+    TResult Function(String table, String id)? hardDelete,
+    TResult Function(String sql, List<SqlValue> params)? raw,
+    TResult Function(String name)? savepoint,
+    TResult Function(String name)? releaseSavepoint,
+    TResult Function(String name)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) {
+    if (update != null) {
+      return update(table, id, data);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(Op_Insert value) insert,
+    required TResult Function(Op_Update value) update,
+    required TResult Function(Op_Upsert value) upsert,
+    required TResult Function(Op_Delete value) delete,
+    required TResult Function(Op_HardDelete value) hardDelete,
+    required TResult Function(Op_Raw value) raw,
+    required TResult Function(Op_Savepoint value) savepoint,
+    required TResult Function(Op_ReleaseSavepoint value) releaseSavepoint,
+    required TResult Function(Op_RollbackToSavepoint value) rollbackToSavepoint,
+  }) {
+    return update(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(Op_Insert value)? insert,
+    TResult? Function(Op_Update value)? update,
+    TResult? Function(Op_Upsert value)? upsert,
+    TResult? Function(Op_Delete value)? delete,
+    TResult? Function(Op_HardDelete value)? hardDelete,
+    TResult? Function(Op_Raw value)? raw,
+    TResult? Function(Op_Savepoint value)? savepoint,
+    TResult? Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult? Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+  }) {
+    return update?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(Op_Insert value)? insert,
+    TResult Function(Op_Update value)? update,
+    TResult Function(Op_Upsert value)? upsert,
+    TResult Function(Op_Delete value)? delete,
+    TResult Function(Op_HardDelete value)? hardDelete,
+    TResult Function(Op_Raw value)? raw,
+    TResult Function(Op_Savepoint value)? savepoint,
+    TResult Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) {
+    if (update != null) {
+      return update(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class Op_Update extends Op {
+  const factory Op_Update({
+    required final String table,
+    required final String id,
+    required final Map<String, SqlValue> data,
+  }) = _$Op_UpdateImpl;
+  const Op_Update._() : super._();
+
+  String get table;
+  String get id;
+  Map<String, SqlValue> get data;
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$Op_UpdateImplCopyWith<_$Op_UpdateImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$Op_UpsertImplCopyWith<$Res> {
+  factory _$$Op_UpsertImplCopyWith(
+    _$Op_UpsertImpl value,
+    $Res Function(_$Op_UpsertImpl) then,
+  ) = __$$Op_UpsertImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String table, Map<String, SqlValue> data, String conflictColumn});
+}
+
+/// @nodoc
+class __$$Op_UpsertImplCopyWithImpl<$Res>
+    extends _$OpCopyWithImpl<$Res, _$Op_UpsertImpl>
+    implements _$$Op_UpsertImplCopyWith<$Res> {
+  __$$Op_UpsertImplCopyWithImpl(
+    _$Op_UpsertImpl _value,
+    $Res Function(_$Op_UpsertImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? table = null,
+    Object? data = null,
+    Object? conflictColumn = null,
+  }) {
+    return _then(
+      _$Op_UpsertImpl(
+        table: null == table
+            ? _value.table
+            : table // ignore: cast_nullable_to_non_nullable
+                  as String,
+        data: null == data
+            ? _value._data
+            : data // ignore: cast_nullable_to_non_nullable
+                  as Map<String, SqlValue>,
+        conflictColumn: null == conflictColumn
+            ? _value.conflictColumn
+            : conflictColumn // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$Op_UpsertImpl extends Op_Upsert {
+  const _$Op_UpsertImpl({
+    required this.table,
+    required final Map<String, SqlValue> data,
+    required this.conflictColumn,
+  }) : _data = data,
+       super._();
+
+  @override
+  final String table;
+  final Map<String, SqlValue> _data;
+  @override
+  Map<String, SqlValue> get data {
+    if (_data is EqualUnmodifiableMapView) return _data;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(_data);
+  }
+
+  @override
+  final String conflictColumn;
+
+  @override
+  String toString() {
+    return 'Op.upsert(table: $table, data: $data, conflictColumn: $conflictColumn)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$Op_UpsertImpl &&
+            (identical(other.table, table) || other.table == table) &&
+            const DeepCollectionEquality().equals(other._data, _data) &&
+            (identical(other.conflictColumn, conflictColumn) ||
+                other.conflictColumn == conflictColumn));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    table,
+    const DeepCollectionEquality().hash(_data),
+    conflictColumn,
+  );
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$Op_UpsertImplCopyWith<_$Op_UpsertImpl> get copyWith =>
+      __$$Op_UpsertImplCopyWithImpl<_$Op_UpsertImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String table, Map<String, SqlValue> data) insert,
+    required TResult Function(
+      String table,
+      String id,
+      Map<String, SqlValue> data,
+    )
+    update,
+    required TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )
+    upsert,
+    required TResult Function(String table, String id) delete,
+    required TResult Function(String table, String id) hardDelete,
+    required TResult Function(String sql, List<SqlValue> params) raw,
+    required TResult Function(String name) savepoint,
+    required TResult Function(String name) releaseSavepoint,
+    required TResult Function(String name) rollbackToSavepoint,
+  }) {
+    return upsert(table, data, conflictColumn);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String table, Map<String, SqlValue> data)? insert,
+    TResult? Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult? Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult? Function(String table, String id)? delete,
+    TResult? Function(String table, String id)? hardDelete,
+    TResult? Function(String sql, List<SqlValue> params)? raw,
+    TResult? Function(String name)? savepoint,
+    TResult? Function(String name)? releaseSavepoint,
+    TResult? Function(String name)? rollbackToSavepoint,
+  }) {
+    return upsert?.call(table, data, conflictColumn);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String table, Map<String, SqlValue> data)? insert,
+    TResult Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult Function(String table, String id)? delete,
+    TResult Function(String table, String id)? hardDelete,
+    TResult Function(String sql, List<SqlValue> params)? raw,
+    TResult Function(String name)? savepoint,
+    TResult Function(String name)? releaseSavepoint,
+    TResult Function(String name)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) {
+    if (upsert != null) {
+      return upsert(table, data, conflictColumn);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(Op_Insert value) insert,
+    required TResult Function(Op_Update value) update,
+    required TResult Function(Op_Upsert value) upsert,
+    required TResult Function(Op_Delete value) delete,
+    required TResult Function(Op_HardDelete value) hardDelete,
+    required TResult Function(Op_Raw value) raw,
+    required TResult Function(Op_Savepoint value) savepoint,
+    required TResult Function(Op_ReleaseSavepoint value) releaseSavepoint,
+    required TResult Function(Op_RollbackToSavepoint value) rollbackToSavepoint,
+  }) {
+    return upsert(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(Op_Insert value)? insert,
+    TResult? Function(Op_Update value)? update,
+    TResult? Function(Op_Upsert value)? upsert,
+    TResult? Function(Op_Delete value)? delete,
+    TResult? Function(Op_HardDelete value)? hardDelete,
+    TResult? Function(Op_Raw value)? raw,
+    TResult? Function(Op_Savepoint value)? savepoint,
+    TResult? Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult? Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+  }) {
+    return upsert?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(Op_Insert value)? insert,
+    TResult Function(Op_Update value)? update,
+    TResult Function(Op_Upsert value)? upsert,
+    TResult Function(Op_Delete value)? delete,
+    TResult Function(Op_HardDelete value)? hardDelete,
+    TResult Function(Op_Raw value)? raw,
+    TResult Function(Op_Savepoint value)? savepoint,
+    TResult Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) {
+    if (upsert != null) {
+      return upsert(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class Op_Upsert extends Op {
+  const factory Op_Upsert({
+    required final String table,
+    required final Map<String, SqlValue> data,
+    required final String conflictColumn,
+  }) = _$Op_UpsertImpl;
+  const Op_Upsert._() : super._();
+
+  String get table;
+  Map<String, SqlValue> get data;
+  String get conflictColumn;
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$Op_UpsertImplCopyWith<_$Op_UpsertImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$Op_DeleteImplCopyWith<$Res> {
+  factory _$$Op_DeleteImplCopyWith(
+    _$Op_DeleteImpl value,
+    $Res Function(_$Op_DeleteImpl) then,
+  ) = __$$Op_DeleteImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String table, String id});
+}
+
+/// @nodoc
+class __$$Op_DeleteImplCopyWithImpl<$Res>
+    extends _$OpCopyWithImpl<$Res, _$Op_DeleteImpl>
+    implements _$$Op_DeleteImplCopyWith<$Res> {
+  __$$Op_DeleteImplCopyWithImpl(
+    _$Op_DeleteImpl _value,
+    $Res Function(_$Op_DeleteImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? table = null, Object? id = null}) {
+    return _then(
+      _$Op_DeleteImpl(
+        table: null == table
+            ? _value.table
+            : table // ignore: cast_nullable_to_non_nullable
+                  as String,
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$Op_DeleteImpl extends Op_Delete {
+  const _$Op_DeleteImpl({required this.table, required this.id}) : super._();
+
+  @override
+  final String table;
+  @override
+  final String id;
+
+  @override
+  String toString() {
+    return 'Op.delete(table: $table, id: $id)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$Op_DeleteImpl &&
+            (identical(other.table, table) || other.table == table) &&
+            (identical(other.id, id) || other.id == id));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, table, id);
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$Op_DeleteImplCopyWith<_$Op_DeleteImpl> get copyWith =>
+      __$$Op_DeleteImplCopyWithImpl<_$Op_DeleteImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String table, Map<String, SqlValue> data) insert,
+    required TResult Function(
+      String table,
+      String id,
+      Map<String, SqlValue> data,
+    )
+    update,
+    required TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )
+    upsert,
+    required TResult Function(String table, String id) delete,
+    required TResult Function(String table, String id) hardDelete,
+    required TResult Function(String sql, List<SqlValue> params) raw,
+    required TResult Function(String name) savepoint,
+    required TResult Function(String name) releaseSavepoint,
+    required TResult Function(String name) rollbackToSavepoint,
+  }) {
+    return delete(table, id);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String table, Map<String, SqlValue> data)? insert,
+    TResult? Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult? Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult? Function(String table, String id)? delete,
+    TResult? Function(String table, String id)? hardDelete,
+    TResult? Function(String sql, List<SqlValue> params)? raw,
+    TResult? Function(String name)? savepoint,
+    TResult? Function(String name)? releaseSavepoint,
+    TResult? Function(String name)? rollbackToSavepoint,
+  }) {
+    return delete?.call(table, id);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String table, Map<String, SqlValue> data)? insert,
+    TResult Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult Function(String table, String id)? delete,
+    TResult Function(String table, String id)? hardDelete,
+    TResult Function(String sql, List<SqlValue> params)? raw,
+    TResult Function(String name)? savepoint,
+    TResult Function(String name)? releaseSavepoint,
+    TResult Function(String name)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) {
+    if (delete != null) {
+      return delete(table, id);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(Op_Insert value) insert,
+    required TResult Function(Op_Update value) update,
+    required TResult Function(Op_Upsert value) upsert,
+    required TResult Function(Op_Delete value) delete,
+    required TResult Function(Op_HardDelete value) hardDelete,
+    required TResult Function(Op_Raw value) raw,
+    required TResult Function(Op_Savepoint value) savepoint,
+    required TResult Function(Op_ReleaseSavepoint value) releaseSavepoint,
+    required TResult Function(Op_RollbackToSavepoint value) rollbackToSavepoint,
+  }) {
+    return delete(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(Op_Insert value)? insert,
+    TResult? Function(Op_Update value)? update,
+    TResult? Function(Op_Upsert value)? upsert,
+    TResult? Function(Op_Delete value)? delete,
+    TResult? Function(Op_HardDelete value)? hardDelete,
+    TResult? Function(Op_Raw value)? raw,
+    TResult? Function(Op_Savepoint value)? savepoint,
+    TResult? Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult? Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+  }) {
+    return delete?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(Op_Insert value)? insert,
+    TResult Function(Op_Update value)? update,
+    TResult Function(Op_Upsert value)? upsert,
+    TResult Function(Op_Delete value)? delete,
+    TResult Function(Op_HardDelete value)? hardDelete,
+    TResult Function(Op_Raw value)? raw,
+    TResult Function(Op_Savepoint value)? savepoint,
+    TResult Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) {
+    if (delete != null) {
+      return delete(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class Op_Delete extends Op {
+  const factory Op_Delete({
+    required final String table,
+    required final String id,
+  }) = _$Op_DeleteImpl;
+  const Op_Delete._() : super._();
+
+  String get table;
+  String get id;
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$Op_DeleteImplCopyWith<_$Op_DeleteImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$Op_HardDeleteImplCopyWith<$Res> {
+  factory _$$Op_HardDeleteImplCopyWith(
+    _$Op_HardDeleteImpl value,
+    $Res Function(_$Op_HardDeleteImpl) then,
+  ) = __$$Op_HardDeleteImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String table, String id});
+}
+
+/// @nodoc
+class __$$Op_HardDeleteImplCopyWithImpl<$Res>
+    extends _$OpCopyWithImpl<$Res, _$Op_HardDeleteImpl>
+    implements _$$Op_HardDeleteImplCopyWith<$Res> {
+  __$$Op_HardDeleteImplCopyWithImpl(
+    _$Op_HardDeleteImpl _value,
+    $Res Function(_$Op_HardDeleteImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? table = null, Object? id = null}) {
+    return _then(
+      _$Op_HardDeleteImpl(
+        table: null == table
+            ? _value.table
+            : table // ignore: cast_nullable_to_non_nullable
+                  as String,
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$Op_HardDeleteImpl extends Op_HardDelete {
+  const _$Op_HardDeleteImpl({required this.table, required this.id})
+    : super._();
+
+  @override
+  final String table;
+  @override
+  final String id;
+
+  @override
+  String toString() {
+    return 'Op.hardDelete(table: $table, id: $id)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$Op_HardDeleteImpl &&
+            (identical(other.table, table) || other.table == table) &&
+            (identical(other.id, id) || other.id == id));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, table, id);
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$Op_HardDeleteImplCopyWith<_$Op_HardDeleteImpl> get copyWith =>
+      __$$Op_HardDeleteImplCopyWithImpl<_$Op_HardDeleteImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String table, Map<String, SqlValue> data) insert,
+    required TResult Function(
+      String table,
+      String id,
+      Map<String, SqlValue> data,
+    )
+    update,
+    required TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )
+    upsert,
+    required TResult Function(String table, String id) delete,
+    required TResult Function(String table, String id) hardDelete,
+    required TResult Function(String sql, List<SqlValue> params) raw,
+    required TResult Function(String name) savepoint,
+    required TResult Function(String name) releaseSavepoint,
+    required TResult Function(String name) rollbackToSavepoint,
+  }) {
+    return hardDelete(table, id);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String table, Map<String, SqlValue> data)? insert,
+    TResult? Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult? Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult? Function(String table, String id)? delete,
+    TResult? Function(String table, String id)? hardDelete,
+    TResult? Function(String sql, List<SqlValue> params)? raw,
+    TResult? Function(String name)? savepoint,
+    TResult? Function(String name)? releaseSavepoint,
+    TResult? Function(String name)? rollbackToSavepoint,
+  }) {
+    return hardDelete?.call(table, id);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String table, Map<String, SqlValue> data)? insert,
+    TResult Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult Function(String table, String id)? delete,
+    TResult Function(String table, String id)? hardDelete,
+    TResult Function(String sql, List<SqlValue> params)? raw,
+    TResult Function(String name)? savepoint,
+    TResult Function(String name)? releaseSavepoint,
+    TResult Function(String name)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) {
+    if (hardDelete != null) {
+      return hardDelete(table, id);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(Op_Insert value) insert,
+    required TResult Function(Op_Update value) update,
+    required TResult Function(Op_Upsert value) upsert,
+    required TResult Function(Op_Delete value) delete,
+    required TResult Function(Op_HardDelete value) hardDelete,
+    required TResult Function(Op_Raw value) raw,
+    required TResult Function(Op_Savepoint value) savepoint,
+    required TResult Function(Op_ReleaseSavepoint value) releaseSavepoint,
+    required TResult Function(Op_RollbackToSavepoint value) rollbackToSavepoint,
+  }) {
+    return hardDelete(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(Op_Insert value)? insert,
+    TResult? Function(Op_Update value)? update,
+    TResult? Function(Op_Upsert value)? upsert,
+    TResult? Function(Op_Delete value)? delete,
+    TResult? Function(Op_HardDelete value)? hardDelete,
+    TResult? Function(Op_Raw value)? raw,
+    TResult? Function(Op_Savepoint value)? savepoint,
+    TResult? Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult? Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+  }) {
+    return hardDelete?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(Op_Insert value)? insert,
+    TResult Function(Op_Update value)? update,
+    TResult Function(Op_Upsert value)? upsert,
+    TResult Function(Op_Delete value)? delete,
+    TResult Function(Op_HardDelete value)? hardDelete,
+    TResult Function(Op_Raw value)? raw,
+    TResult Function(Op_Savepoint value)? savepoint,
+    TResult Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) {
+    if (hardDelete != null) {
+      return hardDelete(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class Op_HardDelete extends Op {
+  const factory Op_HardDelete({
+    required final String table,
+    required final String id,
+  }) = _$Op_HardDeleteImpl;
+  const Op_HardDelete._() : super._();
+
+  String get table;
+  String get id;
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$Op_HardDeleteImplCopyWith<_$Op_HardDeleteImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$Op_RawImplCopyWith<$Res> {
+  factory _$$Op_RawImplCopyWith(
+    _$Op_RawImpl value,
+    $Res Function(_$Op_RawImpl) then,
+  ) = __$$Op_RawImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String sql, List<SqlValue> params});
+}
+
+/// @nodoc
+class __$$Op_RawImplCopyWithImpl<$Res>
+    extends _$OpCopyWithImpl<$Res, _$Op_RawImpl>
+    implements _$$Op_RawImplCopyWith<$Res> {
+  __$$Op_RawImplCopyWithImpl(
+    _$Op_RawImpl _value,
+    $Res Function(_$Op_RawImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? sql = null, Object? params = null}) {
+    return _then(
+      _$Op_RawImpl(
+        sql: null == sql
+            ? _value.sql
+            : sql // ignore: cast_nullable_to_non_nullable
+                  as String,
+        params: null == params
+            ? _value._params
+            : params // ignore: cast_nullable_to_non_nullable
+                  as List<SqlValue>,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$Op_RawImpl extends Op_Raw {
+  const _$Op_RawImpl({required this.sql, required final List<SqlValue> params})
+    : _params = params,
+      super._();
+
+  @override
+  final String sql;
+  final List<SqlValue> _params;
+  @override
+  List<SqlValue> get params {
+    if (_params is EqualUnmodifiableListView) return _params;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_params);
+  }
+
+  @override
+  String toString() {
+    return 'Op.raw(sql: $sql, params: $params)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$Op_RawImpl &&
+            (identical(other.sql, sql) || other.sql == sql) &&
+            const DeepCollectionEquality().equals(other._params, _params));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    sql,
+    const DeepCollectionEquality().hash(_params),
+  );
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$Op_RawImplCopyWith<_$Op_RawImpl> get copyWith =>
+      __$$Op_RawImplCopyWithImpl<_$Op_RawImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String table, Map<String, SqlValue> data) insert,
+    required TResult Function(
+      String table,
+      String id,
+      Map<String, SqlValue> data,
+    )
+    update,
+    required TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )
+    upsert,
+    required TResult Function(String table, String id) delete,
+    required TResult Function(String table, String id) hardDelete,
+    required TResult Function(String sql, List<SqlValue> params) raw,
+    required TResult Function(String name) savepoint,
+    required TResult Function(String name) releaseSavepoint,
+    required TResult Function(String name) rollbackToSavepoint,
+  }) {
+    return raw(sql, params);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String table, Map<String, SqlValue> data)? insert,
+    TResult? Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult? Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult? Function(String table, String id)? delete,
+    TResult? Function(String table, String id)? hardDelete,
+    TResult? Function(String sql, List<SqlValue> params)? raw,
+    TResult? Function(String name)? savepoint,
+    TResult? Function(String name)? releaseSavepoint,
+    TResult? Function(String name)? rollbackToSavepoint,
+  }) {
+    return raw?.call(sql, params);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String table, Map<String, SqlValue> data)? insert,
+    TResult Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult Function(String table, String id)? delete,
+    TResult Function(String table, String id)? hardDelete,
+    TResult Function(String sql, List<SqlValue> params)? raw,
+    TResult Function(String name)? savepoint,
+    TResult Function(String name)? releaseSavepoint,
+    TResult Function(String name)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) {
+    if (raw != null) {
+      return raw(sql, params);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(Op_Insert value) insert,
+    required TResult Function(Op_Update value) update,
+    required TResult Function(Op_Upsert value) upsert,
+    required TResult Function(Op_Delete value) delete,
+    required TResult Function(Op_HardDelete value) hardDelete,
+    required TResult Function(Op_Raw value) raw,
+    required TResult Function(Op_Savepoint value) savepoint,
+    required TResult Function(Op_ReleaseSavepoint value) releaseSavepoint,
+    required TResult Function(Op_RollbackToSavepoint value) rollbackToSavepoint,
+  }) {
+    return raw(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(Op_Insert value)? insert,
+    TResult? Function(Op_Update value)? update,
+    TResult? Function(Op_Upsert value)? upsert,
+    TResult? Function(Op_Delete value)? delete,
+    TResult? Function(Op_HardDelete value)? hardDelete,
+    TResult? Function(Op_Raw value)? raw,
+    TResult? Function(Op_Savepoint value)? savepoint,
+    TResult? Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult? Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+  }) {
+    return raw?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(Op_Insert value)? insert,
+    TResult Function(Op_Update value)? update,
+    TResult Function(Op_Upsert value)? upsert,
+    TResult Function(Op_Delete value)? delete,
+    TResult Function(Op_HardDelete value)? hardDelete,
+    TResult Function(Op_Raw value)? raw,
+    TResult Function(Op_Savepoint value)? savepoint,
+    TResult Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) {
+    if (raw != null) {
+      return raw(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class Op_Raw extends Op {
+  const factory Op_Raw({
+    required final String sql,
+    required final List<SqlValue> params,
+  }) = _$Op_RawImpl;
+  const Op_Raw._() : super._();
+
+  String get sql;
+  List<SqlValue> get params;
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$Op_RawImplCopyWith<_$Op_RawImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$Op_SavepointImplCopyWith<$Res> {
+  factory _$$Op_SavepointImplCopyWith(
+    _$Op_SavepointImpl value,
+    $Res Function(_$Op_SavepointImpl) then,
+  ) = __$$Op_SavepointImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String name});
+}
+
+/// @nodoc
+class __$$Op_SavepointImplCopyWithImpl<$Res>
+    extends _$OpCopyWithImpl<$Res, _$Op_SavepointImpl>
+    implements _$$Op_SavepointImplCopyWith<$Res> {
+  __$$Op_SavepointImplCopyWithImpl(
+    _$Op_SavepointImpl _value,
+    $Res Function(_$Op_SavepointImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? name = null}) {
+    return _then(
+      _$Op_SavepointImpl(
+        name: null == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$Op_SavepointImpl extends Op_Savepoint {
+  const _$Op_SavepointImpl({required this.name}) : super._();
+
+  @override
+  final String name;
+
+  @override
+  String toString() {
+    return 'Op.savepoint(name: $name)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$Op_SavepointImpl &&
+            (identical(other.name, name) || other.name == name));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, name);
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$Op_SavepointImplCopyWith<_$Op_SavepointImpl> get copyWith =>
+      __$$Op_SavepointImplCopyWithImpl<_$Op_SavepointImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String table, Map<String, SqlValue> data) insert,
+    required TResult Function(
+      String table,
+      String id,
+      Map<String, SqlValue> data,
+    )
+    update,
+    required TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )
+    upsert,
+    required TResult Function(String table, String id) delete,
+    required TResult Function(String table, String id) hardDelete,
+    required TResult Function(String sql, List<SqlValue> params) raw,
+    required TResult Function(String name) savepoint,
+    required TResult Function(String name) releaseSavepoint,
+    required TResult Function(String name) rollbackToSavepoint,
+  }) {
+    return savepoint(name);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String table, Map<String, SqlValue> data)? insert,
+    TResult? Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult? Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult? Function(String table, String id)? delete,
+    TResult? Function(String table, String id)? hardDelete,
+    TResult? Function(String sql, List<SqlValue> params)? raw,
+    TResult? Function(String name)? savepoint,
+    TResult? Function(String name)? releaseSavepoint,
+    TResult? Function(String name)? rollbackToSavepoint,
+  }) {
+    return savepoint?.call(name);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String table, Map<String, SqlValue> data)? insert,
+    TResult Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult Function(String table, String id)? delete,
+    TResult Function(String table, String id)? hardDelete,
+    TResult Function(String sql, List<SqlValue> params)? raw,
+    TResult Function(String name)? savepoint,
+    TResult Function(String name)? releaseSavepoint,
+    TResult Function(String name)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) {
+    if (savepoint != null) {
+      return savepoint(name);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(Op_Insert value) insert,
+    required TResult Function(Op_Update value) update,
+    required TResult Function(Op_Upsert value) upsert,
+    required TResult Function(Op_Delete value) delete,
+    required TResult Function(Op_HardDelete value) hardDelete,
+    required TResult Function(Op_Raw value) raw,
+    required TResult Function(Op_Savepoint value) savepoint,
+    required TResult Function(Op_ReleaseSavepoint value) releaseSavepoint,
+    required TResult Function(Op_RollbackToSavepoint value) rollbackToSavepoint,
+  }) {
+    return savepoint(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(Op_Insert value)? insert,
+    TResult? Function(Op_Update value)? update,
+    TResult? Function(Op_Upsert value)? upsert,
+    TResult? Function(Op_Delete value)? delete,
+    TResult? Function(Op_HardDelete value)? hardDelete,
+    TResult? Function(Op_Raw value)? raw,
+    TResult? Function(Op_Savepoint value)? savepoint,
+    TResult? Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult? Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+  }) {
+    return savepoint?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(Op_Insert value)? insert,
+    TResult Function(Op_Update value)? update,
+    TResult Function(Op_Upsert value)? upsert,
+    TResult Function(Op_Delete value)? delete,
+    TResult Function(Op_HardDelete value)? hardDelete,
+    TResult Function(Op_Raw value)? raw,
+    TResult Function(Op_Savepoint value)? savepoint,
+    TResult Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) {
+    if (savepoint != null) {
+      return savepoint(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class Op_Savepoint extends Op {
+  const factory Op_Savepoint({required final String name}) = _$Op_SavepointImpl;
+  const Op_Savepoint._() : super._();
+
+  String get name;
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$Op_SavepointImplCopyWith<_$Op_SavepointImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$Op_ReleaseSavepointImplCopyWith<$Res> {
+  factory _$$Op_ReleaseSavepointImplCopyWith(
+    _$Op_ReleaseSavepointImpl value,
+    $Res Function(_$Op_ReleaseSavepointImpl) then,
+  ) = __$$Op_ReleaseSavepointImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String name});
+}
+
+/// @nodoc
+class __$$Op_ReleaseSavepointImplCopyWithImpl<$Res>
+    extends _$OpCopyWithImpl<$Res, _$Op_ReleaseSavepointImpl>
+    implements _$$Op_ReleaseSavepointImplCopyWith<$Res> {
+  __$$Op_ReleaseSavepointImplCopyWithImpl(
+    _$Op_ReleaseSavepointImpl _value,
+    $Res Function(_$Op_ReleaseSavepointImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? name = null}) {
+    return _then(
+      _$Op_ReleaseSavepointImpl(
+        name: null == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$Op_ReleaseSavepointImpl extends Op_ReleaseSavepoint {
+  const _$Op_ReleaseSavepointImpl({required this.name}) : super._();
+
+  @override
+  final String name;
+
+  @override
+  String toString() {
+    return 'Op.releaseSavepoint(name: $name)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$Op_ReleaseSavepointImpl &&
+            (identical(other.name, name) || other.name == name));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, name);
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$Op_ReleaseSavepointImplCopyWith<_$Op_ReleaseSavepointImpl> get copyWith =>
+      __$$Op_ReleaseSavepointImplCopyWithImpl<_$Op_ReleaseSavepointImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String table, Map<String, SqlValue> data) insert,
+    required TResult Function(
+      String table,
+      String id,
+      Map<String, SqlValue> data,
+    )
+    update,
+    required TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )
+    upsert,
+    required TResult Function(String table, String id) delete,
+    required TResult Function(String table, String id) hardDelete,
+    required TResult Function(String sql, List<SqlValue> params) raw,
+    required TResult Function(String name) savepoint,
+    required TResult Function(String name) releaseSavepoint,
+    required TResult Function(String name) rollbackToSavepoint,
+  }) {
+    return releaseSavepoint(name);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String table, Map<String, SqlValue> data)? insert,
+    TResult? Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult? Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult? Function(String table, String id)? delete,
+    TResult? Function(String table, String id)? hardDelete,
+    TResult? Function(String sql, List<SqlValue> params)? raw,
+    TResult? Function(String name)? savepoint,
+    TResult? Function(String name)? releaseSavepoint,
+    TResult? Function(String name)? rollbackToSavepoint,
+  }) {
+    return releaseSavepoint?.call(name);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String table, Map<String, SqlValue> data)? insert,
+    TResult Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult Function(String table, String id)? delete,
+    TResult Function(String table, String id)? hardDelete,
+    TResult Function(String sql, List<SqlValue> params)? raw,
+    TResult Function(String name)? savepoint,
+    TResult Function(String name)? releaseSavepoint,
+    TResult Function(String name)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) {
+    if (releaseSavepoint != null) {
+      return releaseSavepoint(name);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(Op_Insert value) insert,
+    required TResult Function(Op_Update value) update,
+    required TResult Function(Op_Upsert value) upsert,
+    required TResult Function(Op_Delete value) delete,
+    required TResult Function(Op_HardDelete value) hardDelete,
+    required TResult Function(Op_Raw value) raw,
+    required TResult Function(Op_Savepoint value) savepoint,
+    required TResult Function(Op_ReleaseSavepoint value) releaseSavepoint,
+    required TResult Function(Op_RollbackToSavepoint value) rollbackToSavepoint,
+  }) {
+    return releaseSavepoint(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(Op_Insert value)? insert,
+    TResult? Function(Op_Update value)? update,
+    TResult? Function(Op_Upsert value)? upsert,
+    TResult? Function(Op_Delete value)? delete,
+    TResult? Function(Op_HardDelete value)? hardDelete,
+    TResult? Function(Op_Raw value)? raw,
+    TResult? Function(Op_Savepoint value)? savepoint,
+    TResult? Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult? Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+  }) {
+    return releaseSavepoint?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(Op_Insert value)? insert,
+    TResult Function(Op_Update value)? update,
+    TResult Function(Op_Upsert value)? upsert,
+    TResult Function(Op_Delete value)? delete,
+    TResult Function(Op_HardDelete value)? hardDelete,
+    TResult Function(Op_Raw value)? raw,
+    TResult Function(Op_Savepoint value)? savepoint,
+    TResult Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) {
+    if (releaseSavepoint != null) {
+      return releaseSavepoint(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class Op_ReleaseSavepoint extends Op {
+  const factory Op_ReleaseSavepoint({required final String name}) =
+      _$Op_ReleaseSavepointImpl;
+  const Op_ReleaseSavepoint._() : super._();
+
+  String get name;
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$Op_ReleaseSavepointImplCopyWith<_$Op_ReleaseSavepointImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$Op_RollbackToSavepointImplCopyWith<$Res> {
+  factory _$$Op_RollbackToSavepointImplCopyWith(
+    _$Op_RollbackToSavepointImpl value,
+    $Res Function(_$Op_RollbackToSavepointImpl) then,
+  ) = __$$Op_RollbackToSavepointImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String name});
+}
+
+/// @nodoc
+class __$$Op_RollbackToSavepointImplCopyWithImpl<$Res>
+    extends _$OpCopyWithImpl<$Res, _$Op_RollbackToSavepointImpl>
+    implements _$$Op_RollbackToSavepointImplCopyWith<$Res> {
+  __$$Op_RollbackToSavepointImplCopyWithImpl(
+    _$Op_RollbackToSavepointImpl _value,
+    $Res Function(_$Op_RollbackToSavepointImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? name = null}) {
+    return _then(
+      _$Op_RollbackToSavepointImpl(
+        name: null == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+class _$Op_RollbackToSavepointImpl extends Op_RollbackToSavepoint {
+  const _$Op_RollbackToSavepointImpl({required this.name}) : super._();
+
+  @override
+  final String name;
+
+  @override
+  String toString() {
+    return 'Op.rollbackToSavepoint(name: $name)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$Op_RollbackToSavepointImpl &&
+            (identical(other.name, name) || other.name == name));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, name);
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$Op_RollbackToSavepointImplCopyWith<_$Op_RollbackToSavepointImpl>
+  get copyWith =>
+      __$$Op_RollbackToSavepointImplCopyWithImpl<_$Op_RollbackToSavepointImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String table, Map<String, SqlValue> data) insert,
+    required TResult Function(
+      String table,
+      String id,
+      Map<String, SqlValue> data,
+    )
+    update,
+    required TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )
+    upsert,
+    required TResult Function(String table, String id) delete,
+    required TResult Function(String table, String id) hardDelete,
+    required TResult Function(String sql, List<SqlValue> params) raw,
+    required TResult Function(String name) savepoint,
+    required TResult Function(String name) releaseSavepoint,
+    required TResult Function(String name) rollbackToSavepoint,
+  }) {
+    return rollbackToSavepoint(name);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String table, Map<String, SqlValue> data)? insert,
+    TResult? Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult? Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult? Function(String table, String id)? delete,
+    TResult? Function(String table, String id)? hardDelete,
+    TResult? Function(String sql, List<SqlValue> params)? raw,
+    TResult? Function(String name)? savepoint,
+    TResult? Function(String name)? releaseSavepoint,
+    TResult? Function(String name)? rollbackToSavepoint,
+  }) {
+    return rollbackToSavepoint?.call(name);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String table, Map<String, SqlValue> data)? insert,
+    TResult Function(String table, String id, Map<String, SqlValue> data)?
+    update,
+    TResult Function(
+      String table,
+      Map<String, SqlValue> data,
+      String conflictColumn,
+    )?
+    upsert,
+    TResult Function(String table, String id)? delete,
+    TResult Function(String table, String id)? hardDelete,
+    TResult Function(String sql, List<SqlValue> params)? raw,
+    TResult Function(String name)? savepoint,
+    TResult Function(String name)? releaseSavepoint,
+    TResult Function(String name)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) {
+    if (rollbackToSavepoint != null) {
+      return rollbackToSavepoint(name);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(Op_Insert value) insert,
+    required TResult Function(Op_Update value) update,
+    required TResult Function(Op_Upsert value) upsert,
+    required TResult Function(Op_Delete value) delete,
+    required TResult Function(Op_HardDelete value) hardDelete,
+    required TResult Function(Op_Raw value) raw,
+    required TResult Function(Op_Savepoint value) savepoint,
+    required TResult Function(Op_ReleaseSavepoint value) releaseSavepoint,
+    required TResult Function(Op_RollbackToSavepoint value) rollbackToSavepoint,
+  }) {
+    return rollbackToSavepoint(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(Op_Insert value)? insert,
+    TResult? Function(Op_Update value)? update,
+    TResult? Function(Op_Upsert value)? upsert,
+    TResult? Function(Op_Delete value)? delete,
+    TResult? Function(Op_HardDelete value)? hardDelete,
+    TResult? Function(Op_Raw value)? raw,
+    TResult? Function(Op_Savepoint value)? savepoint,
+    TResult? Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult? Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+  }) {
+    return rollbackToSavepoint?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(Op_Insert value)? insert,
+    TResult Function(Op_Update value)? update,
+    TResult Function(Op_Upsert value)? upsert,
+    TResult Function(Op_Delete value)? delete,
+    TResult Function(Op_HardDelete value)? hardDelete,
+    TResult Function(Op_Raw value)? raw,
+    TResult Function(Op_Savepoint value)? savepoint,
+    TResult Function(Op_ReleaseSavepoint value)? releaseSavepoint,
+    TResult Function(Op_RollbackToSavepoint value)? rollbackToSavepoint,
+    required TResult orElse(),
+  }) {
+    if (rollbackToSavepoint != null) {
+      return rollbackToSavepoint(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class Op_RollbackToSavepoint extends Op {
+  const factory Op_RollbackToSavepoint({required final String name}) =
+      _$Op_RollbackToSavepointImpl;
+  const Op_RollbackToSavepoint._() : super._();
+
+  String get name;
+
+  /// Create a copy of Op
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$Op_RollbackToSavepointImplCopyWith<_$Op_RollbackToSavepointImpl>
+  get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
 mixin _$OrderBy {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({

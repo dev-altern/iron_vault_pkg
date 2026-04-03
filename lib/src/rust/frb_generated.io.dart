@@ -123,6 +123,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<MigrationRecord> dco_decode_list_migration_record(dynamic raw);
 
   @protected
+  List<Op> dco_decode_list_op(dynamic raw);
+
+  @protected
   List<OrderBy> dco_decode_list_order_by(dynamic raw);
 
   @protected
@@ -153,6 +156,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MigrationReport dco_decode_migration_report(dynamic raw);
 
   @protected
+  Op dco_decode_op(dynamic raw);
+
+  @protected
   Map<String, SqlValue>? dco_decode_opt_Map_String_sql_value_None(dynamic raw);
 
   @protected
@@ -175,6 +181,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SqlValue dco_decode_sql_value(dynamic raw);
+
+  @protected
+  TransactionResult dco_decode_transaction_result(dynamic raw);
 
   @protected
   int dco_decode_u_32(dynamic raw);
@@ -308,6 +317,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<Op> sse_decode_list_op(SseDeserializer deserializer);
+
+  @protected
   List<OrderBy> sse_decode_list_order_by(SseDeserializer deserializer);
 
   @protected
@@ -342,6 +354,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   MigrationReport sse_decode_migration_report(SseDeserializer deserializer);
 
   @protected
+  Op sse_decode_op(SseDeserializer deserializer);
+
+  @protected
   Map<String, SqlValue>? sse_decode_opt_Map_String_sql_value_None(
     SseDeserializer deserializer,
   );
@@ -368,6 +383,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SqlValue sse_decode_sql_value(SseDeserializer deserializer);
+
+  @protected
+  TransactionResult sse_decode_transaction_result(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_32(SseDeserializer deserializer);
@@ -533,6 +551,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_op(List<Op> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_order_by(List<OrderBy> self, SseSerializer serializer);
 
   @protected
@@ -584,6 +605,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_op(Op self, SseSerializer serializer);
+
+  @protected
   void sse_encode_opt_Map_String_sql_value_None(
     Map<String, SqlValue>? self,
     SseSerializer serializer,
@@ -612,6 +636,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_sql_value(SqlValue self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_transaction_result(
+    TransactionResult self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_u_32(int self, SseSerializer serializer);

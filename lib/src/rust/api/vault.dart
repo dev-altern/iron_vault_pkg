@@ -192,6 +192,30 @@ abstract class IronVaultDb implements RustOpaqueInterface {
   /// Return a snapshot of database statistics.
   Future<VaultStats> stats();
 
+  /// Execute multiple operations in a single ACID transaction.
+  ///
+  /// All operations run inside `BEGIN IMMEDIATE ... COMMIT`.
+  /// If any operation fails, the entire transaction is rolled back.
+  /// Savepoints provide partial rollback within the transaction.
+  ///
+  /// Tenant isolation is enforced on all operations automatically.
+  Future<TransactionResult> transaction({required List<Op> ops});
+
+  /// Update a row with optimistic locking.
+  ///
+  /// Succeeds only if the row's `version` column matches `expected_version`.
+  /// On success, `version` is incremented by 1 atomically.
+  /// On mismatch (another writer updated first), returns
+  /// `OptimisticLockException`.
+  ///
+  /// The table must have a `version INTEGER NOT NULL DEFAULT 1` column.
+  Future<void> updateWithVersion({
+    required String table,
+    required String id,
+    required PlatformInt64 expectedVersion,
+    required Map<String, SqlValue> data,
+  });
+
   /// Reclaim disk space from deleted rows.
   ///
   /// Rewrites the entire database file. Can be very slow on large
