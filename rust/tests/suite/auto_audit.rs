@@ -15,10 +15,16 @@ fn insert_auto_creates_audit_entry() {
     let history = db.get_history("users".into(), id.clone(), 50).unwrap();
     assert_eq!(history.len(), 1);
     assert_eq!(history[0].operation, "INSERT");
-    assert!(history[0].before_json.is_none(), "INSERT should have no before");
+    assert!(
+        history[0].before_json.is_none(),
+        "INSERT should have no before"
+    );
     assert!(history[0].after_json.is_some(), "INSERT should have after");
     let after = history[0].after_json.as_ref().unwrap();
-    assert!(after.contains("Alice"), "after_json should contain the inserted data");
+    assert!(
+        after.contains("Alice"),
+        "after_json should contain the inserted data"
+    );
 }
 
 #[test]
@@ -52,7 +58,10 @@ fn update_auto_creates_audit_with_before_and_after() {
     // Most recent first: UPDATE, then INSERT
     assert_eq!(history.len(), 2);
     assert_eq!(history[0].operation, "UPDATE");
-    assert!(history[0].before_json.is_some(), "UPDATE should have before");
+    assert!(
+        history[0].before_json.is_some(),
+        "UPDATE should have before"
+    );
     assert!(history[0].after_json.is_some(), "UPDATE should have after");
 
     let before = history[0].before_json.as_ref().unwrap();
@@ -78,7 +87,10 @@ fn update_auto_captures_changed_fields() {
     let update_entry = &history[0];
     assert!(update_entry.changed_fields.is_some());
     let changed = update_entry.changed_fields.as_ref().unwrap();
-    assert!(changed.contains("name"), "changed_fields should include 'name'");
+    assert!(
+        changed.contains("name"),
+        "changed_fields should include 'name'"
+    );
 }
 
 // ─── Delete Auto-Audit ───────────────────────────────────────────────
@@ -112,7 +124,10 @@ fn hard_delete_auto_creates_audit_with_before() {
     db.query_hard_delete("users".into(), id.clone()).unwrap();
 
     let history = db.get_history("users".into(), id, 50).unwrap();
-    let hd_entry = history.iter().find(|e| e.operation == "HARD_DELETE").unwrap();
+    let hd_entry = history
+        .iter()
+        .find(|e| e.operation == "HARD_DELETE")
+        .unwrap();
     assert!(hd_entry.before_json.is_some());
     assert!(hd_entry.after_json.is_none());
 }
@@ -172,7 +187,10 @@ fn update_zero_rows_no_audit_entry() {
     let history = db
         .get_history("users".into(), "nonexistent".into(), 50)
         .unwrap();
-    assert!(history.is_empty(), "Zero-row update should produce no audit");
+    assert!(
+        history.is_empty(),
+        "Zero-row update should produce no audit"
+    );
 }
 
 // ─── Integrity After Auto-Audit ──────────────────────────────────────

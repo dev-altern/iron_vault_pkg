@@ -40,7 +40,11 @@ fn fuzz_where_values_never_cause_injection() {
         });
         let result = db.query_get(spec);
         assert!(result.is_ok(), "Payload '{}' caused error", payload);
-        assert!(result.unwrap().is_empty(), "Payload '{}' returned rows", payload);
+        assert!(
+            result.unwrap().is_empty(),
+            "Payload '{}' returned rows",
+            payload
+        );
     }
 
     // Table must still exist with original data
@@ -61,7 +65,10 @@ fn fuzz_where_values_never_cause_injection() {
     let mut spec = query("users");
     spec.conditions.push(Condition::In {
         column: "email".into(),
-        values: payloads.iter().map(|p| SqlValue::Text(p.to_string())).collect(),
+        values: payloads
+            .iter()
+            .map(|p| SqlValue::Text(p.to_string()))
+            .collect(),
     });
     let result = db.query_get(spec);
     assert!(result.is_ok());
@@ -76,7 +83,13 @@ fn fuzz_random_condition_combinations() {
     let db = open_test_db(&dir);
     create_users_table(&db);
     for i in 0..20 {
-        insert_user(&db, &format!("U{}", i), &format!("u{}@t.com", i), "member", i as f64);
+        insert_user(
+            &db,
+            &format!("U{}", i),
+            &format!("u{}@t.com", i),
+            "member",
+            i as f64,
+        );
     }
 
     // Rapidly combine different condition types — must never crash
@@ -91,7 +104,9 @@ fn fuzz_random_condition_combinations() {
             pattern: format!("%{}%", i % 10),
         });
         if i % 3 == 0 {
-            spec.order_by.push(OrderBy::Desc { column: "score".into() });
+            spec.order_by.push(OrderBy::Desc {
+                column: "score".into(),
+            });
         }
         if i % 5 == 0 {
             spec.limit = Some((i % 10 + 1) as u32);
@@ -137,7 +152,14 @@ fn fuzz_vector_clock_merge_1000_iterations() {
         let conc = a.is_concurrent_with(&b);
         // At most one can be true (or all false if equal)
         let trues = [hb_ab, hb_ba, conc].iter().filter(|&&x| x).count();
-        assert!(trues <= 1, "Iteration {}: hb_ab={} hb_ba={} conc={}", i, hb_ab, hb_ba, conc);
+        assert!(
+            trues <= 1,
+            "Iteration {}: hb_ab={} hb_ba={} conc={}",
+            i,
+            hb_ab,
+            hb_ba,
+            conc
+        );
     }
 }
 
@@ -184,15 +206,23 @@ fn stress_open_close_5_times() {
 
     {
         let db = iron_vault_core::api::vault::IronVaultDb::open(
-            path.clone(), test_key(), "t".into(), VaultConfig::test_config(),
-        ).unwrap();
+            path.clone(),
+            test_key(),
+            "t".into(),
+            VaultConfig::test_config(),
+        )
+        .unwrap();
         create_users_table(&db);
     }
 
     for _ in 0..5 {
         let mut db = iron_vault_core::api::vault::IronVaultDb::open(
-            path.clone(), test_key(), "t".into(), VaultConfig::test_config(),
-        ).unwrap();
+            path.clone(),
+            test_key(),
+            "t".into(),
+            VaultConfig::test_config(),
+        )
+        .unwrap();
         let count = db.query_count(query("users")).unwrap();
         assert_eq!(count, 0);
         db.close().unwrap();
@@ -209,7 +239,13 @@ fn stress_mixed_read_write_operations() {
 
     // Insert 100
     for i in 0..100 {
-        insert_user(&db, &format!("U{}", i), &format!("u{}@t.com", i), "member", i as f64);
+        insert_user(
+            &db,
+            &format!("U{}", i),
+            &format!("u{}@t.com", i),
+            "member",
+            i as f64,
+        );
     }
 
     // Interleave reads and writes
@@ -295,7 +331,10 @@ fn bench_paginate_100_pages() {
             d.insert("name".into(), SqlValue::Text(format!("User{:04}", i)));
             d.insert("email".into(), SqlValue::Text(format!("u{}@t.com", i)));
             d.insert("status".into(), SqlValue::Text("active".into()));
-            Op::Insert { table: "users".into(), data: d }
+            Op::Insert {
+                table: "users".into(),
+                data: d,
+            }
         })
         .collect();
     db.transaction(ops).unwrap();
@@ -387,23 +426,43 @@ fn bench_fts_100_searches() {
     db.execute_raw(
         "CREATE TABLE articles (id TEXT PRIMARY KEY, title TEXT, body TEXT, \
          tenant_id TEXT NOT NULL, created_at INTEGER NOT NULL, \
-         updated_at INTEGER NOT NULL, deleted_at INTEGER)".into(),
+         updated_at INTEGER NOT NULL, deleted_at INTEGER)"
+            .into(),
         vec![],
-    ).unwrap();
+    )
+    .unwrap();
 
     db.build_search_index(
         "articles".into(),
         vec![
-            SearchField { name: "title".into(), weight: 3.0, stored: true },
-            SearchField { name: "body".into(), weight: 1.0, stored: true },
+            SearchField {
+                name: "title".into(),
+                weight: 3.0,
+                stored: true,
+            },
+            SearchField {
+                name: "body".into(),
+                weight: 1.0,
+                stored: true,
+            },
         ],
-    ).unwrap();
+    )
+    .unwrap();
 
     // Seed 500 articles
     for i in 0..500 {
         let mut data = HashMap::new();
-        data.insert("title".into(), SqlValue::Text(format!("Article about topic {}", i % 50)));
-        data.insert("body".into(), SqlValue::Text(format!("This is the body of article {} with searchable content about various subjects", i)));
+        data.insert(
+            "title".into(),
+            SqlValue::Text(format!("Article about topic {}", i % 50)),
+        );
+        data.insert(
+            "body".into(),
+            SqlValue::Text(format!(
+                "This is the body of article {} with searchable content about various subjects",
+                i
+            )),
+        );
         db.query_insert("articles".into(), data).unwrap();
     }
 

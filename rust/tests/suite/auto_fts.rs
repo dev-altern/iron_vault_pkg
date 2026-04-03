@@ -52,9 +52,7 @@ fn insert_auto_indexes_row() {
     insert_doc(&db, "Rust Programming", "Systems language guide");
 
     // Should be immediately searchable without manual index_row call
-    let hits = db
-        .search("docs".into(), "rust".into(), 10, false)
-        .unwrap();
+    let hits = db.search("docs".into(), "rust".into(), 10, false).unwrap();
     assert_eq!(hits.len(), 1);
 }
 
@@ -69,9 +67,7 @@ fn insert_multiple_all_auto_indexed() {
     insert_doc(&db, "Python Guide", "Dynamic language");
     insert_doc(&db, "SQL Reference", "Database queries");
 
-    let hits = db
-        .search("docs".into(), "guide".into(), 10, false)
-        .unwrap();
+    let hits = db.search("docs".into(), "guide".into(), 10, false).unwrap();
     assert_eq!(hits.len(), 2);
 }
 
@@ -99,14 +95,10 @@ fn update_auto_reindexes_row() {
     db.query_update("docs".into(), id, data).unwrap();
 
     // "alpha" should be gone (was only in title), "beta" should be found
-    let alpha_hits = db
-        .search("docs".into(), "alpha".into(), 10, false)
-        .unwrap();
+    let alpha_hits = db.search("docs".into(), "alpha".into(), 10, false).unwrap();
     assert_eq!(alpha_hits.len(), 0, "Old title term should be removed");
 
-    let beta_hits = db
-        .search("docs".into(), "beta".into(), 10, false)
-        .unwrap();
+    let beta_hits = db.search("docs".into(), "beta".into(), 10, false).unwrap();
     assert_eq!(beta_hits.len(), 1, "New title term should be found");
 }
 

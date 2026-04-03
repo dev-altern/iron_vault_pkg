@@ -120,10 +120,7 @@ pub(crate) fn snapshot_row(
     tenant_id: &str,
 ) -> Option<String> {
     // Query all columns for this row
-    let sql = format!(
-        "SELECT * FROM {} WHERE id = ?1 AND tenant_id = ?2",
-        table
-    );
+    let sql = format!("SELECT * FROM {} WHERE id = ?1 AND tenant_id = ?2", table);
     let mut stmt = conn.prepare(&sql).ok()?;
     let col_names: Vec<String> = stmt.column_names().iter().map(|c| c.to_string()).collect();
     let col_count = col_names.len();

@@ -706,7 +706,8 @@ impl IronVaultDb {
     /// Returns JSON: `{"ct":"<base64>","nonce":"<base64>","kid":"v1"}`.
     pub fn encrypt_field(&self, plaintext: String) -> Result<String> {
         self.ensure_open()?;
-        let field_key = crypto::tenant_field_key(&self.encryption_key.read().unwrap(), &self.tenant_id)?;
+        let field_key =
+            crypto::tenant_field_key(&self.encryption_key.read().unwrap(), &self.tenant_id)?;
         crypto::encrypt_field(&plaintext, &field_key)
     }
 
@@ -716,7 +717,8 @@ impl IronVaultDb {
     /// Fails if the key is wrong or data has been tampered with.
     pub fn decrypt_field(&self, ciphertext_json: String) -> Result<String> {
         self.ensure_open()?;
-        let field_key = crypto::tenant_field_key(&self.encryption_key.read().unwrap(), &self.tenant_id)?;
+        let field_key =
+            crypto::tenant_field_key(&self.encryption_key.read().unwrap(), &self.tenant_id)?;
         crypto::decrypt_field(&ciphertext_json, &field_key)
     }
 
@@ -753,7 +755,8 @@ impl IronVaultDb {
             ));
         }
 
-        let old_field_key = crypto::tenant_field_key(&self.encryption_key.read().unwrap(), &self.tenant_id)?;
+        let old_field_key =
+            crypto::tenant_field_key(&self.encryption_key.read().unwrap(), &self.tenant_id)?;
         let new_field_key = crypto::tenant_field_key(&new_encryption_key, &self.tenant_id)?;
 
         let conn = self.acquire_writer()?;
@@ -767,10 +770,7 @@ impl IronVaultDb {
                 .chain(columns.iter().cloned())
                 .collect::<Vec<_>>()
                 .join(", ");
-            let sql = format!(
-                "SELECT {} FROM {} WHERE tenant_id = ?1",
-                col_list, table
-            );
+            let sql = format!("SELECT {} FROM {} WHERE tenant_id = ?1", col_list, table);
             let mut stmt = conn.prepare(&sql)?;
             let rows: Vec<(String, Vec<(String, String)>)> = stmt
                 .query_map(rusqlite::params![&self.tenant_id], |row| {
@@ -795,7 +795,10 @@ impl IronVaultDb {
                     // Decrypt with old key
                     let plaintext = crypto::decrypt_field(ciphertext, &old_field_key)
                         .with_context(|| {
-                            format!("KeyRotation: failed to decrypt {}.{} id={}", table, col_name, id)
+                            format!(
+                                "KeyRotation: failed to decrypt {}.{} id={}",
+                                table, col_name, id
+                            )
                         })?;
 
                     // Re-encrypt with new key
@@ -1462,7 +1465,9 @@ impl IronVaultDb {
             _ => None,
         };
         let actor = self.actor_id.lock().unwrap().clone();
-        if let Ok(hmac_key) = crypto::hkdf_derive(&self.encryption_key.read().unwrap(), "audit_hmac") {
+        if let Ok(hmac_key) =
+            crypto::hkdf_derive(&self.encryption_key.read().unwrap(), "audit_hmac")
+        {
             let _ = audit::record(
                 conn,
                 table,
@@ -1494,17 +1499,15 @@ impl IronVaultDb {
                 table
             );
             if let Ok(mut stmt) = conn.prepare(&sql) {
-                let result: Result<HashMap<String, String>, _> = stmt.query_row(
-                    rusqlite::params![row_id, &self.tenant_id],
-                    |row| {
+                let result: Result<HashMap<String, String>, _> =
+                    stmt.query_row(rusqlite::params![row_id, &self.tenant_id], |row| {
                         let mut fields = HashMap::new();
                         for (i, name) in field_names.iter().enumerate() {
                             let val: String = row.get(i).unwrap_or_default();
                             fields.insert(name.clone(), val);
                         }
                         Ok(fields)
-                    },
-                );
+                    });
                 if let Ok(fields) = result {
                     let _ = self.search_engine.index_row(table, row_id, &fields);
                 }

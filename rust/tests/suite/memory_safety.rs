@@ -29,21 +29,33 @@ fn open_close_10_times_no_leak() {
 
     {
         let db = iron_vault_core::api::vault::IronVaultDb::open(
-            path.clone(), test_key(), "t".into(), VaultConfig::test_config(),
-        ).unwrap();
+            path.clone(),
+            test_key(),
+            "t".into(),
+            VaultConfig::test_config(),
+        )
+        .unwrap();
         create_users_table(&db);
     }
 
     for _ in 0..10 {
         let mut db = iron_vault_core::api::vault::IronVaultDb::open(
-            path.clone(), test_key(), "t".into(), VaultConfig::test_config(),
-        ).unwrap();
+            path.clone(),
+            test_key(),
+            "t".into(),
+            VaultConfig::test_config(),
+        )
+        .unwrap();
         db.close().unwrap();
     }
 
     let db = iron_vault_core::api::vault::IronVaultDb::open(
-        path, test_key(), "t".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path,
+        test_key(),
+        "t".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
     assert_eq!(db.query_count(query("users")).unwrap(), 0);
 }
 
@@ -54,8 +66,12 @@ fn drop_without_close_then_reopen() {
 
     {
         let db = iron_vault_core::api::vault::IronVaultDb::open(
-            path.clone(), test_key(), "t".into(), VaultConfig::test_config(),
-        ).unwrap();
+            path.clone(),
+            test_key(),
+            "t".into(),
+            VaultConfig::test_config(),
+        )
+        .unwrap();
         create_users_table(&db);
         insert_user(&db, "Alice", "a@t.com", "admin", 90.0);
         // Drop without close — Drop impl checkpoints + closes notifier
@@ -66,8 +82,12 @@ fn drop_without_close_then_reopen() {
 
     // Reopen should work and data should be persisted
     let db = iron_vault_core::api::vault::IronVaultDb::open(
-        path, test_key(), "t".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path,
+        test_key(),
+        "t".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
     assert_eq!(db.query_count(query("users")).unwrap(), 1);
 }
 
@@ -96,7 +116,13 @@ fn encrypt_after_many_operations_still_works() {
     create_users_table(&db);
 
     for i in 0..50 {
-        insert_user(&db, &format!("U{}", i), &format!("u{}@t.com", i), "m", i as f64);
+        insert_user(
+            &db,
+            &format!("U{}", i),
+            &format!("u{}@t.com", i),
+            "m",
+            i as f64,
+        );
     }
 
     let enc = db.encrypt_field("test".into()).unwrap();
@@ -109,22 +135,28 @@ fn encrypt_after_many_operations_still_works() {
 #[test]
 fn concurrent_reads_and_writes() {
     let dir = tempfile::TempDir::new().unwrap();
-    let path = dir.path().join("concurrent.db").to_str().unwrap().to_string();
+    let path = dir
+        .path()
+        .join("concurrent.db")
+        .to_str()
+        .unwrap()
+        .to_string();
 
     let mut config = VaultConfig::test_config();
     config.wal_mode = true;
     config.read_pool_size = 4;
 
-    let db = iron_vault_core::api::vault::IronVaultDb::open(
-        path, test_key(), "t".into(), config,
-    ).unwrap();
+    let db = iron_vault_core::api::vault::IronVaultDb::open(path, test_key(), "t".into(), config)
+        .unwrap();
 
     db.execute_raw(
         "CREATE TABLE conc (id TEXT PRIMARY KEY, val INTEGER, \
          tenant_id TEXT NOT NULL, created_at INTEGER NOT NULL, \
-         updated_at INTEGER NOT NULL, deleted_at INTEGER)".into(),
+         updated_at INTEGER NOT NULL, deleted_at INTEGER)"
+            .into(),
         vec![],
-    ).unwrap();
+    )
+    .unwrap();
 
     for i in 0..100 {
         let mut data = HashMap::new();

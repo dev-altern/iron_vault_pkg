@@ -230,9 +230,12 @@ impl SearchEngine {
     /// Check if a table has a search index and return its indexed field names.
     pub(crate) fn indexed_fields(&self, table: &str) -> Option<Vec<String>> {
         let indexes = self.indexes.lock().unwrap();
-        indexes
-            .get(table)
-            .map(|ti| ti.text_fields.iter().map(|(name, _, _)| name.clone()).collect())
+        indexes.get(table).map(|ti| {
+            ti.text_fields
+                .iter()
+                .map(|(name, _, _)| name.clone())
+                .collect()
+        })
     }
 }
 

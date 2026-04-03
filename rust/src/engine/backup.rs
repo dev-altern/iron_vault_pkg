@@ -11,7 +11,7 @@ const FORMAT_VERSION: u32 = 2;
 const FLAG_COMPRESSED: u8 = 0x01;
 const FLAG_ENCRYPTED: u8 = 0x02;
 const CHUNK_SIZE: usize = 1024 * 1024; // 1MB chunks
-// Header v2: magic(4) + version(4) + flags(1) + chunk_size(4) + num_chunks(4) + uncompressed_size(8) = 25
+                                       // Header v2: magic(4) + version(4) + flags(1) + chunk_size(4) + num_chunks(4) + uncompressed_size(8) = 25
 const HEADER_LEN: usize = 4 + 4 + 1 + 4 + 4 + 8;
 
 /// Create a backup using chunked streaming.
@@ -45,7 +45,7 @@ pub(crate) fn create_backup(
     }
 
     // Count chunks
-    let num_chunks = ((uncompressed_size as usize + CHUNK_SIZE - 1) / CHUNK_SIZE).max(1) as u32;
+    let num_chunks = (uncompressed_size as usize).div_ceil(CHUNK_SIZE).max(1) as u32;
 
     // Write header
     let out_file = std::fs::File::create(output_path)
@@ -82,8 +82,7 @@ pub(crate) fn create_backup(
 
         // Compress
         let processed = if compress {
-            zstd::encode_all(chunk_data, 3)
-                .context("BackupException: chunk compression failed")?
+            zstd::encode_all(chunk_data, 3).context("BackupException: chunk compression failed")?
         } else {
             chunk_data.to_vec()
         };
@@ -116,9 +115,7 @@ pub(crate) fn create_backup(
     let checksum_hex = checksum.to_hex().to_string();
 
     // Append checksum
-    let mut file = std::fs::OpenOptions::new()
-        .append(true)
-        .open(output_path)?;
+    let mut file = std::fs::OpenOptions::new().append(true).open(output_path)?;
     file.write_all(checksum.as_bytes())?;
 
     let final_size = std::fs::metadata(output_path)?.len();
@@ -133,10 +130,7 @@ pub(crate) fn create_backup(
 }
 
 /// Verify a backup file without restoring.
-pub(crate) fn verify_backup(
-    backup_path: &str,
-    decrypt_key: &[u8],
-) -> Result<BackupVerifyReport> {
+pub(crate) fn verify_backup(backup_path: &str, decrypt_key: &[u8]) -> Result<BackupVerifyReport> {
     let file_data = std::fs::read(backup_path)
         .with_context(|| format!("BackupException: cannot read {}", backup_path))?;
 

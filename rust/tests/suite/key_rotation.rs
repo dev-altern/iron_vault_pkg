@@ -14,7 +14,11 @@ fn create_encrypted_table(db: &iron_vault_core::api::vault::IronVaultDb) {
     .unwrap();
 }
 
-fn insert_encrypted(db: &iron_vault_core::api::vault::IronVaultDb, email: &str, name: &str) -> String {
+fn insert_encrypted(
+    db: &iron_vault_core::api::vault::IronVaultDb,
+    email: &str,
+    name: &str,
+) -> String {
     let enc_email = db.encrypt_field(email.into()).unwrap();
     let enc_name = db.encrypt_field(name.into()).unwrap();
     let mut data = HashMap::new();
@@ -35,36 +39,58 @@ fn rotate_re_encrypts_all_rows() {
     let id2 = insert_encrypted(&db, "bob@test.com", "Bob");
 
     // Verify decryptable with current key
-    let row = db.query_raw(
-        "SELECT email_enc FROM secrets WHERE id = ?1 AND tenant_id = 'tenant_test'".into(),
-        vec![SqlValue::Text(id1.clone())],
-    ).unwrap();
-    let enc = match &row[0]["email_enc"] { SqlValue::Text(s) => s.clone(), _ => panic!() };
+    let row = db
+        .query_raw(
+            "SELECT email_enc FROM secrets WHERE id = ?1 AND tenant_id = 'tenant_test'".into(),
+            vec![SqlValue::Text(id1.clone())],
+        )
+        .unwrap();
+    let enc = match &row[0]["email_enc"] {
+        SqlValue::Text(s) => s.clone(),
+        _ => panic!(),
+    };
     assert_eq!(db.decrypt_field(enc).unwrap(), "alice@test.com");
 
     // Rotate to new key
     let new_key = vec![0xBBu8; 32];
     let mut tables = HashMap::new();
-    tables.insert("secrets".into(), vec!["email_enc".into(), "name_enc".into()]);
+    tables.insert(
+        "secrets".into(),
+        vec!["email_enc".into(), "name_enc".into()],
+    );
     let rotated = db.rotate_field_keys(new_key, tables).unwrap();
     assert_eq!(rotated, 4); // 2 rows × 2 columns
 
     // Verify decryptable with NEW key (internal key was updated)
-    let row = db.query_raw(
-        "SELECT email_enc, name_enc FROM secrets WHERE id = ?1 AND tenant_id = 'tenant_test'".into(),
-        vec![SqlValue::Text(id1.clone())],
-    ).unwrap();
-    let enc_email = match &row[0]["email_enc"] { SqlValue::Text(s) => s.clone(), _ => panic!() };
-    let enc_name = match &row[0]["name_enc"] { SqlValue::Text(s) => s.clone(), _ => panic!() };
+    let row = db
+        .query_raw(
+            "SELECT email_enc, name_enc FROM secrets WHERE id = ?1 AND tenant_id = 'tenant_test'"
+                .into(),
+            vec![SqlValue::Text(id1.clone())],
+        )
+        .unwrap();
+    let enc_email = match &row[0]["email_enc"] {
+        SqlValue::Text(s) => s.clone(),
+        _ => panic!(),
+    };
+    let enc_name = match &row[0]["name_enc"] {
+        SqlValue::Text(s) => s.clone(),
+        _ => panic!(),
+    };
     assert_eq!(db.decrypt_field(enc_email).unwrap(), "alice@test.com");
     assert_eq!(db.decrypt_field(enc_name).unwrap(), "Alice");
 
     // Second row too
-    let row = db.query_raw(
-        "SELECT email_enc FROM secrets WHERE id = ?1 AND tenant_id = 'tenant_test'".into(),
-        vec![SqlValue::Text(id2)],
-    ).unwrap();
-    let enc = match &row[0]["email_enc"] { SqlValue::Text(s) => s.clone(), _ => panic!() };
+    let row = db
+        .query_raw(
+            "SELECT email_enc FROM secrets WHERE id = ?1 AND tenant_id = 'tenant_test'".into(),
+            vec![SqlValue::Text(id2)],
+        )
+        .unwrap();
+    let enc = match &row[0]["email_enc"] {
+        SqlValue::Text(s) => s.clone(),
+        _ => panic!(),
+    };
     assert_eq!(db.decrypt_field(enc).unwrap(), "bob@test.com");
 }
 
@@ -76,8 +102,12 @@ fn old_key_cannot_decrypt_after_rotation() {
 
     // Create and encrypt with old key
     let db = iron_vault_core::api::vault::IronVaultDb::open(
-        path.clone(), old_key.clone(), "t".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path.clone(),
+        old_key.clone(),
+        "t".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
     create_encrypted_table(&db);
     let id = insert_encrypted(&db, "secret@test.com", "Secret");
 
@@ -88,20 +118,32 @@ fn old_key_cannot_decrypt_after_rotation() {
     db.rotate_field_keys(new_key.clone(), tables).unwrap();
 
     // Read the encrypted value with raw SQL
-    let row = db.query_raw(
-        format!("SELECT email_enc FROM secrets WHERE id = '{}'", id),
-        vec![],
-    ).unwrap();
-    let ciphertext = match &row[0]["email_enc"] { SqlValue::Text(s) => s.clone(), _ => panic!() };
+    let row = db
+        .query_raw(
+            format!("SELECT email_enc FROM secrets WHERE id = '{}'", id),
+            vec![],
+        )
+        .unwrap();
+    let ciphertext = match &row[0]["email_enc"] {
+        SqlValue::Text(s) => s.clone(),
+        _ => panic!(),
+    };
 
     // Open a NEW db instance with the OLD key — should fail to decrypt
     drop(db);
     std::thread::sleep(std::time::Duration::from_millis(100));
     let old_db = iron_vault_core::api::vault::IronVaultDb::open(
-        path, old_key, "t".into(), VaultConfig::test_config(),
-    ).unwrap();
+        path,
+        old_key,
+        "t".into(),
+        VaultConfig::test_config(),
+    )
+    .unwrap();
     let result = old_db.decrypt_field(ciphertext);
-    assert!(result.is_err(), "Old key should not decrypt rotated ciphertext");
+    assert!(
+        result.is_err(),
+        "Old key should not decrypt rotated ciphertext"
+    );
 }
 
 // ─── Edge Cases ──────────────────────────────────────────────────────
@@ -134,7 +176,10 @@ fn rotate_with_null_columns_skipped() {
 
     let new_key = vec![0xBBu8; 32];
     let mut tables = HashMap::new();
-    tables.insert("secrets".into(), vec!["email_enc".into(), "name_enc".into()]);
+    tables.insert(
+        "secrets".into(),
+        vec!["email_enc".into(), "name_enc".into()],
+    );
     let rotated = db.rotate_field_keys(new_key, tables).unwrap();
     assert_eq!(rotated, 1); // only email_enc rotated, name_enc was NULL
 }
@@ -169,7 +214,10 @@ fn encrypt_decrypt_works_after_rotation() {
     // Rotate
     let new_key = vec![0xDDu8; 32];
     let mut tables = HashMap::new();
-    tables.insert("secrets".into(), vec!["email_enc".into(), "name_enc".into()]);
+    tables.insert(
+        "secrets".into(),
+        vec!["email_enc".into(), "name_enc".into()],
+    );
     db.rotate_field_keys(new_key, tables).unwrap();
 
     // New encryptions should use the new key
@@ -190,7 +238,8 @@ fn rotate_multiple_tables() {
             updated_at INTEGER NOT NULL, deleted_at INTEGER)"
             .into(),
         vec![],
-    ).unwrap();
+    )
+    .unwrap();
 
     insert_encrypted(&db, "a@t.com", "Alice");
     let enc_note = db.encrypt_field("secret note".into()).unwrap();
@@ -200,7 +249,10 @@ fn rotate_multiple_tables() {
 
     let new_key = vec![0xEEu8; 32];
     let mut tables = HashMap::new();
-    tables.insert("secrets".into(), vec!["email_enc".into(), "name_enc".into()]);
+    tables.insert(
+        "secrets".into(),
+        vec!["email_enc".into(), "name_enc".into()],
+    );
     tables.insert("notes".into(), vec!["body_enc".into()]);
     let rotated = db.rotate_field_keys(new_key, tables).unwrap();
     assert_eq!(rotated, 3); // 2 from secrets + 1 from notes

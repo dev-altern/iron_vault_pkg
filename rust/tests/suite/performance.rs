@@ -169,7 +169,9 @@ fn encrypt_decrypt_100_fields_under_100ms() {
 
     let start = std::time::Instant::now();
     for i in 0..100 {
-        let enc = db.encrypt_field(format!("email_{}@example.com", i)).unwrap();
+        let enc = db
+            .encrypt_field(format!("email_{}@example.com", i))
+            .unwrap();
         let _dec = db.decrypt_field(enc).unwrap();
     }
     let elapsed = start.elapsed();
