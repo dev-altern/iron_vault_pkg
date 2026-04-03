@@ -58,6 +58,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  RustStreamSink<Map<String, SqlValue>>
+  dco_decode_StreamSink_Map_String_sql_value_None_Sse(dynamic raw);
+
+  @protected
+  RustStreamSink<List<Map<String, SqlValue>>>
+  dco_decode_StreamSink_list_Map_String_sql_value_None_Sse(dynamic raw);
+
+  @protected
+  RustStreamSink<Map<String, SqlValue>?>
+  dco_decode_StreamSink_opt_Map_String_sql_value_None_Sse(dynamic raw);
+
+  @protected
   String dco_decode_String(dynamic raw);
 
   @protected
@@ -244,6 +256,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   IronVaultDb
   sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  RustStreamSink<Map<String, SqlValue>>
+  sse_decode_StreamSink_Map_String_sql_value_None_Sse(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  RustStreamSink<List<Map<String, SqlValue>>>
+  sse_decode_StreamSink_list_Map_String_sql_value_None_Sse(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  RustStreamSink<Map<String, SqlValue>?>
+  sse_decode_StreamSink_opt_Map_String_sql_value_None_Sse(
     SseDeserializer deserializer,
   );
 
@@ -454,6 +484,24 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void
   sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerIronVaultDb(
     IronVaultDb self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_StreamSink_Map_String_sql_value_None_Sse(
+    RustStreamSink<Map<String, SqlValue>> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_StreamSink_list_Map_String_sql_value_None_Sse(
+    RustStreamSink<List<Map<String, SqlValue>>> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_StreamSink_opt_Map_String_sql_value_None_Sse(
+    RustStreamSink<Map<String, SqlValue>?> self,
     SseSerializer serializer,
   );
 

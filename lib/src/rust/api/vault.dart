@@ -7,7 +7,7 @@ import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'types.dart';
 
-// These functions are ignored because they are not marked as `pub`: `acquire_reader`, `acquire_writer`, `checkpoint_internal`, `ensure_open`, `execute_read_query`
+// These functions are ignored because they are not marked as `pub`: `acquire_reader`, `acquire_writer`, `checkpoint_internal`, `ensure_open`, `execute_query_on_pool`, `execute_read_query`, `hash_results`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `fmt`
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<IronVaultDb>>
@@ -79,6 +79,9 @@ abstract class IronVaultDb implements RustOpaqueInterface {
   /// **Checksum protection:** if a previously-applied migration's SQL
   /// has been modified, returns `MigrationChecksumException`.
   Future<MigrationReport> migrate({required List<VaultMigration> migrations});
+
+  /// Get the notification version for a table channel (for testing).
+  Future<BigInt> notificationVersion({required String table});
 
   /// Open or create an encrypted database.
   ///
@@ -240,4 +243,26 @@ abstract class IronVaultDb implements RustOpaqueInterface {
   /// Rewrites the entire database file. Can be very slow on large
   /// databases — prefer `incremental_vacuum` when available (Phase 12).
   Future<void> vacuum();
+
+  /// Watch aggregate expressions — emits updated aggregates on table changes.
+  Stream<Map<String, SqlValue>> watchAggregate({
+    required QuerySpec spec,
+    required List<AggExpr> expressions,
+  });
+
+  /// Watch a query — emits results whenever the table changes.
+  ///
+  /// Returns a Dart `Stream<List<Map<String, SqlValue>>>`.
+  /// Initial result emitted immediately. Re-executes on every write
+  /// to the table. Only emits if the result set actually changed
+  /// (distinct emission via hash comparison).
+  ///
+  /// The stream stops when the Dart side cancels or the DB is closed.
+  Stream<List<Map<String, SqlValue>>> watchQuery({required QuerySpec spec});
+
+  /// Watch a single row — emits the row or None if soft-deleted.
+  Stream<Map<String, SqlValue>?> watchRow({
+    required String table,
+    required String id,
+  });
 }

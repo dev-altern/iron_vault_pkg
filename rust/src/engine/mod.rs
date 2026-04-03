@@ -2,6 +2,7 @@ pub(crate) mod connection;
 pub(crate) mod convert;
 pub(crate) mod crypto;
 pub(crate) mod migration;
+pub(crate) mod notifier;
 pub(crate) mod query_builder;
 pub(crate) mod transaction;
 pub(crate) mod validate;

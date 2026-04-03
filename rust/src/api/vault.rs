@@ -1,9 +1,10 @@
 use crate::api::types::*;
-use crate::engine::{connection, convert, crypto, migration, query_builder, transaction, write_ops};
+use crate::engine::{connection, convert, crypto, migration, notifier, query_builder, transaction, write_ops};
 use anyhow::{anyhow, Context, Result};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use std::collections::HashMap;
+use std::sync::Arc;
 use zeroize::Zeroizing;
 
 // ─── IronVaultDb ─────────────────────────────────────────────────────
@@ -30,6 +31,8 @@ pub struct IronVaultDb {
     /// Master encryption key (Zeroizing — zeroed on drop).
     /// Used to derive tenant-scoped field encryption keys via HKDF.
     encryption_key: Zeroizing<Vec<u8>>,
+    /// Broadcast notifier for reactive streams.
+    notifier: Arc<notifier::ChangeNotifier>,
 }
 
 impl std::fmt::Debug for IronVaultDb {
@@ -98,6 +101,7 @@ impl IronVaultDb {
             path,
             closed: false,
             encryption_key: Zeroizing::new(encryption_key),
+            notifier: Arc::new(notifier::ChangeNotifier::new()),
         })
     }
 
@@ -112,6 +116,7 @@ impl IronVaultDb {
             return Ok(());
         }
         let _ = self.checkpoint_internal(CheckpointMode::Passive);
+        self.notifier.close(); // Wake all watchers so they exit
         self.closed = true;
         Ok(())
     }
@@ -393,6 +398,7 @@ impl IronVaultDb {
         let conn = self.acquire_writer()?;
         conn.execute(&sql, rusqlite::params_from_iter(params))
             .with_context(|| format!("InsertException: {}", table))?;
+        self.notifier.notify(&table, &self.tenant_id);
         Ok(id)
     }
 
@@ -413,6 +419,9 @@ impl IronVaultDb {
         let affected = conn
             .execute(&sql, rusqlite::params_from_iter(params))
             .with_context(|| format!("UpdateException: {} id={}", table, id))?;
+        if affected > 0 {
+            self.notifier.notify(&table, &self.tenant_id);
+        }
         Ok(affected as u64)
     }
 
@@ -431,6 +440,7 @@ impl IronVaultDb {
         let conn = self.acquire_writer()?;
         conn.execute(&sql, rusqlite::params_from_iter(params))
             .with_context(|| format!("UpsertException: {}", table))?;
+        self.notifier.notify(&table, &self.tenant_id);
         Ok(id)
     }
 
@@ -445,6 +455,9 @@ impl IronVaultDb {
         let affected = conn
             .execute(&sql, rusqlite::params_from_iter(params))
             .with_context(|| format!("DeleteException: {} id={}", table, id))?;
+        if affected > 0 {
+            self.notifier.notify(&table, &self.tenant_id);
+        }
         Ok(affected as u64)
     }
 
@@ -459,6 +472,9 @@ impl IronVaultDb {
         let affected = conn
             .execute(&sql, rusqlite::params_from_iter(params))
             .with_context(|| format!("HardDeleteException: {} id={}", table, id))?;
+        if affected > 0 {
+            self.notifier.notify(&table, &self.tenant_id);
+        }
         Ok(affected as u64)
     }
 
@@ -493,6 +509,9 @@ impl IronVaultDb {
 
         conn.execute_batch("COMMIT")
             .context("Failed to commit batch insert")?;
+        if !ids.is_empty() {
+            self.notifier.notify(&table, &self.tenant_id);
+        }
         Ok(ids)
     }
 
@@ -528,6 +547,9 @@ impl IronVaultDb {
 
         conn.execute_batch("COMMIT")
             .context("Failed to commit batch update")?;
+        if total_affected > 0 {
+            self.notifier.notify(&table, &self.tenant_id);
+        }
         Ok(total_affected)
     }
 
@@ -563,6 +585,9 @@ impl IronVaultDb {
 
         conn.execute_batch("COMMIT")
             .context("Failed to commit batch delete")?;
+        if total_affected > 0 {
+            self.notifier.notify(&table, &self.tenant_id);
+        }
         Ok(total_affected)
     }
 
@@ -620,7 +645,12 @@ impl IronVaultDb {
     pub fn transaction(&self, ops: Vec<Op>) -> Result<TransactionResult> {
         self.ensure_open()?;
         let conn = self.acquire_writer()?;
-        transaction::execute_transaction(&conn, &ops, &self.tenant_id)
+        let result = transaction::execute_transaction(&conn, &ops, &self.tenant_id)?;
+        // Notify for each affected table
+        for table in &result.affected_tables {
+            self.notifier.notify(table, &self.tenant_id);
+        }
+        Ok(result)
     }
 
     /// Update a row with optimistic locking.
@@ -647,7 +677,9 @@ impl IronVaultDb {
             expected_version,
             data,
             &self.tenant_id,
-        )
+        )?;
+        self.notifier.notify(&table, &self.tenant_id);
+        Ok(())
     }
 
     // ── Encryption ───────────────────────────────────────────────
@@ -680,6 +712,183 @@ impl IronVaultDb {
     pub fn derive_purpose_key(&self, purpose: String) -> Result<Vec<u8>> {
         self.ensure_open()?;
         crypto::hkdf_derive(&self.encryption_key, &purpose)
+    }
+
+    // ── Reactive Streams ──────────────────────────────────────────
+
+    /// Watch a query — emits results whenever the table changes.
+    ///
+    /// Returns a Dart `Stream<List<Map<String, SqlValue>>>`.
+    /// Initial result emitted immediately. Re-executes on every write
+    /// to the table. Only emits if the result set actually changed
+    /// (distinct emission via hash comparison).
+    ///
+    /// The stream stops when the Dart side cancels or the DB is closed.
+    pub fn watch_query(
+        &self,
+        spec: QuerySpec,
+        sink: crate::frb_generated::StreamSink<Vec<HashMap<String, SqlValue>>>,
+    ) -> Result<()> {
+        self.ensure_open()?;
+        let read_pool = self.read_pool.clone();
+        let tenant_id = self.tenant_id.clone();
+        let notifier = self.notifier.clone();
+        let table = spec.table.clone();
+
+        std::thread::spawn(move || {
+            let key = format!("{}:{}", table, tenant_id);
+
+            // Initial emission
+            let initial = Self::execute_query_on_pool(&read_pool, &spec, &tenant_id)
+                .unwrap_or_default();
+            let mut prev_hash = Self::hash_results(&initial);
+            let _ = sink.add(initial);
+
+            loop {
+                if !notifier.wait(&key) {
+                    break; // DB closed
+                }
+
+                let new_results = Self::execute_query_on_pool(&read_pool, &spec, &tenant_id)
+                    .unwrap_or_default();
+                let new_hash = Self::hash_results(&new_results);
+
+                if new_hash != prev_hash {
+                    if sink.add(new_results).is_err() {
+                        break; // Dart cancelled
+                    }
+                    prev_hash = new_hash;
+                }
+            }
+        });
+
+        Ok(())
+    }
+
+    /// Watch a single row — emits the row or None if soft-deleted.
+    pub fn watch_row(
+        &self,
+        table: String,
+        id: String,
+        sink: crate::frb_generated::StreamSink<Option<HashMap<String, SqlValue>>>,
+    ) -> Result<()> {
+        self.ensure_open()?;
+        let read_pool = self.read_pool.clone();
+        let tenant_id = self.tenant_id.clone();
+        let notifier = self.notifier.clone();
+        let table_clone = table.clone();
+
+        std::thread::spawn(move || {
+            let key = format!("{}:{}", table_clone, tenant_id);
+            let spec = QuerySpec {
+                table: table_clone,
+                conditions: vec![Condition::Eq {
+                    column: "id".into(),
+                    value: SqlValue::Text(id),
+                }],
+                or_conditions: vec![],
+                order_by: vec![],
+                limit: Some(1),
+                offset: None,
+                joins: vec![],
+                columns: vec![],
+                include_deleted: false,
+            };
+
+            let initial = Self::execute_query_on_pool(&read_pool, &spec, &tenant_id)
+                .unwrap_or_default();
+            let row = initial.into_iter().next();
+            let mut prev_hash = format!("{:?}", row);
+            let _ = sink.add(row);
+
+            loop {
+                if !notifier.wait(&key) {
+                    break;
+                }
+
+                let results = Self::execute_query_on_pool(&read_pool, &spec, &tenant_id)
+                    .unwrap_or_default();
+                let new_row = results.into_iter().next();
+                let new_hash = format!("{:?}", new_row);
+
+                if new_hash != prev_hash {
+                    if sink.add(new_row).is_err() {
+                        break;
+                    }
+                    prev_hash = new_hash;
+                }
+            }
+        });
+
+        Ok(())
+    }
+
+    /// Watch aggregate expressions — emits updated aggregates on table changes.
+    pub fn watch_aggregate(
+        &self,
+        spec: QuerySpec,
+        expressions: Vec<AggExpr>,
+        sink: crate::frb_generated::StreamSink<HashMap<String, SqlValue>>,
+    ) -> Result<()> {
+        self.ensure_open()?;
+        let read_pool = self.read_pool.clone();
+        let tenant_id = self.tenant_id.clone();
+        let notifier = self.notifier.clone();
+        let table = spec.table.clone();
+
+        std::thread::spawn(move || {
+            let key = format!("{}:{}", table, tenant_id);
+
+            let exec = || -> HashMap<String, SqlValue> {
+                let (sql, params) =
+                    query_builder::build_aggregate(&spec, &expressions, &tenant_id)
+                        .unwrap_or_default();
+                let conn = read_pool.get().ok();
+                conn.and_then(|c| {
+                    let mut stmt = c.prepare(&sql).ok()?;
+                    let cols: Vec<String> = stmt.column_names().iter().map(|c| c.to_string()).collect();
+                    let count = cols.len();
+                    stmt.query_row(rusqlite::params_from_iter(params), |row| {
+                        let mut map = HashMap::with_capacity(count);
+                        for i in 0..count {
+                            let v: rusqlite::types::Value = row.get(i)?;
+                            map.insert(cols[i].clone(), convert::from_rusqlite(v));
+                        }
+                        Ok(map)
+                    }).ok()
+                })
+                .unwrap_or_default()
+            };
+
+            let initial = exec();
+            let mut prev_hash = format!("{:?}", initial);
+            let _ = sink.add(initial);
+
+            loop {
+                if !notifier.wait(&key) {
+                    break;
+                }
+
+                let new_result = exec();
+                let new_hash = format!("{:?}", new_result);
+
+                if new_hash != prev_hash {
+                    if sink.add(new_result).is_err() {
+                        break;
+                    }
+                    prev_hash = new_hash;
+                }
+            }
+        });
+
+        Ok(())
+    }
+
+    /// Get the notification version for a table channel (for testing).
+    pub fn notification_version(&self, table: String) -> Result<u64> {
+        self.ensure_open()?;
+        let key = format!("{}:{}", table, self.tenant_id);
+        Ok(self.notifier.version(&key))
     }
 
     // ── Private Helpers ──────────────────────────────────────────
@@ -739,6 +948,41 @@ impl IronVaultDb {
             result.push(row.with_context(|| "QueryException: failed to read row")?);
         }
         Ok(result)
+    }
+
+    /// Execute a query on the read pool (used by watch threads).
+    fn execute_query_on_pool(
+        pool: &Pool<SqliteConnectionManager>,
+        spec: &QuerySpec,
+        tenant_id: &str,
+    ) -> Result<Vec<HashMap<String, SqlValue>>> {
+        let (sql, params) = query_builder::build_select(spec, tenant_id)?;
+        let conn = pool.get().map_err(|e| anyhow!("PoolExhaustedException: {}", e))?;
+        let mut stmt = conn.prepare(&sql)?;
+        let column_names: Vec<String> =
+            stmt.column_names().iter().map(|c| c.to_string()).collect();
+        let column_count = column_names.len();
+        let rows = stmt.query_map(rusqlite::params_from_iter(params), |row| {
+            let mut map = HashMap::with_capacity(column_count);
+            for i in 0..column_count {
+                let value: rusqlite::types::Value = row.get(i)?;
+                map.insert(column_names[i].clone(), convert::from_rusqlite(value));
+            }
+            Ok(map)
+        })?;
+        let mut result = Vec::new();
+        for row in rows {
+            result.push(row?);
+        }
+        Ok(result)
+    }
+
+    /// Hash a result set for distinct emission comparison.
+    fn hash_results(results: &[HashMap<String, SqlValue>]) -> u64 {
+        use std::hash::{Hash, Hasher};
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        format!("{:?}", results).hash(&mut hasher);
+        hasher.finish()
     }
 
     fn checkpoint_internal(&self, mode: CheckpointMode) -> Result<CheckpointResult> {
