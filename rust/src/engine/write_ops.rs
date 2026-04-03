@@ -148,20 +148,23 @@ pub(crate) fn build_upsert(
         .collect::<Vec<_>>()
         .join(", ");
 
-    // Build ON CONFLICT ... DO UPDATE SET for all columns except the conflict column and id
+    // Build ON CONFLICT ... DO UPDATE SET for all columns except the conflict column, id, and tenant_id
     let update_parts: Vec<String> = columns
         .iter()
-        .filter(|c| **c != conflict_column && **c != "id")
+        .filter(|c| **c != conflict_column && **c != "id" && **c != "tenant_id")
         .map(|c| format!("{} = excluded.{}", c, c))
         .collect();
 
+    // WHERE tenant_id = excluded.tenant_id ensures cross-tenant upserts
+    // insert a new row instead of overwriting another tenant's data.
     let sql = format!(
-        "INSERT INTO {} ({}) VALUES ({}) ON CONFLICT({}) DO UPDATE SET {}",
+        "INSERT INTO {} ({}) VALUES ({}) ON CONFLICT({}) DO UPDATE SET {} WHERE {}.tenant_id = excluded.tenant_id",
         table,
         columns.join(", "),
         placeholders,
         conflict_column,
         update_parts.join(", "),
+        table,
     );
 
     Ok((sql, values, id))
