@@ -14,6 +14,7 @@ pub mod backup_export;
 pub mod cross_phase;
 pub mod edge_cases;
 pub mod encryption_crypto;
+pub mod key_rotation;
 pub mod memory_safety;
 pub mod performance;
 pub mod migrations;

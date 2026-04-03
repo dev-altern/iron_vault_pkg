@@ -7,7 +7,7 @@ use anyhow::{anyhow, Context, Result};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 use zeroize::Zeroizing;
 
 // ─── IronVaultDb ─────────────────────────────────────────────────────
@@ -32,8 +32,8 @@ pub struct IronVaultDb {
     path: String,
     closed: bool,
     /// Master encryption key (Zeroizing — zeroed on drop).
-    /// Used to derive tenant-scoped field encryption keys via HKDF.
-    encryption_key: Zeroizing<Vec<u8>>,
+    /// Behind RwLock for key rotation support.
+    encryption_key: RwLock<Zeroizing<Vec<u8>>>,
     /// Broadcast notifier for reactive streams.
     notifier: Arc<notifier::ChangeNotifier>,
     /// Current actor ID for audit logging (default: "system").
@@ -136,7 +136,7 @@ impl IronVaultDb {
             config,
             path,
             closed: false,
-            encryption_key: Zeroizing::new(encryption_key),
+            encryption_key: RwLock::new(Zeroizing::new(encryption_key)),
             notifier: Arc::new(notifier::ChangeNotifier::new()),
             actor_id: Mutex::new("system".to_string()),
             search_engine,
@@ -706,7 +706,7 @@ impl IronVaultDb {
     /// Returns JSON: `{"ct":"<base64>","nonce":"<base64>","kid":"v1"}`.
     pub fn encrypt_field(&self, plaintext: String) -> Result<String> {
         self.ensure_open()?;
-        let field_key = crypto::tenant_field_key(&self.encryption_key, &self.tenant_id)?;
+        let field_key = crypto::tenant_field_key(&self.encryption_key.read().unwrap(), &self.tenant_id)?;
         crypto::encrypt_field(&plaintext, &field_key)
     }
 
@@ -716,7 +716,7 @@ impl IronVaultDb {
     /// Fails if the key is wrong or data has been tampered with.
     pub fn decrypt_field(&self, ciphertext_json: String) -> Result<String> {
         self.ensure_open()?;
-        let field_key = crypto::tenant_field_key(&self.encryption_key, &self.tenant_id)?;
+        let field_key = crypto::tenant_field_key(&self.encryption_key.read().unwrap(), &self.tenant_id)?;
         crypto::decrypt_field(&ciphertext_json, &field_key)
     }
 
@@ -726,8 +726,104 @@ impl IronVaultDb {
     /// or any custom string. Returns 32 bytes.
     pub fn derive_purpose_key(&self, purpose: String) -> Result<Vec<u8>> {
         self.ensure_open()?;
-        let key = crypto::hkdf_derive(&self.encryption_key, &purpose)?;
+        let key = crypto::hkdf_derive(&self.encryption_key.read().unwrap(), &purpose)?;
         Ok(key.to_vec()) // Zeroizing → Vec for FRB (key zeroed when Zeroizing drops)
+    }
+
+    /// Rotate field encryption keys.
+    ///
+    /// Re-encrypts all specified columns in the given tables using
+    /// a new master key. Each table is processed in a single transaction.
+    ///
+    /// - `new_encryption_key`: the new 32-byte master key
+    /// - `tables_columns`: map of table_name → list of encrypted column names
+    ///
+    /// After rotation, the internal master key is updated to the new key.
+    /// Old key material is zeroed.
+    pub fn rotate_field_keys(
+        &self,
+        new_encryption_key: Vec<u8>,
+        tables_columns: HashMap<String, Vec<String>>,
+    ) -> Result<u64> {
+        self.ensure_open()?;
+        if new_encryption_key.len() != 32 {
+            return Err(anyhow!(
+                "EncryptionException: new key must be 32 bytes, got {}",
+                new_encryption_key.len()
+            ));
+        }
+
+        let old_field_key = crypto::tenant_field_key(&self.encryption_key.read().unwrap(), &self.tenant_id)?;
+        let new_field_key = crypto::tenant_field_key(&new_encryption_key, &self.tenant_id)?;
+
+        let conn = self.acquire_writer()?;
+        let mut total_rotated = 0u64;
+
+        for (table, columns) in &tables_columns {
+            crate::engine::validate::table_name(table)?;
+
+            // Read all rows with encrypted columns
+            let col_list = std::iter::once("id".to_string())
+                .chain(columns.iter().cloned())
+                .collect::<Vec<_>>()
+                .join(", ");
+            let sql = format!(
+                "SELECT {} FROM {} WHERE tenant_id = ?1",
+                col_list, table
+            );
+            let mut stmt = conn.prepare(&sql)?;
+            let rows: Vec<(String, Vec<(String, String)>)> = stmt
+                .query_map(rusqlite::params![&self.tenant_id], |row| {
+                    let id: String = row.get(0)?;
+                    let mut cols = Vec::new();
+                    for (i, col_name) in columns.iter().enumerate() {
+                        let val: Option<String> = row.get(i + 1)?;
+                        if let Some(v) = val {
+                            cols.push((col_name.clone(), v));
+                        }
+                    }
+                    Ok((id, cols))
+                })?
+                .filter_map(|r| r.ok())
+                .collect();
+
+            // Re-encrypt in a transaction
+            conn.execute_batch("BEGIN IMMEDIATE")?;
+
+            for (id, encrypted_cols) in &rows {
+                for (col_name, ciphertext) in encrypted_cols {
+                    // Decrypt with old key
+                    let plaintext = crypto::decrypt_field(ciphertext, &old_field_key)
+                        .with_context(|| {
+                            format!("KeyRotation: failed to decrypt {}.{} id={}", table, col_name, id)
+                        })?;
+
+                    // Re-encrypt with new key
+                    let new_ciphertext = crypto::encrypt_field(&plaintext, &new_field_key)?;
+
+                    // Update the row
+                    let update_sql = format!(
+                        "UPDATE {} SET {} = ?1 WHERE id = ?2 AND tenant_id = ?3",
+                        table, col_name
+                    );
+                    conn.execute(
+                        &update_sql,
+                        rusqlite::params![new_ciphertext, id, &self.tenant_id],
+                    )?;
+                    total_rotated += 1;
+                }
+            }
+
+            conn.execute_batch("COMMIT")?;
+        }
+
+        // Update the internal master key — old key zeroed by Zeroizing on drop
+        {
+            let mut key_guard = self.encryption_key.write().unwrap();
+            *key_guard = Zeroizing::new(new_encryption_key);
+        }
+
+        Ok(total_rotated)
     }
 
     // ── Reactive Streams ──────────────────────────────────────────
@@ -949,7 +1045,7 @@ impl IronVaultDb {
         self.ensure_open()?;
         let conn = self.acquire_writer()?;
         let actor = self.actor_id.lock().unwrap().clone();
-        let hmac_key = crypto::hkdf_derive(&self.encryption_key, "audit_hmac")?;
+        let hmac_key = crypto::hkdf_derive(&self.encryption_key.read().unwrap(), "audit_hmac")?;
         audit::record(
             &conn,
             &table_name,
@@ -1012,7 +1108,7 @@ impl IronVaultDb {
     ) -> Result<AuditIntegrityReport> {
         self.ensure_open()?;
         let conn = self.acquire_reader()?;
-        let hmac_key = crypto::hkdf_derive(&self.encryption_key, "audit_hmac")?;
+        let hmac_key = crypto::hkdf_derive(&self.encryption_key.read().unwrap(), "audit_hmac")?;
         audit::verify_integrity(&conn, &self.tenant_id, &hmac_key, from, to)
     }
 
@@ -1033,7 +1129,7 @@ impl IronVaultDb {
         // Checkpoint WAL first to flush all changes to the main DB file
         let _ = self.checkpoint_internal(CheckpointMode::Passive);
         let backup_key = if encrypt {
-            crypto::hkdf_derive(&self.encryption_key, "backup")?
+            crypto::hkdf_derive(&self.encryption_key.read().unwrap(), "backup")?
         } else {
             Zeroizing::new(vec![0u8; 32])
         };
@@ -1043,7 +1139,7 @@ impl IronVaultDb {
     /// Verify a backup file without restoring.
     pub fn verify_backup(&self, backup_path: String) -> Result<BackupVerifyReport> {
         self.ensure_open()?;
-        let backup_key = crypto::hkdf_derive(&self.encryption_key, "backup")?;
+        let backup_key = crypto::hkdf_derive(&self.encryption_key.read().unwrap(), "backup")?;
         backup::verify_backup(&backup_path, &backup_key)
     }
 
@@ -1058,7 +1154,7 @@ impl IronVaultDb {
         expected_checksum: Option<String>,
     ) -> Result<RestoreResult> {
         self.ensure_open()?;
-        let backup_key = crypto::hkdf_derive(&self.encryption_key, "backup")?;
+        let backup_key = crypto::hkdf_derive(&self.encryption_key.read().unwrap(), "backup")?;
         backup::restore_backup(
             &backup_path,
             &target_path,
@@ -1366,7 +1462,7 @@ impl IronVaultDb {
             _ => None,
         };
         let actor = self.actor_id.lock().unwrap().clone();
-        if let Ok(hmac_key) = crypto::hkdf_derive(&self.encryption_key, "audit_hmac") {
+        if let Ok(hmac_key) = crypto::hkdf_derive(&self.encryption_key.read().unwrap(), "audit_hmac") {
             let _ = audit::record(
                 conn,
                 table,
